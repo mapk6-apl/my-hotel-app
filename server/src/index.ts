@@ -10,7 +10,7 @@ dotenv.config(); //load environment variables from .env
 const app: Express = express();
 const PORT = process.env.PORT || 5000;
 
-//middleware configuration
+//1.Middleware Configuration
 
 //CORS (Cross-Origin Resource Sharing); allows frontend to communicate with backend server
 app.use(cors({
@@ -19,3 +19,14 @@ app.use(cors({
 }));
 
 app.use(express.json()); //express middleware; parses incoming JSON payload bodies 
+
+//2. Health Check Route
+
+//diagnostic route to check if the Node.ts server is alive and responding
+app.get('/health', (req: Request, res: Response) => {
+    res.status(200).json({
+        status: 'ok',
+        message: 'Hotel App API server is healthy',
+        timestamp: new Date().toISOString(),
+    });
+});
