@@ -30,3 +30,12 @@ app.get('/health', (req: Request, res: Response) => {
         timestamp: new Date().toISOString(),
     });
 });
+
+//3. Global Error Handling Middeware; catches unhandled errors thrown inside API route handlers and returns clear JSON
+app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+    console.error('Unhandled Server Error:', err.stack);
+    res.status(500).json({
+        error: 'Internal Server Error',
+        message: process.env.NODE_ENV === 'development' ? err.message : 'An unexpected error occured.'
+    });
+});
