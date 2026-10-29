@@ -39,3 +39,15 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
         message: process.env.NODE_ENV === 'development' ? err.message : 'An unexpected error occured.'
     });
 });
+
+//4. Server Initialization
+const startServer = async (): Promise<void> => {
+    await testDatabaseConnection(); //verify PostgreSQL connection before starting HTTP server
+
+    //start express server listener
+    app.listen(PORT, () => {
+        console.log(`Hotel API server running on http://localhost:${PORT}`)
+    });
+};
+
+startServer();
