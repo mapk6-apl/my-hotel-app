@@ -44,3 +44,42 @@ export const fetchCurrentUser = createAsyncThunk( 'auth/fetchCurrentUser',
         } 
     } 
 );
+
+const authSlice = createSlice({ 
+    name: 'auth', 
+    initialState, 
+    reducers: { 
+        setToken: (state, action: PayloadAction<string>) => {
+            state.token = action.payload; 
+            state.isAuthenticated = true; 
+            localStorage.setItem('token', action.payload); 
+        }, 
+        logout: (state) => { 
+            state.token = null; 
+            state.user = null; 
+            state.isAuthenticated = false; 
+            localStorage.removeItem('token'); 
+        }, 
+    },    
+    extraReducers: (builder) => { 
+        builder 
+        .addCase(fetchCurrentUser.pending, (state) => { 
+            state.loading = true; 
+        })
+        .addCase(fetchCurrentUser.fulfilled, (state, action) => { 
+            state.loading = false; 
+            state.user = action.payload; 
+            state.isAuthenticated = true; 
+        })
+        .addCase(fetchCurrentUser.rejected, (state) => { 
+            state.loading = false; 
+            state.token = null; 
+            state.user = null; 
+            state.isAuthenticated = false; 
+            localStorage.removeItem('token'); 
+        }); 
+    }, 
+}); 
+
+export const { setToken, logout } = authSlice.actions; 
+export default authSlice.reducer;
