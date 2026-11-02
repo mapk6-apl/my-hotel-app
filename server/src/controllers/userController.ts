@@ -24,3 +24,15 @@ export const updateProfile = async (req: AuthenticatedRequest, res: Response): P
         res.status(500).json({ error: 'Failed to update profile' });
     }
 }
+
+//GET /api/amenities fetches the master list of hotel amenities for UI search filters. 
+export const getAmenities = async (req: any, res: Response): Promise<void> => {
+    try {
+       const result = await pool.query('SELECT * FROM amenities ORDER BY id ASC'); 
+       res.status(200).json({ 
+        success: true, 
+        data: result.rows, }); 
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to fetch amenities' });
+    }
+};
