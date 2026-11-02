@@ -104,3 +104,27 @@ export const updateBookingStatus = async (req: AuthenticatedRequest, res: Respon
         res.status(500).json({ error: 'Failed to update reservation status' });
     }
 };
+
+//POST /api/admin/hotels adds a new Break-Away Hotel branch to PostgreSQL.
+export const createHotelBranch = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+    try {
+        const { name, description, address, city, latitude, longitude, star_rating, policies } = req.body; 
+        const query = ` 
+        INSERT INTO accommodations (name, description, address, city, latitude, longitude, star_rating, policies) 
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8) 
+        RETURNING * 
+        `;
+
+        const result = await pool.query(query, [ name, description, address, city, latitude || 0, longitude || 0, star_rating || 4.5, policies || 'Standard check-in policies apply.', 
+        ]);
+
+        res.status(201).json({ 
+            success: true, 
+            message: 'Break-Away Hotel branch added successfully!', 
+            data: result.rows[0],
+        });
+    } catch (error) {
+        console.error('Error creating hotel branch:', error); 
+        res.status(500).json({ error: 'Failed to create new hotel branch' });
+    }
+};
