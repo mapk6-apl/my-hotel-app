@@ -1,0 +1,57 @@
+import type { Request, Response } from 'express'; 
+import { pool } from '../config/db.js';
+
+//GET /api/hotels fetches Break-Away Hotel branches with optional search & filters (city, price, rating)
+export const getAllHotels = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { city, minPrice, maxPrice, starRating } = req.query; 
+        
+        let queryText = ` 
+        SELECT a.id, a.name, a.description, a.address, a.city, a.latitude, a.longitude, a.star_rating, img.image_url AS hero_image, COALESCE(MIN(r.price_per_night), 0) AS starting_price 
+        FROM accommodations a 
+        LEFT JOIN accommodation_images img ON a.id = img.accommodation_id AND img.is_hero = true 
+        LEFT JOIN rooms r ON a.id = r.accommodation_id `;
+
+        const queryParams: any[] = []; 
+        const whereClauses: string[] = []; 
+        
+        if (city) { 
+            queryParams.push(`%${city}%`); 
+            whereClauses.push(`a.city ILIKE $${queryParams.length}`); 
+        }
+
+        if (starRating) { 
+            queryParams.push(Number(starRating)); 
+            whereClauses.push(`a.star_rating >= $${queryParams.length}`); 
+        } 
+        
+        if (whereClauses.length > 0) { 
+            queryText += ` WHERE ` + whereClauses.join(' AND '); 
+        }
+
+        queryText += ` GROUP BY a.id, img.image_url`; 
+        
+        if (minPrice || maxPrice) { 
+            const havingClauses: string[] = []; 
+            if (minPrice) { 
+                queryParams.push(Number(minPrice)); 
+                havingClauses.push(`MIN(r.price_per_night) >= $${queryParams.length}`); 
+            } 
+            if (maxPrice) { 
+                queryParams.push(Number(maxPrice)); 
+                havingClauses.push(`MIN(r.price_per_night) >= $${queryParams.length}`); 
+            } queryText += ` HAVING ` + havingClauses.join(' AND '); 
+        } 
+        queryText += ` ORDER BY a.star_rating DESC`; 
+        
+        const result = await pool.query(queryText, queryParams); 
+        res.status(200).json({ 
+            success: true, 
+            count: result.rows.length, 
+            data: result.rows, 
+        });
+    } catch (error) {
+        console.error('Error fetching accommodations:', error); 
+        res.status(500).json({ error: 'Failed to fetch accommodation listings'});
+    }
+}
