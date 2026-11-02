@@ -73,9 +73,49 @@ export const createBooking = async (req: AuthenticatedRequest, res: Response): P
 //GET /api/bookings/my-bookings retrieves all past and upcoming reservations for the authenticated guest.
 export const getUserBookings = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
     try {
+        const userId = req.user?.id;
+
+        if(!userId){
+            res.status(401).json({error: 'User not authenticated'})
+            return;
+        }
+
+        const bookingsQuery = ` SELECT 
+        res.id AS reservation_id, 
+        res.check_in, res.check_out, 
+        res.guest_count, 
+        res.total_amount,
+        res.payment_status, 
+        res.status, 
+        res.created_at, 
+        r.room_type, 
+        r.price_per_night, 
+        acc.id AS accommodation_id, 
+        acc.name AS hotel_name, 
+        acc.city, 
+        acc.address, 
+        img.image_url AS hero_image 
+        FROM reservations res 
+        JOIN rooms r ON res.room_id = r.id 
+        JOIN accommodations acc ON r.accommodation_id = acc.id 
+        LEFT JOIN accommodation_images img ON acc.id = img.accommodation_id 
+        AND img.is_hero = true 
+        WHERE res.user_id = $1 
+        ORDER BY res.created_at DESC `; 
         
+        const result = await pool.query(bookingsQuery, [userId]); 
+        
+        res.status(200).json({ 
+            success: true, 
+            count: result.rows.length, 
+            data: result.rows, 
+        });
     } catch (error) {
-        
+        console.error('Error fetching user bookings:', error); 
+        res.status(500).json({ error: 'Failed to fetch reservations' });
     }
-}
+};
+
+//PATCH /api/bookings/:id/cancel allows a guest to cancel an active reservation.
+
 
