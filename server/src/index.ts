@@ -5,6 +5,11 @@ import dotenv from 'dotenv'
 import {testDatabaseConnection} from './config/db.js' //add .js to avoid import error
 import bookingRoutes from './routes/bookingRoutes.js'
 import favouriteRoutes from './routes/favouriteRoutes.js'
+import hotelRoutes from './routes/hotelRoutes.js'; 
+import authRoutes from './routes/authRoutes.js'; 
+import adminRoutes from './routes/adminRoutes.js'; 
+import reviewRoutes from './routes/reviewRoutes.js'; 
+import userRoutes from './routes/userRoutes.js';
 
 dotenv.config(); //load environment variables from .env
 
@@ -21,11 +26,22 @@ app.use(cors({
 }));
 
 app.use(express.json()); //express middleware; parses incoming JSON payload bodies 
-app.use('/api/bookings', bookingRoutes);
-app.use('/api/favorites', favouriteRoutes);
 
-//2. Health Check Route
+//2. Root Route
+app.get('/', (req: Request, res: Response) => { 
+    res.status(200).json({ 
+        message: 'Welcome to Break-Away Hotels & Resorts API', 
+        status: 'online', 
+        endpoints: { hotels: `http://localhost:${PORT}/api/hotels`, 
+        auth: `http://localhost:${PORT}/api/auth`, 
+        bookings: `http://localhost:${PORT}/api/bookings`, 
+        favorites: `http://localhost:${PORT}/api/favorites`, 
+        health: `http://localhost:${PORT}/health`, 
+    }, 
+    }); 
+});
 
+//3. Health Check Route
 //diagnostic route to check if the Node.ts server is alive and responding
 app.get('/health', (req: Request, res: Response) => {
     res.status(200).json({
@@ -35,7 +51,16 @@ app.get('/health', (req: Request, res: Response) => {
     });
 });
 
-//3. Global Error Handling Middeware; catches unhandled errors thrown inside API route handlers and returns clear JSON
+//4. Register API Routes
+app.use('/api/hotels', hotelRoutes); 
+app.use('/api/auth', authRoutes); 
+app.use('/api/bookings', bookingRoutes); 
+app.use('/api/admin', adminRoutes); 
+app.use('/api/reviews', reviewRoutes); 
+app.use('/api/favorites', favouriteRoutes); 
+app.use('/api/users', userRoutes);
+
+//5. Global Error Handling Middeware; catches unhandled errors thrown inside API route handlers and returns clear JSON
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
     console.error('Unhandled Server Error:', err.stack);
     res.status(500).json({
@@ -44,7 +69,7 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
     });
 });
 
-//4. Server Initialization
+//6. Server Initialization
 const startServer = async (): Promise<void> => {
     await testDatabaseConnection(); //verify PostgreSQL connection before starting HTTP server
 
