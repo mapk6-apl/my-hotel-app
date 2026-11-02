@@ -57,3 +57,22 @@ export const createReservation = createAsyncThunk(
         }
     }
 );
+
+// Async Thunk: Fetch guest reservation history 
+export const fetchUserBookings = createAsyncThunk( 
+    'bookings/fetchUserBookings', 
+    async (_, { rejectWithValue }) => { 
+        try { 
+            const token = localStorage.getItem('token'); 
+            const response = await fetch('http://localhost:5001/api/bookings/my-bookings', { 
+                headers: { Authorization: `Bearer ${token}` }, 
+            }); 
+            const data = await response.json() as { error?: string; data: Booking[] }; 
+            
+            if (!response.ok) throw new Error(data.error || 'Failed to fetch bookings'); 
+            return data.data; 
+        } catch (err: any) { 
+            return rejectWithValue(err.message); 
+        } 
+    } 
+);
