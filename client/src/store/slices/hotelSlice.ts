@@ -62,3 +62,19 @@ const initialState: HotelState = {
     } 
 );
 
+// Async Thunk: Fetch detailed single hotel branch view export 
+const fetchHotelById = createAsyncThunk( 
+    'hotels/fetchHotelById', 
+    async (id: number, { rejectWithValue }) => { 
+        try { 
+            const response = await fetch(`http://localhost:5001/api/hotels/${id}`); 
+            const data = await response.json() as { error?: string; data: Hotel }; 
+            
+            if (!response.ok) throw new Error(data.error || 'Hotel not found'); 
+            return data.data; 
+        } catch (err: any) { 
+            return rejectWithValue(err.message); 
+        } 
+    } 
+);
+
