@@ -15,3 +15,10 @@ interface AuthState {
     loading: boolean; 
     error: string | null; 
 }
+
+const initialState: AuthState = { 
+    token: localStorage.getItem('token'), 
+    user: null, 
+    isAuthenticated: !!localStorage.getItem('token'), 
+    loading: false, error: null, 
+};
