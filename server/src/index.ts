@@ -3,6 +3,7 @@ import type {Express, Request, Response, NextFunction} from 'express'
 import cors from 'cors' //cross-origin resource sharing; security mechanism, controls whether a web page from one origin(localhost:5173) can make requests to a different origin (localhost:3000)
 import dotenv from 'dotenv'
 import {testDatabaseConnection} from './config/db.js' //add .js to avoid import error
+import bookingRoutes from './routes/bookingRoutes.js'
 
 dotenv.config(); //load environment variables from .env
 
@@ -19,6 +20,7 @@ app.use(cors({
 }));
 
 app.use(express.json()); //express middleware; parses incoming JSON payload bodies 
+app.use('/api/bookings', bookingRoutes);
 
 //2. Health Check Route
 
