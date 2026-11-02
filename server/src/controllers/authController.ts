@@ -33,14 +33,18 @@ export const googleCallback = (req: Request, res: Response): void => {
 //GET api/auth/me. It retrieves the current authenticated user profile details from JWT token.
 export const getCurrentuser = async (req: Request, res: Response): Promise<void> => {
     try {
-        const authHeader = req.headers.auuthorization;
+        const authHeader = req.headers.authorization;
         if(!authHeader || !authHeader.startsWith('Bearer')){
             res.status(401).json({error: 'Unauthorized: Missing or malformed token'});
             return;
         }
 
         const token = authHeader.split(' ')[1];
-        const decoded = jwt.verify(token, JWT_SECRET) as {id: number};
+        if(!token) {
+            res.status(401).json({error: 'Unauthorized: Token missing'});
+            return; 
+        }
+        const decoded = jwt.verify(token, JWT_SECRET) as unknown as {id: number};
         const userQuery = 'SELECT id, email, full_name, avatar_url, role, phone, created_at FROM users WHERE id = $1';
         const userResult = await pool.query(userQuery, [decoded.id]);
 
