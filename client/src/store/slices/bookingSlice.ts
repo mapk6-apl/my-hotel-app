@@ -59,20 +59,60 @@ export const createReservation = createAsyncThunk(
 );
 
 // Async Thunk: Fetch guest reservation history 
-export const fetchUserBookings = createAsyncThunk( 
-    'bookings/fetchUserBookings', 
-    async (_, { rejectWithValue }) => { 
-        try { 
-            const token = localStorage.getItem('token'); 
-            const response = await fetch('http://localhost:5001/api/bookings/my-bookings', { 
-                headers: { Authorization: `Bearer ${token}` }, 
-            }); 
-            const data = await response.json() as { error?: string; data: Booking[] }; 
-            
-            if (!response.ok) throw new Error(data.error || 'Failed to fetch bookings'); 
-            return data.data; 
-        } catch (err: any) { 
-            return rejectWithValue(err.message); 
-        } 
-    } 
+export const fetchUserBookings = createAsyncThunk(
+    'bookings/fetchUserBookings',
+    async (_, { rejectWithValue }) => {
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch('http://localhost:5001/api/bookings/my-bookings', {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            const data = await response.json() as { error?: string; data: Booking[] };
+
+            if (!response.ok) throw new Error(data.error || 'Failed to fetch bookings');
+            return data.data;
+        } catch (err: any) {
+            return rejectWithValue(err.message);
+        }
+    }
 );
+
+const bookingSlice = createSlice({
+    name: 'bookings',
+    initialState,
+    reducers: {
+        clearBookingMessages: (state) => {
+            state.error = null;
+            state.successMessage = null;
+        },
+    },
+    extraReducers: (builder) => {
+        builder
+            .addCase(createReservation.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(createReservation.fulfilled, (state, action) => {
+                state.loading = false;
+                state.successMessage = action.payload ?? null;
+            })
+            .addCase(createReservation.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload as string;
+            })
+            .addCase(fetchUserBookings.pending, (state) => {
+                state.loading = true;
+            })
+            .addCase(fetchUserBookings.fulfilled, (state, action) => {
+                state.loading = false;
+                state.myBookings = action.payload;
+            })
+            .addCase(fetchUserBookings.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload as string;
+            });
+    },
+});
+
+export const { clearBookingMessages } = bookingSlice.actions;
+export default bookingSlice.reducer;
