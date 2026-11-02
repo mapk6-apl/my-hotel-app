@@ -4,6 +4,7 @@ import cors from 'cors' //cross-origin resource sharing; security mechanism, con
 import dotenv from 'dotenv'
 import {testDatabaseConnection} from './config/db.js' //add .js to avoid import error
 import bookingRoutes from './routes/bookingRoutes.js'
+import favouriteRoutes from './routes/favouriteRoutes.js'
 
 dotenv.config(); //load environment variables from .env
 
@@ -21,6 +22,7 @@ app.use(cors({
 
 app.use(express.json()); //express middleware; parses incoming JSON payload bodies 
 app.use('/api/bookings', bookingRoutes);
+app.use('/api/favorites', favouriteRoutes);
 
 //2. Health Check Route
 
