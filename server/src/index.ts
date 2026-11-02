@@ -15,7 +15,7 @@ dotenv.config(); //load environment variables from .env
 
 //initialize Express application instance
 const app: Express = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 
 //1.Middleware Configuration
 
@@ -53,12 +53,12 @@ app.get('/health', (req: Request, res: Response) => {
 
 //4. Register API Routes
 app.use('/api/hotels', hotelRoutes); 
-app.use('/api/auth', authRoutes); 
-app.use('/api/bookings', bookingRoutes); 
-app.use('/api/admin', adminRoutes); 
+app.use('/api/auth', authRoutes);  
 app.use('/api/reviews', reviewRoutes); 
 app.use('/api/favorites', favouriteRoutes); 
 app.use('/api/users', userRoutes);
+app.use('/api/bookings', bookingRoutes); 
+app.use('/api/admin', adminRoutes);
 
 //5. Global Error Handling Middeware; catches unhandled errors thrown inside API route handlers and returns clear JSON
 app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
