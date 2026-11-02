@@ -38,3 +38,69 @@ export const getAdminStats = async (req: AuthenticatedRequest, res: Response): P
 }); 
     }
 };
+
+//GET /api/admin/bookings retrieves all reservations across all users for admin management.
+export const getAllAdminBookings = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+    try {
+        const query = ` SELECT 
+        res.id AS reservation_id, 
+        res.check_in, 
+        res.check_out, 
+        res.guest_count, 
+        res.total_amount, 
+        res.payment_status, 
+        res.status, 
+        res.created_at, 
+        u.full_name AS guest_name, 
+        u.email AS guest_email, 
+        acc.name AS hotel_name, 
+        r.room_type 
+        FROM reservations res 
+        JOIN users u ON res.user_id = u.id 
+        JOIN rooms r ON res.room_id = r.id 
+        JOIN accommodations acc ON r.accommodation_id = acc.id 
+        ORDER BY res.created_at DESC 
+        `;
+
+        const result = await pool.query(query);
+
+        res.status(200).json({
+            success: true, 
+            count: result.rows.length, 
+            data: result.rows,
+        });
+    } catch (error) {
+        console.error('Error fetching admin bookings:', error); 
+        res.status(500).json({ error: 'Failed to fetch global reservations' });
+    }
+};
+
+//PATCH /api/admin/bookings/:id/status updates reservation status (e.g., 'approved', 'cancelled', 'completed').
+export const updateBookingStatus = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+    try { 
+        const { id } = req.params; 
+        const { status, payment_status } = req.body; 
+        const query = ` 
+        UPDATE reservations 
+        SET status = COALESCE($1, status), payment_status = COALESCE($2, payment_status) 
+        WHERE id = $3 
+        RETURNING * 
+        `; 
+
+        const result = await pool.query(query, [status, payment_status, id]); 
+        
+        if (result.rows.length === 0) { 
+            res.status(404).json({ error: 'Reservation not found' }); 
+            return; 
+        }
+
+        res.status(200).json({ 
+            success: true, 
+            message: 'Reservation status updated successfully', 
+            data: result.rows[0], 
+        });
+    } catch(error){
+        console.error('Error updating booking status:', error); 
+        res.status(500).json({ error: 'Failed to update reservation status' });
+    }
+};
