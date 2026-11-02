@@ -22,4 +22,31 @@ export const getUserFavorites = async (req: AuthenticatedRequest, res: Response)
     } catch (error) {
         res.status(500).json({ error: 'Failed to fetch guest favorites' });
     }
+};
+
+//POST /api/favorites/toggle adds or removes a hotel branch from guest favorites.
+export const toggleFavorite = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+    try {
+        const userId = req.user?.id; 
+        const { accommodationId } = req.body; 
+        const checkQuery = `SELECT * FROM user_favorites 
+        WHERE user_id = $1 AND accommodation_id = $2`; 
+        const checkResult = await pool.query(checkQuery, [userId, accommodationId]);
+
+        if (checkResult.rows.length > 0) { await pool.query(`DELETE FROM user_favorites 
+            WHERE user_id = $1 AND accommodation_id = $2`, [userId, accommodationId]); 
+            res.status(200).json({ 
+                success: true, 
+                isFavorite: false, 
+                message: 'Removed from favorites' }); 
+            } else { await pool.query(`INSERT INTO user_favorites (user_id, accommodation_id) 
+                VALUES ($1, $2)`, [userId, accommodationId]); 
+                res.status(201).json({ 
+                    success: true, 
+                    isFavorite: true, 
+                    message: 'Added to favorites'}); 
+            }
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to toggle favorite' });
+    }
 }
