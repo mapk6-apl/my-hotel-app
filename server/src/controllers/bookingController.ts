@@ -117,5 +117,33 @@ export const getUserBookings = async (req: AuthenticatedRequest, res: Response):
 };
 
 //PATCH /api/bookings/:id/cancel allows a guest to cancel an active reservation.
+export const cancelBooking = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
+    try { 
+        const userId = req.user?.id; 
+        const { id } = req.params; 
+        const checkQuery = 'SELECT * FROM reservations WHERE id = $1 AND user_id = $2'; 
+        const checkResult = await pool.query(checkQuery, [id, userId]); 
+        
+        if (checkResult.rows.length === 0) { 
+            res.status(404).json({ error: 'Reservation not found or unauthorized' }); 
+            return; 
+        }
 
+        const updateQuery = ` UPDATE reservations 
+        SET status = 'cancelled' 
+        WHERE id = $1 AND user_id = $2 
+        RETURNING * `; 
+        
+        const updatedResult = await pool.query(updateQuery, [id, userId]);
+
+        res.status(200).json({ 
+            success: true, 
+            message: 'Reservation cancelled successfully', 
+            data: updatedResult.rows[0],
+        });
+    }catch(error){
+        console.error('Error cancelling reservation:', error); 
+        res.status(500).json({ error: 'Failed to cancel reservation' });
+    }
+};
 
