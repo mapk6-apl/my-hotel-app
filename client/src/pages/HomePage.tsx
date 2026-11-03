@@ -12,3 +12,13 @@ export type HomePageProps = {
     onOpenAuthModal: () =>void; 
     onSelectHotel: (hotelId: number) => void; 
 };
+
+export const HomePage: React.FC<HomePageProps> = ({ onOpenAuthModal, onSelectHotel }) => {
+  const dispatch = useDispatch<AppDispatch>();
+  const { hotels, loading, filters } = useSelector((state: RootState) => state.hotels);
+
+  // Fetch initial hotels on mount 
+  useEffect(() => { 
+    dispatch(fetchHotels(filters)); 
+}, [dispatch]);
+
