@@ -8,7 +8,7 @@ export interface UserProfile {
     role: 'guest' | 'admin'; 
 } 
 
-interface AuthState { 
+export interface AuthState { 
     token: string | null; 
     user: UserProfile | null; 
     isAuthenticated: boolean; 

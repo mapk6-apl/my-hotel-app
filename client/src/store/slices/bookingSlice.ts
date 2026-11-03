@@ -13,7 +13,7 @@ export interface Booking {
     hero_image: string;
 }
 
-interface BookingState {
+export interface BookingState {
     myBookings: Booking[];
     loading: boolean;
     error: string | null;

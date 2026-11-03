@@ -11,8 +11,8 @@
     "target": "esnext",
     "types": ["node"], "lib":["esnext"],
     // For nodejs:
-    // "lib": ["esnext"],
-    // "types": ["node"],
+    "lib": ["esnext", "dom", "DOM.Iterable"],
+    "types": ["node", "react", "react-dom"],
     // and npm install -D @types/node
 
     // Other Outputs

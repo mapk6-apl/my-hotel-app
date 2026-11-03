@@ -18,7 +18,7 @@ export interface SearchFilters {
     starRating: number | '';
 }
 
-interface HotelState {
+export interface HotelState {
     hotels: Hotel[];
     selectedHotel: any | null;
     filters: SearchFilters;
