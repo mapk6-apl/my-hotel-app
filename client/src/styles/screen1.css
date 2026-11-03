@@ -1,0 +1,497 @@
+
+/* ==========================================================================
+   5-COLOR EARTHY PALETTE VARIABLES
+   ========================================================================== */
+:root {
+  --dark-khaki: #514B23; /* Primary header, main title text, and dark accents */
+  --olive-leaf: #656839; /* Primary CTA buttons (SEARCH, VIEW DETAILS, Book Now) */
+  --dry-sage:   #CBC9AD; /* Search sidebar container and input borders */
+  --ash-grey:   #CBD0B9; /* Property card surfaces and secondary backgrounds */
+  --mint-sage:  #BDDBD0; /* Rating badges, active pill highlights, user badges */
+  --bg-ivory:   #F4F9E9; /* Main app canvas background */
+}
+
+/* Base Page Layout */
+.page-container {
+  min-height: 100vh;
+  background-color: var(--bg-ivory);
+  color: var(--dark-khaki);
+  display: flex;
+  flex-direction: column;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+/* ==========================================================================
+   1. NAVBAR STYLES (client/src/components/common/Navbar.tsx)
+   ========================================================================== */
+.navbar {
+  background-color: var(--dark-khaki);
+  color: #ffffff;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.nav-container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  height: 4rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.brand-logo {
+  font-weight: 800;
+  font-size: 1.25rem;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.logo-badge {
+  background-color: var(--mint-sage);
+  color: var(--dark-khaki);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  font-weight: 900;
+}
+
+.logo-text-light {
+  color: var(--mint-sage);
+  font-weight: 300;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.nav-link {
+  color: #ffffff;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.nav-link:hover {
+  color: var(--mint-sage);
+}
+
+.favorites-counter {
+  background-color: var(--mint-sage);
+  color: var(--dark-khaki);
+  font-size: 0.625rem;
+  font-weight: 900;
+  padding: 0.1rem 0.4rem;
+  border-radius: 9999px;
+  margin-left: 0.25rem;
+}
+
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.currency-tag {
+  font-size: 0.625rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--ash-grey);
+  text-transform: uppercase;
+}
+
+.user-profile-summary {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.user-name {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--mint-sage);
+}
+
+.btn-auth-signin {
+  background-color: var(--olive-leaf);
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.btn-auth-signin:hover {
+  background-color: var(--mint-sage);
+  color: var(--dark-khaki);
+}
+
+/* ==========================================================================
+   2. HERO & SEARCH FILTER BAR (client/src/components/hotel/SearchFilterBar.tsx)
+   ========================================================================== */
+.hero-header {
+  background-color: var(--dark-khaki);
+  color: #ffffff;
+  padding: 2.5rem 1.5rem;
+  text-align: center;
+}
+
+.hero-title {
+  font-size: 2rem;
+  font-weight: 800;
+  margin: 0;
+}
+
+.hero-subtitle {
+  font-size: 0.875rem;
+  color: var(--mint-sage);
+  margin-top: 0.5rem;
+}
+
+.main-content-layout {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+  width: 100%;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+@media (min-width: 1024px) {
+  .main-content-layout {
+    flex-direction: row;
+  }
+}
+
+.filter-sidebar {
+  width: 100%;
+  background-color: var(--dry-sage);
+  padding: 1.25rem;
+  border-radius: 16px;
+  border: 1px solid rgba(81, 75, 35, 0.2);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  box-sizing: border-box;
+}
+
+@media (min-width: 1024px) {
+  .filter-sidebar {
+    width: 18rem;
+    flex-shrink: 0;
+    align-self: flex-start;
+  }
+}
+
+.filter-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid rgba(81, 75, 35, 0.2);
+  margin-bottom: 1.25rem;
+}
+
+.filter-title {
+  font-weight: 800;
+  font-size: 1rem;
+  color: var(--dark-khaki);
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.btn-reset {
+  background: none;
+  border: none;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--olive-leaf);
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.filter-group {
+  margin-bottom: 1.25rem;
+}
+
+.filter-label {
+  display: block;
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--dark-khaki);
+  margin-bottom: 0.25rem;
+}
+
+.filter-input-text {
+  width: 100%;
+  background-color: rgba(255, 255, 255, 0.9);
+  border: 1px solid var(--ash-grey);
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--dark-khaki);
+  box-sizing: border-box;
+}
+
+.price-readout {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: var(--olive-leaf);
+}
+
+.filter-slider {
+  width: 100%;
+  accent-color: var(--olive-leaf);
+  cursor: pointer;
+}
+
+.star-rating-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+}
+
+.star-btn {
+  padding: 0.5rem;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  border: 1px solid var(--ash-grey);
+  background-color: rgba(255, 255, 255, 0.7);
+  color: var(--dark-khaki);
+  cursor: pointer;
+}
+
+.star-btn.active {
+  background-color: var(--olive-leaf);
+  color: #ffffff;
+  border-color: var(--dark-khaki);
+}
+
+.btn-search-submit {
+  width: 100%;
+  background-color: var(--olive-leaf);
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 0.875rem;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.btn-search-submit:hover {
+  background-color: var(--dark-khaki);
+}
+
+/* ==========================================================================
+   3. HOTEL CARD & GRID STYLES (client/src/components/hotel/HotelCard.tsx)
+   ========================================================================== */
+.section-title {
+  font-size: 1.125rem;
+  font-weight: 800;
+  margin-bottom: 1.5rem;
+  text-transform: uppercase;
+}
+
+.hotel-grid-container {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .hotel-grid-container {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1280px) {
+  .hotel-grid-container {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.hotel-card {
+  background-color: var(--ash-grey);
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(81, 75, 35, 0.15);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.card-image-wrapper {
+  position: relative;
+  height: 12rem;
+  width: 100%;
+  background-color: #d1d5db;
+}
+
+.card-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.star-badge {
+  position: absolute;
+  top: 0.75rem;
+  left: 0.75rem;
+  background-color: var(--mint-sage);
+  color: var(--dark-khaki);
+  font-size: 0.625rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  padding: 0.25rem 0.625rem;
+  border-radius: 9999px;
+}
+
+.favorite-toggle-btn {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  background-color: rgba(255, 255, 255, 0.9);
+  border: none;
+  padding: 0.5rem;
+  border-radius: 9999px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card-content {
+  padding: 1rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.card-location {
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--olive-leaf);
+}
+
+.card-title {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--dark-khaki);
+  margin: 0.25rem 0;
+}
+
+.card-description {
+  font-size: 0.75rem;
+  color: rgba(81, 75, 35, 0.8);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.card-footer {
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(81, 75, 35, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.price-label {
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  display: block;
+}
+
+.price-amount {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--dark-khaki);
+}
+
+.btn-view-details {
+  background-color: var(--olive-leaf);
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.btn-view-details:hover {
+  background-color: var(--dark-khaki);
+}
+
+.loading-state {
+  text-align: center;
+  padding: 5rem 0;
+  font-weight: 700;
+  color: var(--olive-leaf);
+}
+
+.empty-state {
+  background-color: var(--ash-grey);
+  padding: 2.5rem;
+  border-radius: 16px;
+  text-align: center;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+/* Footer */
+.app-footer {
+  background-color: var(--dark-khaki);
+  color: var(--ash-grey);
+  padding: 2rem 1.5rem;
+  text-align: center;
+  font-size: 0.75rem;
+  margin-top: 3rem;
+  border-top: 1px solid rgba(101, 104, 57, 0.3);
+}
+
+.footer-brand {
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #ffffff;
+  margin: 0;
+}
+
+.footer-subtitle {
+  color: var(--mint-sage);
+  margin: 0.25rem 0;
+}
+
+.footer-copy {
+  opacity: 0.6;
+  font-size: 0.625rem;
+  margin: 0;
+}
