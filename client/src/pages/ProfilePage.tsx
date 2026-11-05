@@ -147,3 +147,32 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onNavigateHome, onOpen
               )}
             </div>
           )}
+
+          {/* Tab 3: ACcount settings */}
+          {activeTab === 'account' && (
+            <div className="checkout-form-card">
+              <h2 className="checkout-card-header">Account Details</h2>
+              <div className="checkout-form-grid">
+                <div>
+                  <label className="filter-label">Full Name</label>
+                  <input type="text" defaultValue={user?.full_name || 'User 1'} className="filter-input-text" />
+                </div>
+                <div>
+                  <label className="filter-label">Email Address</label>
+                  <input type="email" defaultValue={user?.email || 'user1@example.com'} className="filter-input-text" />
+                </div>
+              </div>
+              <button className="btn-search-submit" style={{ marginTop: '1.5rem', width: 'auto' }}>
+                Save Profile Changes
+              </button>
+            </div>
+          )}
+
+        </section>
+
+      </main>
+
+      <Footer />
+    </div>
+  );
+};
