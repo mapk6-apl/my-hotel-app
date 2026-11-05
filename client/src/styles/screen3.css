@@ -1,0 +1,329 @@
+/* ==========================================================================
+   SCREEN 3: HOTEL DETAILS PAGE STYLES (5-COLOR EARTHY PALETTE)
+   ========================================================================== */
+
+/* Main Details Header */
+.hotel-details-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+}
+
+.hotel-details-title {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--dark-khaki);
+  margin: 0;
+}
+
+.hotel-details-address {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: rgba(81, 75, 35, 0.8);
+  margin-top: 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.action-buttons-group {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.icon-action-btn {
+  background-color: var(--ash-grey);
+  border: 1px solid rgba(81, 75, 35, 0.2);
+  color: var(--dark-khaki);
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.icon-action-btn:hover {
+  background-color: var(--dry-sage);
+  transform: scale(1.05);
+}
+
+.icon-action-btn.active {
+  color: #e11d48;
+  border-color: #f43f5e;
+}
+
+/* Photo Gallery Component */
+.gallery-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  margin-bottom: 2.5rem;
+}
+
+@media (min-width: 768px) {
+  .gallery-grid {
+    grid-template-columns: 2fr 1fr;
+    height: 24rem;
+  }
+}
+
+.gallery-hero-image-wrapper {
+  width: 100%;
+  height: 100%;
+  min-height: 16rem;
+  background-color: #d1d5db;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.gallery-hero-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.gallery-thumbs-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
+  height: 100%;
+}
+
+.gallery-thumb-item {
+  width: 100%;
+  height: 100%;
+  min-height: 7rem;
+  background-color: #e5e7eb;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.gallery-thumb-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Page Layout Split (Content Left + Sticky Card Right) */
+.details-content-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2.5rem;
+}
+
+@media (min-width: 1024px) {
+  .details-content-layout {
+    grid-template-columns: 2fr 1fr;
+  }
+}
+
+/* Info Section Panels */
+.info-section-card {
+  background-color: rgba(203, 208, 185, 0.4);
+  border: 1px solid rgba(81, 75, 35, 0.15);
+  border-radius: 16px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.section-card-title {
+  font-size: 1.125rem;
+  font-weight: 800;
+  color: var(--dark-khaki);
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.section-card-body {
+  font-size: 0.875rem;
+  color: var(--dark-khaki);
+  line-height: 1.6;
+}
+
+/* Facilities Grid */
+.facilities-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+@media (min-width: 640px) {
+  .facilities-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.facility-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--dark-khaki);
+  background-color: rgba(255, 255, 255, 0.6);
+  padding: 0.625rem 0.875rem;
+  border-radius: 10px;
+  border: 1px solid rgba(81, 75, 35, 0.1);
+}
+
+/* Reviews Summary */
+.reviews-summary-container {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  background-color: var(--dry-sage);
+  padding: 1.25rem;
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+}
+
+.review-score-badge {
+  background-color: var(--olive-leaf);
+  color: #ffffff;
+  font-size: 1.5rem;
+  font-weight: 900;
+  padding: 0.75rem 1.25rem;
+  border-radius: 12px;
+}
+
+.review-meta-text {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--dark-khaki);
+}
+
+.review-meta-subtext {
+  font-size: 0.75rem;
+  color: rgba(81, 75, 35, 0.7);
+}
+
+/* Sticky Booking Card */
+.sticky-booking-card {
+  background-color: var(--ash-grey);
+  border: 1px solid rgba(81, 75, 35, 0.2);
+  border-radius: 20px;
+  padding: 1.5rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+  position: sticky;
+  top: 5rem;
+}
+
+.sticky-price-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 1.25rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(81, 75, 35, 0.15);
+}
+
+.sticky-price-main {
+  font-size: 1.75rem;
+  font-weight: 900;
+  color: var(--dark-khaki);
+}
+
+.sticky-price-unit {
+  font-size: 0.75rem;
+  color: rgba(81, 75, 35, 0.8);
+}
+
+.booking-form-box {
+  background-color: rgba(255, 255, 255, 0.85);
+  border: 1px solid var(--dry-sage);
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 1rem;
+}
+
+.date-picker-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-bottom: 1px solid var(--dry-sage);
+}
+
+.date-picker-cell {
+  padding: 0.5rem 0.75rem;
+}
+
+.date-picker-cell:first-child {
+  border-right: 1px solid var(--dry-sage);
+}
+
+.form-mini-label {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.5625rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--dark-khaki);
+  margin-bottom: 0.25rem;
+}
+
+.form-mini-input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--dark-khaki);
+  outline: none;
+}
+
+.guest-select-cell {
+  padding: 0.625rem 0.75rem;
+}
+
+.cost-breakdown-list {
+  font-size: 0.75rem;
+  color: var(--dark-khaki);
+  margin: 1rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.cost-item-row {
+  display: flex;
+  justify-content: space-between;
+}
+
+.cost-total-row {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(81, 75, 35, 0.2);
+  font-weight: 900;
+  font-size: 0.9375rem;
+}
+
+.btn-book-now {
+  width: 100%;
+  background-color: var(--olive-leaf);
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 0.875rem;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.btn-book-now:hover {
+  background-color: var(--dark-khaki);
+}
