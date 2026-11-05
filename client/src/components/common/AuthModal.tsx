@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { setUser, setToken } from '../../store/slices/authSlice.js';
+import { X } from 'lucide-react'; 
 
 //Explicit TypeScript type definition for AuthModal props
 export type AuthModalProps = {
@@ -64,9 +65,18 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
         window.location.href = 'http://localhost:5001/api/auth/google';
     };
 
+    return (
+    <div className="auth-modal-overlay">
+      <div className="auth-modal-card">
+        
+        {/* this is for the close button; using lucide-react icons */}
+        <button onClick={onClose} className="auth-close-btn" aria-label="Close Auth Modal"><X size={20} /></button> /
 
+        {/* modal header */}
+        <div className="auth-header">
+          <h2 className="auth-title">{isSignUp ? 'Create an Account' : 'Welcome Back'}</h2>
+          <p className="auth-subtitle">{isSignUp ? 'Join Break-Away Hotels & Resorts to unlock exclusive member rates' : 'Sign in to manage your bookings and saved favorites'}</p>
+        </div>
 
-
-
-    
-};
+        {/* error notificatoin alert */}
+};          
