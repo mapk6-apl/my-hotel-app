@@ -69,7 +69,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onNavigateHome, onOp
 
                         {/* Left: guest and financial inouts*/}
                         <div>
-                            {/* GUEST DETAILS CARD */}
+                            {/* Guest details card */}
                             <div className="checkout-form-card">
                                 <h2 className="checkout-card-header">
                                     <User size={18} color="#656839" />
@@ -183,3 +183,43 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onNavigateHome, onOp
                                 </div>
                             </div>
                         </div>
+
+                        </form>
+        ) : (
+          /* Step 2: confirmation success view*/
+          <div className="success-card">
+            <CheckCircle2 size={56} color="#656839" style={{ margin: '0 auto 1rem' }} />
+            <h2 style={{ fontSize: '1.75rem', fontWeight: 900, color: 'var(--dark-khaki)', margin: 0 }}>
+              Reservation Confirmed!
+            </h2>
+            <p style={{ fontSize: '0.875rem', color: 'var(--dark-khaki)', marginTop: '0.5rem' }}>
+              Thank you, <span style={{ fontWeight: 800 }}>{fullName}</span>. Your stay at <span style={{ fontWeight: 800 }}>Hotel 1</span> has been booked.
+            </p>
+
+            <div style={{ backgroundColor: 'rgba(255, 255, 255, 0.7)', padding: '1rem', borderRadius: '12px', margin: '1.5rem 0', textAlign: 'left', fontSize: '0.75rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                <span style={{ opacity: 0.7 }}>Booking Reference:</span>
+                <span style={{ fontWeight: 800 }}>#BA-2026-9812</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                <span style={{ opacity: 0.7 }}>Total Amount Paid:</span>
+                <span style={{ fontWeight: 800 }}>R8,370</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <span style={{ opacity: 0.7 }}>Confirmation Sent To:</span>
+                <span style={{ fontWeight: 800 }}>{email}</span>
+              </div>
+            </div>
+
+            <button onClick={onNavigateHome} className="btn-pay-now" style={{ width: 'auto', margin: '0 auto', padding: '0.75rem 2rem' }}>
+              Return to Home
+            </button>
+          </div>
+        )}
+
+      </main>
+
+      <Footer />
+    </div>
+  );
+};
