@@ -1,7 +1,7 @@
 import React from 'react';
 import { HotelCard } from './HotelCard.js';
 import { type Hotel } from '../../store/slices/hotelSlice.js';
-//import '../../styles/screen1.css';
+import '../../styles/screen1.css';
 
 export type HotelGridProps = {
     hotels: Hotel[];

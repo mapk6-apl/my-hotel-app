@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux'; 
 import { setFilters, fetchHotels, resetFilters } from '../../store/slices/hotelSlice.js'; 
 import type { RootState, AppDispatch } from '../../store/store.js'; 
-//import '../../styles/screen1.css'; 
+import '../../styles/screen1.css'; 
 
 export const SearchFilterBar: React.FC = () => { 
     // AppDispatch provides strict typing for async thunks like fetchHotels 

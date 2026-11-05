@@ -2,7 +2,7 @@ import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { toggleFavoriteLocal, type Hotel } from '../../store/slices/hotelSlice.js';
 import { type RootState } from '../../store/store.js';
-//import '../../styles/screen1.css'; 
+import '../../styles/screen1.css'; 
 
 export type HotelCardProps = {
     hotel: Hotel;

@@ -6,7 +6,7 @@ import { HotelGrid } from '../components/hotel/HotelGrid.js';
 import { Footer } from '../components/common/Footer.js';
 import { fetchHotels } from '../store/slices/hotelSlice.js';
 import type { RootState, AppDispatch } from '../store/store.js';
-//import '../styles/screen1.css';
+import '../styles/screen1.css';
 
 export type HomePageProps = {
     onOpenAuthModal: () => void;

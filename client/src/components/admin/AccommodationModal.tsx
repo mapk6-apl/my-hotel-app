@@ -39,7 +39,7 @@ export const AccommodationModal: React.FC<AccommodationModalProps> = ({ isOpen, 
           </div>
 
           <div className="auth-input-group">
-            <label className="auth-label">Location / City</label>
+            <label className="auth-label">Location/City</label>
             <select value={city} onChange={(e) => setCity(e.target.value)} className="auth-input" style={{ cursor: 'pointer' }}>
               <option value="Durban">Durban</option>
               <option value="Pretoria">Pretoria</option>

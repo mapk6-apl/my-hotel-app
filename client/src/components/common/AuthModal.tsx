@@ -70,7 +70,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
       <div className="auth-modal-card">
         
         {/* this is for the close button; using lucide-react icons */}
-        <button onClick={onClose} className="auth-close-btn" aria-label="Close Auth Modal"><X size={20} /></button> /
+        <button onClick={onClose} className="auth-close-btn" aria-label="Close Auth Modal"><X size={20} /></button>
 
         {/* modal header */}
         <div className="auth-header">

@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-// @ts-ignore -- suppress missing type/module diagnostics when router dependencies are not installed.
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { store } from './store/store.js';
