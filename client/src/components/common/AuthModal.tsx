@@ -79,4 +79,38 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
         </div>
 
         {/* error notificatoin alert */}
+        {errorMessage && (
+          <div className="auth-error-alert">
+            {errorMessage}
+          </div>
+        )}
+
+        {/* authentication form */}
+         <form onSubmit={handleSubmit} className="auth-form">
+          
+          {/* Render full name input only during registration */}
+          {isSignUp && (
+            <div className="auth-input-group">
+              <label className="auth-label">Full Name</label>
+              <input type="text" required placeholder="ex. Mmaphuti Kgomo" value={fullName} onChange={(e) => setFullName(e.target.value)} className="auth-input"/>
+            </div>
+          )}
+
+          {/* Eemail address input */}
+          <div className="auth-input-group">
+            <label className="auth-label">Email Address</label>
+            <input type="email" required placeholder="mk@gmail.com" value={email} onChange={(e) => setEmail(e.target.value)} className="auth-input"/>
+          </div>
+
+          {/* password input */}
+          <div className="auth-input-group">
+            <label className="auth-label">Password</label>
+            <input type="password" required placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} className="auth-input"/>
+          </div>
+
+          {/* submit button; disabled={loading} prevents the user from clicking the button mu;tiple times while an action is processing */}
+          <button type="submit" disabled={loading} className="auth-submit-btn">
+            {loading ? 'Processing...' : isSignUp ? 'Sign Up' : 'Sign In'}
+          </button>
+        </form>
 };          
