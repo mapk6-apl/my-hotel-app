@@ -14,7 +14,7 @@ export type HotelDetailsPageProps = {
     onOpenAuthModal: () => void;
 };
 
-export const HotelDetailsPage: React.FC<HotelDetailsPageProps> = ({ hotelId, onNavigateToCheckout, onOpenAuthModal }) => {
+export const HotelDetailsPage: React.FC<HotelDetailsPageProps> = ({ hotelId = 1, onNavigateToCheckout, onOpenAuthModal }) => {
     const [isFavorite, setIsFavorite] = useState<boolean>(false);
 
     return (

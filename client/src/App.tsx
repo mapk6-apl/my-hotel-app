@@ -39,6 +39,7 @@ export const App: React.FC = () => {
               path="/hotel/:id" 
               element={
                 <HotelDetailsPage 
+                  onOpenAuthModal={() => setIsAuthOpen(true)}
                   onNavigateToCheckout={() => {
                     // Navigate to checkout with state payload
                     window.location.href = '/checkout';
