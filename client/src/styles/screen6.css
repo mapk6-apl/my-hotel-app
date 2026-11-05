@@ -1,0 +1,172 @@
+/* ==========================================================================
+   SCREEN 6: ADMIN DASHBOARD STYLES
+   ========================================================================== */
+
+.admin-layout-container {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--bg-ivory);
+}
+
+.admin-sidebar-nav {
+  width: 16rem;
+  background-color: var(--dark-khaki);
+  color: #ffffff;
+  padding: 1.5rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  shrink-0: 0;
+}
+
+.admin-sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: var(--ash-grey);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s ease;
+}
+
+.admin-sidebar-link:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+.admin-sidebar-link.active {
+  background-color: var(--olive-leaf);
+  color: #ffffff;
+}
+
+.admin-main-workspace {
+  flex: 1;
+  padding: 2rem;
+  overflow-x: auto;
+}
+
+/* Analytics Metrics Grid */
+.analytics-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+}
+
+@media (min-width: 640px) {
+  .analytics-cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .analytics-cards-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.metric-card {
+  background-color: var(--ash-grey);
+  border: 1px solid rgba(81, 75, 35, 0.2);
+  border-radius: 16px;
+  padding: 1.25rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+}
+
+.metric-card-title {
+  font-size: 0.6875rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--dark-khaki);
+  opacity: 0.8;
+}
+
+.metric-card-value {
+  font-size: 1.75rem;
+  font-weight: 900;
+  color: var(--dark-khaki);
+  margin-top: 0.25rem;
+}
+
+/* Admin Data Table */
+.admin-table-container {
+  background-color: var(--dry-sage);
+  border-radius: 20px;
+  border: 1px solid rgba(81, 75, 35, 0.2);
+  padding: 1.5rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8125rem;
+  text-align: left;
+}
+
+.admin-table th {
+  background-color: rgba(81, 75, 35, 0.15);
+  color: var(--dark-khaki);
+  font-weight: 800;
+  text-transform: uppercase;
+  font-size: 0.6875rem;
+  letter-spacing: 0.05em;
+  padding: 0.875rem 1rem;
+}
+
+.admin-table th:first-child {
+  border-top-left-radius: 10px;
+  border-bottom-left-radius: 10px;
+}
+
+.admin-table th:last-child {
+  border-top-right-radius: 10px;
+  border-bottom-right-radius: 10px;
+}
+
+.admin-table td {
+  padding: 1rem;
+  border-bottom: 1px solid rgba(81, 75, 35, 0.1);
+  color: var(--dark-khaki);
+  font-weight: 600;
+}
+
+.admin-table tr:last-child td {
+  border-bottom: none;
+}
+
+.table-status-pill {
+  font-size: 0.625rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+}
+
+.table-status-pill.available {
+  background-color: var(--mint-sage);
+  color: var(--dark-khaki);
+}
+
+.table-status-pill.booked {
+  background-color: rgba(81, 75, 35, 0.2);
+  color: var(--dark-khaki);
+}
+
+.btn-table-action {
+  background-color: var(--olive-leaf);
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  cursor: pointer;
+}
