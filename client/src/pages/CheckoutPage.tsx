@@ -34,3 +34,62 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onNavigateHome, onOp
       setCurrentStep(2); //transition to Step 2: Confirmation
     }, 1500);
   };
+
+  return (
+    <div className="page-container">
+      <Navbar onOpenAuthModal={onOpenAuthModal} onNavigateHome={onNavigateHome} />
+
+      <main className="main-content-layout" style={{ flexDirection: 'column' }}>
+        
+        {/* progress step bar*/}
+        <div className="checkout-steps-bar">
+          <div className={`step-item ${currentStep >= 1 ? 'active' : ''}`}>
+            <span className="step-number-badge">1</span>
+            <span>Reservation & Guest Details</span>
+          </div>
+
+          <div className="step-connector-line"></div>
+
+          <div className={`step-item ${currentStep >= 1 ? 'active' : ''}`}>
+            <span className="step-number-badge">2</span>
+            <span>Payment Gateway</span>
+          </div>
+
+          <div className="step-connector-line"></div>
+
+          <div className={`step-item ${currentStep === 2 ? 'active' : ''}`}>
+            <span className="step-number-badge">3</span>
+            <span>Confirmation</span>
+          </div>
+        </div>
+
+        {/* Step 1: Guest details and payment form */}
+        {currentStep === 1 ? (
+          <form onSubmit={handlePaymentSubmit} className="checkout-layout-grid">
+            
+            {/* Left: guest and financial inouts*/}
+            <div>
+              {/* GUEST DETAILS CARD */}
+              <div className="checkout-form-card">
+                <h2 className="checkout-card-header">
+                  <User size={18} color="#656839" />
+                  <span>1. Guest Information</span>
+                </h2>
+
+                <div className="checkout-form-grid">
+                  <div className="form-full-width">
+                    <label className="filter-label">Full Name</label>
+                    <input type="text" required value={fullName} onChange={(e) => setFullName(e.target.value)} className="filter-input-text"/>
+                  </div>
+
+                  <div>
+                    <label className="filter-label">Email Address</label>
+                    <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="filter-input-text"/>
+                  </div>
+
+                  <div>
+                    <label className="filter-label">Phone Number</label>
+                    <input type="tel" required value={phone} onChange={(e) => setPhone(e.target.value)} className="filter-input-text"/>
+                  </div>
+                </div>
+              </div>
