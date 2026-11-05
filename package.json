@@ -38,6 +38,7 @@
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@types/react-router-dom": "^5.3.3",
+    "concurrently": "^10.0.6",
     "install": "^0.13.0",
     "nodemon": "^3.1.14",
     "npm": "^12.2.2",
