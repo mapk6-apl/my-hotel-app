@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Calendar, Users, Star, ShieldCheck } from 'lucide-react'; //using Lucide React icons
-//import '../../styles/screen3.css'; 
+// @ts-ignore CSS is loaded by the bundler and has no TypeScript module declaration.
+import '../../styles/screen3.css';
 
 export type StickyBookingCardProps = {
   startingPrice: number;
