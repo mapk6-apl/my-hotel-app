@@ -8,9 +8,11 @@ import { HotelDetailsPage } from './pages/HotelDetailsPage.js';
 import { CheckoutPage } from './pages/CheckoutPage.js';
 import { ProfilePage } from './pages/ProfilePage.js';
 import { AdminDashboardPage } from './pages/AdminDashboardPage.js';
+import { AboutPage } from './pages/AboutPage.js';
 
 import { AuthModal } from './components/common/AuthModal.js';
 import { ProtectedRoute } from './components/common/ProtectedRoute.js';
+import { Toast, type ToastType } from './components/common/Toast.js';
 
 export const App: React.FC = () => {
   //Global modal state for Sign In / Sign Up overlay
@@ -20,87 +22,134 @@ export const App: React.FC = () => {
 
   const handleOpenAuthModal = () => setIsAuthModalOpen(true);
   const handleCloseAuthModal = () => setIsAuthModalOpen(false);
+  // Toast notification state
+  const [toastState, setToastState] = useState<{ message: string; type: ToastType; isVisible: boolean }>({
+    message: '',
+    type: 'info',
+    isVisible: false,
+  });
 
-  return (
+  const showToast = (message: string, type: ToastType = 'info') => {
+    setToastState({ message, type, isVisible: true });
+  };
+
+  const handleCloseToast = () => {
+    setToastState((prev) => ({ ...prev, isVisible: false }));
+  };
+
+ return (
     <Provider store={store}>
       <Router>
         <div className="app-container">
+          
           <Routes>
-            {/* Public Routes*/}
-            {/* 1. Home Page/Property Listing Grid */}
-            <Route 
-              path="/" 
+            {/* 1. STANDALONE LANDING HERO PAGE AT "/" */}
+            <Route
+              path="/"
               element={
-                <LandingPage 
-                  onOpenAuthModal={handleOpenAuthModal}
+                <LandingPage
+                  onOpenAuthModal={() => setIsAuthModalOpen(true)}
                   onSelectHotel={(id) => {
                     setSelectedHotelId(id);
                     window.location.href = `/hotel/${id}`;
                   }}
                 />
-              } 
+              }
             />
 
-            {/* 2. Hotel Details Page */}
-            <Route 
-              path="/hotel/:id" 
+            {/* 2. FAVORITES PAGE AT "/favorites" */}
+            <Route
+              path="/favorites"
               element={
-               <HotelDetailsPage
+                <FavoritesPage
+                  onOpenAuthModal={() => setIsAuthModalOpen(true)}
+                  onSelectHotel={(id) => {
+                    setSelectedHotelId(id);
+                    window.location.href = `/hotel/${id}`;
+                  }}
+                />
+              }
+            />
+
+            {/* 3. ABOUT PAGE AT "/about" */}
+            <Route
+              path="/about"
+              element={
+                <AboutPage
+                  onOpenAuthModal={() => setIsAuthModalOpen(true)}
+                />
+              }
+            />
+
+            {/* 4. HOTEL DETAILS PAGE */}
+            <Route
+              path="/hotel/:id"
+              element={
+                <HotelDetailsPage
                   hotelId={selectedHotelId}
-                  onOpenAuthModal={handleOpenAuthModal}
+                  onOpenAuthModal={() => setIsAuthModalOpen(true)}
                   onNavigateToCheckout={() => {
-                    // Navigate to checkout with state payload
                     window.location.href = '/checkout';
                   }}
                 />
-              } 
+              }
             />
 
-            {/* Protected Routes */}
-            {/* 3. Checkout & Payment Gateway (Requires Traveler Login) */}
+            {/* 5. PROTECTED CHECKOUT ROUTE */}
             <Route
               path="/checkout"
               element={
                 <ProtectedRoute>
                   <CheckoutPage
-                    onNavigateHome={() => { window.location.href = '/'; }}
-                    onOpenAuthModal={handleOpenAuthModal}
+                    onBookingComplete={() => {
+                      showToast('Reservation confirmed successfully!', 'success');
+                      setTimeout(() => {
+                        window.location.href = '/profile';
+                      }, 1000);
+                    }}
                   />
                 </ProtectedRoute>
               }
             />
-            {/* 4. User Profile & My Bookings (Requires Traveler Login) */}
-            <Route 
-              path="/profile" 
+
+            {/* 6. PROTECTED USER PROFILE */}
+            <Route
+              path="/profile"
               element={
                 <ProtectedRoute>
-                  <ProfilePage
-                    onNavigateHome={() => { window.location.href = '/'; }}
-                    onOpenAuthModal={handleOpenAuthModal}
-                  />
+                  <ProfilePage />
                 </ProtectedRoute>
-              } 
+              }
             />
 
-            {/* 5. Admin Control Hub (Requires Admin Role) */}
-            <Route 
-              path="/admin" 
+            {/* 7. PROTECTED ADMIN DASHBOARD */}
+            <Route
+              path="/admin"
               element={
                 <ProtectedRoute adminOnly={true}>
-                  <AdminDashboardPage onNavigateHome={() => { window.location.href = '/'; }} />
+                  <AdminDashboardPage />
                 </ProtectedRoute>
-              } 
+              }
             />
 
-            {/* Fallback Route: Redirect unknown URLs to Home */}
+            {/* FALLBACK ROUTE */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
 
-          {/* Global Auth Modal Overlay */}
-          <AuthModal 
-            isOpen={isAuthModalOpen} 
-            onClose={handleCloseAuthModal} 
+          {/* GLOBAL AUTHENTICATION MODAL */}
+          <AuthModal
+            isOpen={isAuthModalOpen}
+            onClose={() => setIsAuthModalOpen(false)}
           />
+
+          {/* GLOBAL TOAST NOTIFICATION */}
+          <Toast
+            message={toastState.message}
+            type={toastState.type}
+            isVisible={toastState.isVisible}
+            onClose={handleCloseToast}
+          />
+
         </div>
       </Router>
     </Provider>

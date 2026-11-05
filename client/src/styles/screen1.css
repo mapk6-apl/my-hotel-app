@@ -1,10 +1,12 @@
+/* client/src/styles/screen1.css */
+
 /* ==========================================================================\n   5-COLOR EARTHY PALETTE VARIABLES\n   ========================================================================== */
 :root {
-  --dark-khaki: #514B23; /* Primary header, main title text, dark accents */
+  --dark-khaki: #514B23; /* Primary header, main title text, and dark accents */
   --olive-leaf: #656839; /* Primary CTA buttons (SEARCH, VIEW DETAILS, Book Now) */
   --dry-sage:   #CBC9AD; /* Search sidebar container and input borders */
   --ash-grey:   #CBD0B9; /* Property card surfaces and secondary backgrounds */
-  --mint-sage:  #BDDBD0; /* Rating badges, active highlights, badges */
+  --mint-sage:  #BDDBD0; /* Rating badges, active pill highlights, user badges */
   --bg-ivory:   #F4F9E9; /* Main app canvas background */
 }
 
@@ -15,24 +17,24 @@
   color: var(--dark-khaki);
   display: flex;
   flex-direction: column;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: system-ui, -apple-system, sans-serif;
 }
 
-/* ==========================================================================\n   1. NAVBAR STYLES (client/src/components/common/Navbar.tsx)\n   ========================================================================== */
+/* NAVBAR STYLES */
 .navbar {
   background-color: var(--dark-khaki);
   color: #ffffff;
   position: sticky;
   top: 0;
   z-index: 50;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 .nav-container {
   max-width: 1280px;
   margin: 0 auto;
   padding: 0 1.5rem;
-  height: 4.25rem;
+  height: 4rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -52,7 +54,7 @@
   background-color: var(--mint-sage);
   color: var(--dark-khaki);
   padding: 0.25rem 0.5rem;
-  border-radius: 6px;
+  border-radius: 4px;
   font-size: 0.875rem;
   font-weight: 900;
 }
@@ -67,7 +69,7 @@
   align-items: center;
   gap: 2rem;
   font-size: 0.75rem;
-  font-weight: 700;
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -76,8 +78,6 @@
   color: #ffffff;
   text-decoration: none;
   transition: color 0.2s ease;
-  display: flex;
-  align-items: center;
 }
 
 .nav-link:hover {
@@ -85,39 +85,38 @@
 }
 
 .favorites-counter {
-  background-color: #f43f5e;
-  color: #ffffff;
-  font-size: 0.65rem;
+  background-color: var(--mint-sage);
+  color: var(--dark-khaki);
+  font-size: 0.625rem;
   font-weight: 900;
-  padding: 0.1rem 0.45rem;
+  padding: 0.1rem 0.4rem;
   border-radius: 9999px;
-  margin-left: 0.35rem;
+  margin-left: 0.25rem;
 }
 
 .nav-actions {
   display: flex;
   align-items: center;
-  gap: 1.25rem;
+  gap: 1.5rem;
 }
 
 .currency-tag-btn {
-  background-color: rgba(255, 255, 255, 0.12);
-  color: var(--mint-sage);
-  border: 1px solid rgba(189, 219, 208, 0.3);
-  padding: 0.35rem 0.75rem;
-  border-radius: 8px;
-  font-size: 0.7rem;
+  background: none;
+  border: none;
+  font-size: 0.625rem;
   font-weight: 700;
   letter-spacing: 0.05em;
+  color: var(--ash-grey);
+  text-transform: uppercase;
   cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
+  padding: 0.25rem 0.5rem;
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
 }
 
 .currency-tag-btn:hover {
-  background-color: var(--mint-sage);
-  color: var(--dark-khaki);
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
 }
 
 .user-profile-summary {
@@ -128,13 +127,9 @@
 
 .user-name {
   font-size: 0.75rem;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--mint-sage);
   text-decoration: none;
-}
-
-.user-name:hover {
-  text-decoration: underline;
 }
 
 .btn-auth-signin {
@@ -143,7 +138,6 @@
   font-weight: 700;
   font-size: 0.75rem;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
   padding: 0.5rem 1rem;
   border-radius: 8px;
   border: none;
@@ -156,99 +150,16 @@
   color: var(--dark-khaki);
 }
 
-/* REGIONAL MODAL OVERLAY */
-.region-modal-overlay {
-  position: fixed;
-  inset: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(4px);
-  z-index: 100;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1rem;
-}
-
-.region-modal-card {
-  background-color: #ffffff;
-  color: var(--dark-khaki);
-  border-radius: 20px;
-  padding: 1.5rem;
-  width: 100%;
-  max-width: 420px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
-}
-
-.region-modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1.25rem;
-  padding-bottom: 0.75rem;
-  border-bottom: 1px solid var(--ash-grey);
-}
-
-.region-modal-header h3 {
-  margin: 0;
-  font-size: 1.1rem;
-  font-weight: 800;
-}
-
-.region-close-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: var(--dark-khaki);
-}
-
-.region-section {
-  margin-bottom: 1.25rem;
-}
-
-.region-label {
-  font-size: 0.7rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--olive-leaf);
-  margin-bottom: 0.5rem;
-  display: block;
-}
-
-.region-options-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 0.5rem;
-}
-
-.region-opt-btn {
-  padding: 0.5rem;
-  border-radius: 8px;
-  border: 1px solid var(--ash-grey);
-  background-color: var(--bg-ivory);
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: var(--dark-khaki);
-  cursor: pointer;
-}
-
-.region-opt-btn.active {
-  background-color: var(--olive-leaf);
-  color: #ffffff;
-  border-color: var(--dark-khaki);
-}
-
-/* ==========================================================================\n   2. HERO LANDING SECTION (client/src/pages/LandingPage.tsx)\n   ========================================================================== */
+/* HERO SECTION */
 .hero-section {
   background-color: var(--dark-khaki);
   color: #ffffff;
-  padding: 3.5rem 1.5rem 4rem 1.5rem;
+  padding: 3.5rem 1.5rem 4.5rem;
   text-align: center;
-  position: relative;
 }
 
 .hero-content-wrapper {
-  max-width: 1000px;
+  max-width: 900px;
   margin: 0 auto;
 }
 
@@ -256,14 +167,13 @@
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  background-color: rgba(189, 219, 208, 0.15);
-  color: var(--mint-sage);
-  border: 1px solid rgba(189, 219, 208, 0.3);
-  padding: 0.35rem 1rem;
-  border-radius: 9999px;
+  background-color: var(--olive-leaf);
+  color: var(--bg-ivory);
   font-size: 0.7rem;
   font-weight: 800;
   letter-spacing: 0.08em;
+  padding: 0.35rem 0.85rem;
+  border-radius: 9999px;
   margin-bottom: 1.25rem;
 }
 
@@ -271,13 +181,13 @@
   font-size: 2.25rem;
   font-weight: 900;
   line-height: 1.2;
-  margin: 0 0 1rem 0;
+  margin: 0 0 1rem;
   color: #ffffff;
 }
 
 @media (min-width: 768px) {
   .hero-main-title {
-    font-size: 3.25rem;
+    font-size: 3rem;
   }
 }
 
@@ -288,18 +198,17 @@
 .hero-description {
   font-size: 0.95rem;
   color: var(--ash-grey);
-  max-width: 680px;
-  margin: 0 auto 2.25rem auto;
-  line-height: 1.6;
+  max-width: 650px;
+  margin: 0 auto 2rem;
+  line-height: 1.5;
 }
 
-/* HERO SEARCH ENGINE CARD */
 .hero-search-card {
   background-color: #ffffff;
-  border-radius: 20px;
   padding: 1rem;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-  max-width: 900px;
+  border-radius: 20px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+  max-width: 840px;
   margin: 0 auto;
 }
 
@@ -309,28 +218,27 @@
   gap: 0.75rem;
 }
 
-@media (min-width: 768px) {
+@media (min-width: 640px) {
   .hero-search-grid {
-    grid-template-columns: 1.2fr 1fr 1fr 1.2fr;
-    align-items: center;
+    grid-template-columns: repeat(3, 1fr) auto;
   }
 }
 
 .hero-input-field {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.6rem;
   background-color: var(--bg-ivory);
-  padding: 0.65rem 0.85rem;
+  padding: 0.6rem 0.85rem;
   border-radius: 12px;
   border: 1px solid var(--ash-grey);
-  text-align: left;
 }
 
 .field-content {
   display: flex;
   flex-direction: column;
-  flex: 1;
+  align-items: flex-start;
+  width: 100%;
 }
 
 .field-label {
@@ -341,14 +249,14 @@
   color: var(--olive-leaf);
 }
 
-.field-input {
+.field-input, .field-select {
   border: none;
   background: transparent;
   font-size: 0.8rem;
   font-weight: 700;
   color: var(--dark-khaki);
-  outline: none;
   width: 100%;
+  outline: none;
 }
 
 .field-value-text {
@@ -357,32 +265,22 @@
   color: var(--dark-khaki);
 }
 
-.field-select {
-  border: none;
-  background: transparent;
-  font-size: 0.8rem;
-  font-weight: 700;
-  color: var(--dark-khaki);
-  outline: none;
-  cursor: pointer;
-}
-
 .hero-search-button {
   background-color: var(--olive-leaf);
   color: #ffffff;
   border: none;
-  padding: 0.9rem 1.25rem;
+  padding: 0.85rem 1.5rem;
   border-radius: 12px;
   font-weight: 800;
   font-size: 0.8rem;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.05em;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
   transition: background-color 0.2s ease;
-  height: 100%;
+  white-space: nowrap;
 }
 
 .hero-search-button:hover {
@@ -392,7 +290,6 @@
 .hero-features-bar {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
   justify-content: center;
   gap: 1.5rem;
   margin-top: 2rem;
@@ -407,60 +304,45 @@
   color: var(--mint-sage);
 }
 
-/* ==========================================================================\n   3. FEATURED HOTELS PREVIEW SECTION (client/src/pages/LandingPage.tsx)\n   ========================================================================== */
+/* FEATURED PREVIEW SECTION */
 .featured-section {
-  padding: 3.5rem 1.5rem;
-  background-color: var(--bg-ivory);
-}
-
-.featured-container {
+  padding: 3rem 1.5rem;
   max-width: 1280px;
   margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .section-header-block {
   text-align: center;
-  margin-bottom: 2.5rem;
+  margin-bottom: 2rem;
 }
 
 .featured-title {
-  font-size: 1.75rem;
+  font-size: 1.5rem;
   font-weight: 900;
   color: var(--dark-khaki);
-  margin: 0 0 0.5rem 0;
   text-transform: uppercase;
+  margin: 0;
 }
 
 .featured-subtitle {
   font-size: 0.875rem;
   color: var(--olive-leaf);
-  margin: 0;
-  font-weight: 600;
+  margin-top: 0.4rem;
 }
 
 .featured-grid {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 1.5rem;
 }
 
-@media (min-width: 768px) {
-  .featured-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (min-width: 1280px) {
-  .featured-grid {
-    grid-template-columns: repeat(4, 1fr);
-  }
-}
-
-/* ==========================================================================\n   4. PROTOTYPE SCREEN 1 MAIN LAYOUT & FILTER SIDEBAR\n   ========================================================================== */
+/* MAIN PROTOTYPE SCREEN 1 LAYOUT */
 .main-content-layout {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 2.5rem 1.5rem;
+  padding: 2rem 1.5rem;
   width: 100%;
   flex: 1;
   display: flex;
@@ -478,16 +360,16 @@
 .filter-sidebar {
   width: 100%;
   background-color: var(--dry-sage);
-  padding: 1.5rem;
-  border-radius: 20px;
+  padding: 1.25rem;
+  border-radius: 16px;
   border: 1px solid rgba(81, 75, 35, 0.2);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
   box-sizing: border-box;
 }
 
 @media (min-width: 1024px) {
   .filter-sidebar {
-    width: 18.5rem;
+    width: 18rem;
     flex-shrink: 0;
     align-self: flex-start;
   }
@@ -498,24 +380,23 @@
   justify-content: space-between;
   align-items: center;
   padding-bottom: 0.75rem;
-  border-bottom: 1px solid rgba(81, 75, 35, 0.25);
+  border-bottom: 1px solid rgba(81, 75, 35, 0.2);
   margin-bottom: 1.25rem;
 }
 
 .filter-title {
-  font-weight: 900;
-  font-size: 0.95rem;
+  font-weight: 800;
+  font-size: 1rem;
   color: var(--dark-khaki);
   text-transform: uppercase;
   margin: 0;
-  letter-spacing: 0.05em;
 }
 
 .btn-reset {
   background: none;
   border: none;
   font-size: 0.75rem;
-  font-weight: 800;
+  font-weight: 700;
   color: var(--olive-leaf);
   cursor: pointer;
   text-decoration: underline;
@@ -527,25 +408,24 @@
 
 .filter-label {
   display: block;
-  font-size: 0.65rem;
-  font-weight: 800;
+  font-size: 0.625rem;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--dark-khaki);
-  margin-bottom: 0.35rem;
+  margin-bottom: 0.25rem;
 }
 
 .filter-input-text {
   width: 100%;
-  background-color: rgba(255, 255, 255, 0.95);
+  background-color: rgba(255, 255, 255, 0.9);
   border: 1px solid var(--ash-grey);
-  border-radius: 10px;
-  padding: 0.6rem 0.75rem;
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
   font-size: 0.75rem;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--dark-khaki);
   box-sizing: border-box;
-  outline: none;
 }
 
 .price-readout {
@@ -567,15 +447,14 @@
 }
 
 .star-btn {
-  padding: 0.55rem;
-  border-radius: 10px;
+  padding: 0.5rem;
+  border-radius: 8px;
   font-size: 0.75rem;
-  font-weight: 800;
+  font-weight: 700;
   border: 1px solid var(--ash-grey);
-  background-color: rgba(255, 255, 255, 0.75);
+  background-color: rgba(255, 255, 255, 0.7);
   color: var(--dark-khaki);
   cursor: pointer;
-  transition: all 0.2s ease;
 }
 
 .star-btn.active {
@@ -588,11 +467,11 @@
   width: 100%;
   background-color: var(--olive-leaf);
   color: #ffffff;
-  font-weight: 900;
+  font-weight: 800;
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  padding: 0.85rem;
+  padding: 0.875rem;
   border-radius: 12px;
   border: none;
   cursor: pointer;
@@ -603,27 +482,11 @@
   background-color: var(--dark-khaki);
 }
 
-/* ==========================================================================\n   5. HOTEL LISTINGS GRID & CARD STYLES\n   ========================================================================== */
-.listings-section {
-  flex: 1;
-}
-
-.listings-header {
-  margin-bottom: 1.5rem;
-}
-
-.listings-title-group {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
 .section-title {
-  font-size: 1.15rem;
-  font-weight: 900;
-  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 800;
+  margin-bottom: 1.5rem;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
 }
 
 .hotel-grid-container {
@@ -646,26 +509,20 @@
 
 .hotel-card {
   background-color: var(--ash-grey);
-  border-radius: 20px;
+  border-radius: 16px;
   overflow: hidden;
   border: 1px solid rgba(81, 75, 35, 0.15);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.hotel-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 }
 
 .card-image-wrapper {
   position: relative;
-  height: 12.5rem;
+  height: 12rem;
   width: 100%;
-  background-color: #d1d5db;
+  background-color: var(--dry-sage);
 }
 
 .card-image {
@@ -680,14 +537,11 @@
   left: 0.75rem;
   background-color: var(--mint-sage);
   color: var(--dark-khaki);
-  font-size: 0.65rem;
-  font-weight: 900;
+  font-size: 0.625rem;
+  font-weight: 800;
   text-transform: uppercase;
-  padding: 0.25rem 0.65rem;
+  padding: 0.25rem 0.625rem;
   border-radius: 9999px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-  display: flex;
-  align-items: center;
 }
 
 .favorite-toggle-btn {
@@ -696,56 +550,47 @@
   right: 0.75rem;
   background-color: rgba(255, 255, 255, 0.9);
   border: none;
-  padding: 0.45rem;
+  padding: 0.5rem;
   border-radius: 9999px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
 .card-content {
-  padding: 1.15rem;
+  padding: 1rem;
   flex: 1;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
 }
 
-.card-location-group {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  margin-bottom: 0.2rem;
-}
-
 .card-location {
-  font-size: 0.65rem;
-  font-weight: 800;
+  font-size: 0.625rem;
+  font-weight: 700;
   text-transform: uppercase;
   color: var(--olive-leaf);
-  letter-spacing: 0.05em;
 }
 
 .card-title {
-  font-size: 1.05rem;
-  font-weight: 900;
+  font-size: 1rem;
+  font-weight: 800;
   color: var(--dark-khaki);
-  margin: 0.2rem 0;
+  margin: 0.25rem 0;
 }
 
 .card-description {
   font-size: 0.75rem;
-  color: rgba(81, 75, 35, 0.85);
+  color: rgba(81, 75, 35, 0.8);
   margin: 0;
-  line-height: 1.45;
+  line-height: 1.4;
 }
 
 .card-footer {
   margin-top: 1rem;
   padding-top: 0.75rem;
-  border-top: 1px solid rgba(81, 75, 35, 0.15);
+  border-top: 1px solid rgba(81, 75, 35, 0.1);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -755,24 +600,22 @@
   font-size: 0.6rem;
   text-transform: uppercase;
   display: block;
-  font-weight: 700;
-  color: var(--olive-leaf);
 }
 
 .price-amount {
   font-size: 1rem;
-  font-weight: 900;
+  font-weight: 800;
   color: var(--dark-khaki);
 }
 
 .btn-view-details {
   background-color: var(--olive-leaf);
   color: #ffffff;
-  font-weight: 800;
+  font-weight: 700;
   font-size: 0.75rem;
   text-transform: uppercase;
-  padding: 0.55rem 1rem;
-  border-radius: 10px;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
   border: none;
   cursor: pointer;
   transition: background-color 0.2s ease;
@@ -782,27 +625,135 @@
   background-color: var(--dark-khaki);
 }
 
-.loading-state {
-  text-align: center;
-  padding: 5rem 0;
-  font-weight: 800;
-  color: var(--olive-leaf);
+/* CUSTOM TOAST NOTIFICATIONS */
+.toast-notification {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 100;
+  background-color: var(--dark-khaki);
+  color: #ffffff;
+  padding: 0.85rem 1.25rem;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-width: 280px;
+  border-left: 4px solid var(--mint-sage);
+  animation: slideUp 0.3s ease-out;
 }
 
-.empty-state {
-  background-color: var(--ash-grey);
-  padding: 2.5rem;
+.toast-success { border-left-color: #10B981; }
+.toast-error { border-left-color: #EF4444; }
+.toast-info { border-left-color: var(--mint-sage); }
+
+.toast-content {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.toast-message {
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.toast-close-btn {
+  background: none;
+  border: none;
+  color: var(--ash-grey);
+  cursor: pointer;
+  padding: 0.2rem;
+}
+
+/* REGION MODAL */
+.region-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  backdrop-filter: blur(4px);
+}
+
+.region-modal-card {
+  background-color: var(--bg-ivory);
+  padding: 1.75rem;
   border-radius: 20px;
-  text-align: center;
-  font-size: 0.875rem;
-  font-weight: 700;
+  max-width: 420px;
+  width: 100%;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  border: 1px solid var(--ash-grey);
 }
 
-/* FOOTER */
+.region-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--ash-grey);
+}
+
+.region-modal-header h3 {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--dark-khaki);
+  margin: 0;
+}
+
+.region-close-btn {
+  background: none;
+  border: none;
+  color: var(--dark-khaki);
+  cursor: pointer;
+}
+
+.region-section {
+  margin-bottom: 1rem;
+}
+
+.region-label {
+  display: block;
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--olive-leaf);
+  margin-bottom: 0.5rem;
+}
+
+.region-options-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: 0.5rem;
+}
+
+.region-opt-btn {
+  padding: 0.5rem;
+  border-radius: 8px;
+  border: 1px solid var(--ash-grey);
+  background-color: #ffffff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--dark-khaki);
+  cursor: pointer;
+}
+
+.region-opt-btn.active {
+  background-color: var(--olive-leaf);
+  color: #ffffff;
+  border-color: var(--dark-khaki);
+}
+
 .app-footer {
   background-color: var(--dark-khaki);
   color: var(--ash-grey);
-  padding: 2.5rem 1.5rem;
+  padding: 2rem 1.5rem;
   text-align: center;
   font-size: 0.75rem;
   margin-top: 3rem;
@@ -810,11 +761,10 @@
 }
 
 .footer-brand {
-  font-weight: 900;
+  font-weight: 800;
   text-transform: uppercase;
   color: #ffffff;
   margin: 0;
-  letter-spacing: 0.05em;
 }
 
 .footer-subtitle {
@@ -824,6 +774,11 @@
 
 .footer-copy {
   opacity: 0.6;
-  font-size: 0.65rem;
+  font-size: 0.625rem;
   margin: 0;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
 }
