@@ -95,55 +95,91 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onNavigateHome, onOp
                             </div>
 
                             {/* Payment Gateway Card*/}
-              <div className="checkout-form-card">
-                <h2 className="checkout-card-header">
-                  <CreditCard size={18} color="#656839" />
-                  <span>2. Payment Gateway (Credit / Debit Card)</span>
-                </h2>
+                            <div className="checkout-form-card">
+                                <h2 className="checkout-card-header">
+                                    <CreditCard size={18} color="#656839" />
+                                    <span>2. Payment Gateway (Credit / Debit Card)</span>
+                                </h2>
 
-                <p style={{ fontSize: '0.75rem', color: 'rgba(81, 75, 35, 0.8)', marginBottom: '1rem' }}>
-                  Transactions are encrypted with 256-bit SSL security.
-                </p>
+                                <p style={{ fontSize: '0.75rem', color: 'rgba(81, 75, 35, 0.8)', marginBottom: '1rem' }}>
+                                    Transactions are encrypted with 256-bit SSL security.
+                                </p>
 
-                <div className="credit-card-inputs-wrapper">
-                  <div className="checkout-form-grid">
-                    <div className="form-full-width">
-                      <label className="filter-label">Cardholder Name</label>
-                      <input type="text" required value={cardName} onChange={(e) => setCardName(e.target.value)} className="filter-input-text"/>
-                    </div>
+                                <div className="credit-card-inputs-wrapper">
+                                    <div className="checkout-form-grid">
+                                        <div className="form-full-width">
+                                            <label className="filter-label">Cardholder Name</label>
+                                            <input type="text" required value={cardName} onChange={(e) => setCardName(e.target.value)} className="filter-input-text" />
+                                        </div>
 
-                    <div className="form-full-width">
-                      <label className="filter-label">Card Number</label>
-                      <input type="text" required value={cardNumber} onChange={(e) => setCardNumber(e.target.value)} className="filter-input-text"/>
-                    </div>
+                                        <div className="form-full-width">
+                                            <label className="filter-label">Card Number</label>
+                                            <input type="text" required value={cardNumber} onChange={(e) => setCardNumber(e.target.value)} className="filter-input-text" />
+                                        </div>
 
-                    <div>
-                      <label className="filter-label">Expiry Date</label>
-                      <input type="text" required placeholder="MM/YY" value={expiry} onChange={(e) => setExpiry(e.target.value)} className="filter-input-text"/>
-                    </div>
+                                        <div>
+                                            <label className="filter-label">Expiry Date</label>
+                                            <input type="text" required placeholder="MM/YY" value={expiry} onChange={(e) => setExpiry(e.target.value)} className="filter-input-text" />
+                                        </div>
 
-                    <div>
-                      <label className="filter-label">CVV Code</label>
-                      <input type="password" required maxLength={4} value={cvv} onChange={(e) => setCvv(e.target.value)} className="filter-input-text"/>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+                                        <div>
+                                            <label className="filter-label">CVV Code</label>
+                                            <input type="password" required maxLength={4} value={cvv} onChange={(e) => setCvv(e.target.value)} className="filter-input-text" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
-            {/* Right: order summmary */}
-            <div>
-              <div className="order-summary-card">
-                <h3 className="filter-title" style={{ marginBottom: '1rem' }}>Order Summary</h3>
+                        {/* Right: order summmary */}
+                        <div>
+                            <div className="order-summary-card">
+                                <h3 className="filter-title" style={{ marginBottom: '1rem' }}>Order Summary</h3>
 
-                {/* Hotel mini preview */}
-                <div className="summary-hotel-header">
-                  <img src="" alt="Hotel Preview" className="summary-hotel-thumb"/>
-                  <div>
-                    <h4 style={{ fontWeight: 800, fontSize: '0.9375rem', margin: 0, color: 'var(--dark-khaki)' }}>Hotel 1</h4>
-                    <span style={{ fontSize: '0.75rem', color: 'var(--olive-leaf)', fontWeight: 700 }}>Polokwane</span>
-                    <div style={{ fontSize: '0.6875rem', opacity: 0.8, marginTop: '0.25rem' }}>
-                      4 Nights (24 Oct - 28 Oct 2026)
-                    </div>
-                  </div>
-                </div>
+                                {/* Hotel mini preview */}
+                                <div className="summary-hotel-header">
+                                    <img src="" alt="Hotel Preview" className="summary-hotel-thumb" />
+                                    <div>
+                                        <h4 style={{ fontWeight: 800, fontSize: '0.9375rem', margin: 0, color: 'var(--dark-khaki)' }}>Hotel 1</h4>
+                                        <span style={{ fontSize: '0.75rem', color: 'var(--olive-leaf)', fontWeight: 700 }}>Polokwane</span>
+                                        <div style={{ fontSize: '0.6875rem', opacity: 0.8, marginTop: '0.25rem' }}>
+                                            4 Nights (24 Oct - 28 Oct 2026)
+                                        </div>
+                                    </div>
+                                </div>
+                                {/* cost breakdown */}
+                                <div className="cost-breakdown-list">
+                                    <div className="cost-item-row">
+                                        <span>R1,800 × 4 nights</span>
+                                        <span>R7,200</span>
+                                    </div>
+                                    <div className="cost-item-row">
+                                        <span>Cleaning Fee</span>
+                                        <span>R650</span>
+                                    </div>
+                                    <div className="cost-item-row">
+                                        <span>Service Fee</span>
+                                        <span>R520</span>
+                                    </div>
+                                    <div className="cost-item-row">
+                                        <span>VAT (15%)</span>
+                                        <span>Included</span>
+                                    </div>
+                                    <div className="cost-total-row">
+                                        <span>Grand Total (ZAR)</span>
+                                        <span>R8,370</span>
+                                    </div>
+                                </div>
+
+                                {/* Pay and Confirm CTA*/}
+                                <button type="submit" disabled={isProcessing} className="btn-pay-now">
+                                    <Lock size={16} />
+                                    <span>{isProcessing ? 'Authorizing Payment...' : 'Pay & Confirm Reservation'}</span>
+                                </button>
+
+                                <div style={{ textAlign: 'center', fontSize: '0.625rem', opacity: 0.7, marginTop: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.25rem' }}>
+                                    <ShieldCheck size={12} color="#656839" />
+                                    <span>Bank-grade secure checkout</span>
+                                </div>
+                            </div>
+                        </div>
