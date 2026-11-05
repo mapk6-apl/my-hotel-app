@@ -9,7 +9,7 @@ import { Footer } from '../components/common/Footer.js';
 import '../styles/screen3.css';
 
 export type HotelDetailsPageProps = {
-    hotelId: number;
+    hotelId?: number;
     onNavigateToCheckout: () => void;
     onOpenAuthModal: () => void;
 };
