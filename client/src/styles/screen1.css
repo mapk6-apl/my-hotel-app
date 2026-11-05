@@ -1,24 +1,30 @@
+/* client/src/styles/screen1.css */
+
+/* ==========================================================================
+   5-COLOR EARTHY PALETTE SYSTEM
+   ========================================================================== */
 :root {
-  --dark-khaki: #514B23; /* Primary header, main title text, and dark accents */
-  --olive-leaf: #656839; /* Primary CTA buttons (SEARCH, VIEW DETAILS, Book Now) */
-  --dry-sage:   #CBC9AD; /* Search sidebar container and input borders */
-  --ash-grey:   #CBD0B9; /* Property card surfaces and secondary backgrounds */
-  --mint-sage:  #BDDBD0; /* Rating badges, active pill highlights, user badges */
-  --bg-ivory:   #F4F9E9; /* Main app canvas background */
+  --dark-khaki: #514B23; /* Primary header text, brand logo, dark accents */
+  --olive-leaf: #656839; /* Primary CTA buttons (EXPLORE STAYS, SEARCH, VIEW DETAILS) */
+  --dry-sage:   #CBC9AD; /* Search filter container background and borders */
+  --ash-grey:   #CBD0B9; /* Card surface backgrounds and secondary elements */
+  --mint-sage:  #BDDBD0; /* Badges, rating highlights, count pills */
+  --bg-ivory:   #F4F9E9; /* Main application background */
 }
 
-/* Base Page Layout */
+/* Base Page Container */
 .page-container {
   min-height: 100vh;
   background-color: var(--bg-ivory);
   color: var(--dark-khaki);
   display: flex;
   flex-direction: column;
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  box-sizing: border-box;
 }
 
 /* ==========================================================================
-   1. NAVBAR STYLES (client/src/components/common/Navbar.tsx)
+   1. NAVBAR STYLES
    ========================================================================== */
 .navbar {
   background-color: var(--dark-khaki);
@@ -26,14 +32,14 @@
   position: sticky;
   top: 0;
   z-index: 50;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .nav-container {
   max-width: 1280px;
   margin: 0 auto;
   padding: 0 1.5rem;
-  height: 4rem;
+  height: 4.25rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -47,13 +53,15 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  color: #ffffff;
+  user-select: none;
 }
 
 .logo-badge {
   background-color: var(--mint-sage);
   color: var(--dark-khaki);
   padding: 0.25rem 0.5rem;
-  border-radius: 4px;
+  border-radius: 6px;
   font-size: 0.875rem;
   font-weight: 900;
 }
@@ -68,14 +76,16 @@
   align-items: center;
   gap: 2rem;
   font-size: 0.75rem;
-  font-weight: 600;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
 }
 
 .nav-link {
   color: #ffffff;
   text-decoration: none;
+  display: flex;
+  align-items: center;
   transition: color 0.2s ease;
 }
 
@@ -86,17 +96,17 @@
 .favorites-counter {
   background-color: var(--mint-sage);
   color: var(--dark-khaki);
-  font-size: 0.625rem;
+  font-size: 0.65rem;
   font-weight: 900;
-  padding: 0.1rem 0.4rem;
+  padding: 0.15rem 0.5rem;
   border-radius: 9999px;
-  margin-left: 0.25rem;
+  margin-left: 0.35rem;
 }
 
 .nav-actions {
   display: flex;
   align-items: center;
-  gap: 1.5rem;
+  gap: 1.25rem;
 }
 
 .currency-tag {
@@ -115,21 +125,27 @@
 
 .user-name {
   font-size: 0.75rem;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--mint-sage);
+  text-decoration: none;
+}
+
+.user-name:hover {
+  text-decoration: underline;
 }
 
 .btn-auth-signin {
   background-color: var(--olive-leaf);
   color: #ffffff;
-  font-weight: 700;
+  font-weight: 800;
   font-size: 0.75rem;
   text-transform: uppercase;
-  padding: 0.5rem 1rem;
+  letter-spacing: 0.05em;
+  padding: 0.55rem 1.15rem;
   border-radius: 8px;
   border: none;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: all 0.2s ease;
 }
 
 .btn-auth-signin:hover {
@@ -138,36 +154,210 @@
 }
 
 /* ==========================================================================
-   2. HERO & SEARCH FILTER BAR (client/src/components/hotel/SearchFilterBar.tsx)
+   2. HERO LANDING SECTION (FIRST VIEW FOR VISITORS)
    ========================================================================== */
-.hero-header {
+.hero-section {
   background-color: var(--dark-khaki);
   color: #ffffff;
-  padding: 2.5rem 1.5rem;
+  padding: 4rem 1.5rem 4.5rem;
   text-align: center;
+  position: relative;
+  overflow: hidden;
 }
 
-.hero-title {
-  font-size: 2rem;
-  font-weight: 800;
-  margin: 0;
+.hero-content-wrapper {
+  max-width: 960px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-.hero-subtitle {
-  font-size: 0.875rem;
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: rgba(189, 219, 208, 0.15);
+  border: 1px solid var(--mint-sage);
   color: var(--mint-sage);
-  margin-top: 0.5rem;
+  padding: 0.35rem 0.9rem;
+  border-radius: 9999px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 1.25rem;
 }
 
+.badge-icon {
+  color: var(--mint-sage);
+}
+
+.hero-main-title {
+  font-size: 2.5rem;
+  font-weight: 900;
+  line-height: 1.2;
+  margin: 0 0 1rem;
+  color: #ffffff;
+  letter-spacing: -0.02em;
+}
+
+@media (min-width: 768px) {
+  .hero-main-title {
+    font-size: 3.25rem;
+  }
+}
+
+.hero-title-highlight {
+  color: var(--mint-sage);
+}
+
+.hero-description {
+  font-size: 0.95rem;
+  color: var(--ash-grey);
+  max-width: 680px;
+  line-height: 1.6;
+  margin: 0 0 2.25rem;
+  font-weight: 400;
+}
+
+/* HERO SEARCH CARD ENGINE */
+.hero-search-card {
+  width: 100%;
+  background-color: #ffffff;
+  border-radius: 20px;
+  padding: 0.85rem;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
+  box-sizing: border-box;
+}
+
+.hero-search-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+}
+
+@media (min-width: 768px) {
+  .hero-search-grid {
+    grid-template-columns: 1.2fr 1fr 1fr 1.1fr;
+    align-items: center;
+  }
+}
+
+.hero-input-field {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background-color: var(--bg-ivory);
+  padding: 0.65rem 0.85rem;
+  border-radius: 14px;
+  border: 1px solid var(--dry-sage);
+  text-align: left;
+}
+
+.field-icon {
+  color: var(--olive-leaf);
+  flex-shrink: 0;
+}
+
+.field-content {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.field-label {
+  font-size: 0.6rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--olive-leaf);
+  margin-bottom: 0.15rem;
+}
+
+.field-input {
+  border: none;
+  background: transparent;
+  font-size: 0.825rem;
+  font-weight: 700;
+  color: var(--dark-khaki);
+  width: 100%;
+  outline: none;
+  padding: 0;
+}
+
+.field-value-text {
+  font-size: 0.825rem;
+  font-weight: 700;
+  color: var(--dark-khaki);
+}
+
+.field-select {
+  border: none;
+  background: transparent;
+  font-size: 0.825rem;
+  font-weight: 700;
+  color: var(--dark-khaki);
+  outline: none;
+  cursor: pointer;
+  width: 100%;
+  padding: 0;
+}
+
+.hero-search-button {
+  background-color: var(--olive-leaf);
+  color: #ffffff;
+  border: none;
+  height: 100%;
+  min-height: 48px;
+  border-radius: 14px;
+  font-weight: 800;
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: background-color 0.2s ease;
+  width: 100%;
+}
+
+.hero-search-button:hover {
+  background-color: #3e3a1a;
+}
+
+/* HERO VALUE PROPOSITION BADGES */
+.hero-features-bar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-top: 2.25rem;
+}
+
+.feature-pill {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--mint-sage);
+}
+
+/* ==========================================================================
+   3. MAIN WORKSPACE LAYOUT (FILTER SIDEBAR & LIVE HOTEL LISTINGS)
+   ========================================================================== */
 .main-content-layout {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 2rem 1.5rem;
+  padding: 3rem 1.5rem;
   width: 100%;
   flex: 1;
   display: flex;
   flex-direction: column;
   gap: 2rem;
+  box-sizing: border-box;
 }
 
 @media (min-width: 1024px) {
@@ -180,9 +370,9 @@
   width: 100%;
   background-color: var(--dry-sage);
   padding: 1.25rem;
-  border-radius: 16px;
+  border-radius: 18px;
   border: 1px solid rgba(81, 75, 35, 0.2);
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
   box-sizing: border-box;
 }
 
@@ -204,17 +394,18 @@
 }
 
 .filter-title {
-  font-weight: 800;
-  font-size: 1rem;
+  font-weight: 900;
+  font-size: 0.95rem;
   color: var(--dark-khaki);
   text-transform: uppercase;
+  letter-spacing: 0.05em;
   margin: 0;
 }
 
 .btn-reset {
   background: none;
   border: none;
-  font-size: 0.75rem;
+  font-size: 0.725rem;
   font-weight: 700;
   color: var(--olive-leaf);
   cursor: pointer;
@@ -227,28 +418,29 @@
 
 .filter-label {
   display: block;
-  font-size: 0.625rem;
-  font-weight: 700;
+  font-size: 0.65rem;
+  font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
   color: var(--dark-khaki);
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.35rem;
 }
 
 .filter-input-text {
   width: 100%;
   background-color: rgba(255, 255, 255, 0.9);
   border: 1px solid var(--ash-grey);
-  border-radius: 8px;
-  padding: 0.5rem 0.75rem;
-  font-size: 0.75rem;
+  border-radius: 10px;
+  padding: 0.55rem 0.75rem;
+  font-size: 0.775rem;
   font-weight: 600;
   color: var(--dark-khaki);
   box-sizing: border-box;
+  outline: none;
 }
 
 .price-readout {
-  font-size: 0.75rem;
+  font-size: 0.775rem;
   font-weight: 800;
   color: var(--olive-leaf);
 }
@@ -290,7 +482,7 @@
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  padding: 0.875rem;
+  padding: 0.85rem;
   border-radius: 12px;
   border: none;
   cursor: pointer;
@@ -301,23 +493,44 @@
   background-color: var(--dark-khaki);
 }
 
-/* ==========================================================================
-   3. HOTEL CARD & GRID STYLES (client/src/components/hotel/HotelCard.tsx)
-   ========================================================================== */
-.section-title {
-  font-size: 1.125rem;
-  font-weight: 800;
-  margin-bottom: 1.5rem;
-  text-transform: uppercase;
+/* LISTINGS SECTION */
+.listings-section {
+  flex: 1;
 }
 
+.listings-header {
+  margin-bottom: 1.5rem;
+}
+
+.listings-title-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.listings-icon {
+  color: var(--olive-leaf);
+}
+
+.section-title {
+  font-size: 1.15rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--dark-khaki);
+  margin: 0;
+}
+
+/* ==========================================================================
+   4. HOTEL GRID & HOTEL CARD STYLES
+   ========================================================================== */
 .hotel-grid-container {
   display: grid;
   grid-template-columns: 1fr;
   gap: 1.5rem;
 }
 
-@media (min-width: 768px) {
+@media (min-width: 640px) {
   .hotel-grid-container {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -331,18 +544,24 @@
 
 .hotel-card {
   background-color: var(--ash-grey);
-  border-radius: 16px;
+  border-radius: 18px;
   overflow: hidden;
   border: 1px solid rgba(81, 75, 35, 0.15);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.06);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hotel-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
 }
 
 .card-image-wrapper {
   position: relative;
-  height: 12rem;
+  height: 13rem;
   width: 100%;
   background-color: #d1d5db;
 }
@@ -353,17 +572,37 @@
   object-fit: cover;
 }
 
+.card-image-placeholder {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, var(--ash-grey), var(--dry-sage));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  color: var(--dark-khaki);
+}
+
+.placeholder-text {
+  font-size: 0.8rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
 .star-badge {
   position: absolute;
   top: 0.75rem;
   left: 0.75rem;
   background-color: var(--mint-sage);
   color: var(--dark-khaki);
-  font-size: 0.625rem;
+  font-size: 0.65rem;
   font-weight: 800;
   text-transform: uppercase;
-  padding: 0.25rem 0.625rem;
+  padding: 0.25rem 0.65rem;
   border-radius: 9999px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .favorite-toggle-btn {
@@ -378,10 +617,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .card-content {
-  padding: 1rem;
+  padding: 1.15rem;
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -389,30 +629,31 @@
 }
 
 .card-location {
-  font-size: 0.625rem;
-  font-weight: 700;
+  font-size: 0.65rem;
+  font-weight: 800;
   text-transform: uppercase;
+  letter-spacing: 0.05em;
   color: var(--olive-leaf);
 }
 
 .card-title {
-  font-size: 1rem;
+  font-size: 1.05rem;
   font-weight: 800;
   color: var(--dark-khaki);
   margin: 0.25rem 0;
 }
 
 .card-description {
-  font-size: 0.75rem;
-  color: rgba(81, 75, 35, 0.8);
+  font-size: 0.775rem;
+  color: rgba(81, 75, 35, 0.85);
   margin: 0;
-  line-height: 1.4;
+  line-height: 1.45;
 }
 
 .card-footer {
   margin-top: 1rem;
-  padding-top: 0.75rem;
-  border-top: 1px solid rgba(81, 75, 35, 0.1);
+  padding-top: 0.85rem;
+  border-top: 1px solid rgba(81, 75, 35, 0.15);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -425,19 +666,20 @@
 }
 
 .price-amount {
-  font-size: 1rem;
-  font-weight: 800;
+  font-size: 1.05rem;
+  font-weight: 900;
   color: var(--dark-khaki);
 }
 
 .btn-view-details {
   background-color: var(--olive-leaf);
   color: #ffffff;
-  font-weight: 700;
+  font-weight: 800;
   font-size: 0.75rem;
   text-transform: uppercase;
-  padding: 0.5rem 1rem;
-  border-radius: 8px;
+  letter-spacing: 0.05em;
+  padding: 0.55rem 1.15rem;
+  border-radius: 10px;
   border: none;
   cursor: pointer;
   transition: background-color 0.2s ease;
@@ -450,44 +692,51 @@
 .loading-state {
   text-align: center;
   padding: 5rem 0;
-  font-weight: 700;
+  font-weight: 800;
   color: var(--olive-leaf);
+  font-size: 1rem;
 }
 
 .empty-state {
   background-color: var(--ash-grey);
-  padding: 2.5rem;
-  border-radius: 16px;
+  padding: 3rem 1.5rem;
+  border-radius: 18px;
   text-align: center;
-  font-size: 0.875rem;
-  font-weight: 600;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--dark-khaki);
+  border: 1px solid rgba(81, 75, 35, 0.15);
 }
 
-/* Footer */
+/* ==========================================================================
+   5. FOOTER STYLES
+   ========================================================================== */
 .app-footer {
   background-color: var(--dark-khaki);
   color: var(--ash-grey);
-  padding: 2rem 1.5rem;
+  padding: 2.5rem 1.5rem;
   text-align: center;
-  font-size: 0.75rem;
-  margin-top: 3rem;
+  font-size: 0.775rem;
+  margin-top: 4rem;
   border-top: 1px solid rgba(101, 104, 57, 0.3);
 }
 
 .footer-brand {
-  font-weight: 800;
+  font-weight: 900;
   text-transform: uppercase;
+  letter-spacing: 0.05em;
   color: #ffffff;
   margin: 0;
+  font-size: 1rem;
 }
 
 .footer-subtitle {
   color: var(--mint-sage);
-  margin: 0.25rem 0;
+  margin: 0.35rem 0;
 }
 
 .footer-copy {
   opacity: 0.6;
-  font-size: 0.625rem;
-  margin: 0;
+  font-size: 0.65rem;
+  margin: 0.5rem 0 0;
 }

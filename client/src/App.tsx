@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { Provider } from 'react-redux';
 import { store } from './store/store.js';
 
-import { HomePage } from './pages/HomePage.js';
+import { LandingPage } from './pages/LandingPage.js';
 import { HotelDetailsPage } from './pages/HotelDetailsPage.js';
 import { CheckoutPage } from './pages/CheckoutPage.js';
 import { ProfilePage } from './pages/ProfilePage.js';
@@ -14,21 +14,29 @@ import { ProtectedRoute } from './components/common/ProtectedRoute.js';
 
 export const App: React.FC = () => {
   //Global modal state for Sign In / Sign Up overlay
-  const [isAuthOpen, setIsAuthOpen] = useState<boolean>(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
+  //State to track selected hotel ID for detailed view navigation
+  const [selectedHotelId, setSelectedHotelId] = useState<number>(1);
+
+  const handleOpenAuthModal = () => setIsAuthModalOpen(true);
+  const handleCloseAuthModal = () => setIsAuthModalOpen(false);
 
   return (
     <Provider store={store}>
       <Router>
-        <div className="app-root">
+        <div className="app-container">
           <Routes>
             {/* Public Routes*/}
             {/* 1. Home Page/Property Listing Grid */}
             <Route 
               path="/" 
               element={
-                <HomePage 
-                  onOpenAuthModal={() => setIsAuthOpen(true)}
-                  onSelectHotel={(id) => window.location.href = `/hotel/${id}`}
+                <LandingPage 
+                  onOpenAuthModal={handleOpenAuthModal}
+                  onSelectHotel={(id) => {
+                    setSelectedHotelId(id);
+                    window.location.href = `/hotel/${id}`;
+                  }}
                 />
               } 
             />
@@ -37,8 +45,9 @@ export const App: React.FC = () => {
             <Route 
               path="/hotel/:id" 
               element={
-                <HotelDetailsPage 
-                  onOpenAuthModal={() => setIsAuthOpen(true)}
+               <HotelDetailsPage
+                  hotelId={selectedHotelId}
+                  onOpenAuthModal={handleOpenAuthModal}
                   onNavigateToCheckout={() => {
                     // Navigate to checkout with state payload
                     window.location.href = '/checkout';
@@ -49,18 +58,17 @@ export const App: React.FC = () => {
 
             {/* Protected Routes */}
             {/* 3. Checkout & Payment Gateway (Requires Traveler Login) */}
-            <Route 
-              path="/checkout" 
+            <Route
+              path="/checkout"
               element={
                 <ProtectedRoute>
                   <CheckoutPage
                     onNavigateHome={() => { window.location.href = '/'; }}
-                    onOpenAuthModal={() => setIsAuthOpen(true)}
+                    onOpenAuthModal={handleOpenAuthModal}
                   />
                 </ProtectedRoute>
-              } 
+              }
             />
-
             {/* 4. User Profile & My Bookings (Requires Traveler Login) */}
             <Route 
               path="/profile" 
@@ -68,7 +76,7 @@ export const App: React.FC = () => {
                 <ProtectedRoute>
                   <ProfilePage
                     onNavigateHome={() => { window.location.href = '/'; }}
-                    onOpenAuthModal={() => setIsAuthOpen(true)}
+                    onOpenAuthModal={handleOpenAuthModal}
                   />
                 </ProtectedRoute>
               } 
@@ -90,8 +98,8 @@ export const App: React.FC = () => {
 
           {/* Global Auth Modal Overlay */}
           <AuthModal 
-            isOpen={isAuthOpen} 
-            onClose={() => setIsAuthOpen(false)} 
+            isOpen={isAuthModalOpen} 
+            onClose={handleCloseAuthModal} 
           />
         </div>
       </Router>

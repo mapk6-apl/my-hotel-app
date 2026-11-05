@@ -2,8 +2,10 @@ import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import type { RootState } from '../../store/store.js';
 import { logout } from '../../store/slices/authSlice.js';
+import { Heart, User, Shield, LogOut, Hotel as HotelIcon } from 'lucide-react';
+import '../../styles/screen1.css';
 
-//callback props ar optional (?) to prevent runtime errors if a parent component doesn't pass them
+//callback props are optional (?) to prevent runtime errors if a parent component doesn't pass them
 export type NavbarProps = {
     onOpenAuthModal?: () => void;
     onNavigateHome?: () => void;
@@ -35,10 +37,15 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuthModal, onNavigateHome 
                     {/* favourites count badge */}
                     <a href="/favorites" className="nav-link">
                         <span>FAVORITES</span>
-                        {favorites.length > 0 && (
-                            <span>{favorites.length}</span>
+                        {favorites && favorites.length > 0 && (
+                            <span className="favorites-counter">{favorites.length}</span>
                         )}
                     </a>
+
+                    {/* admin link visible to admins */}
+                    {isAuthenticated && user?.role === 'admin' && (
+                        <a href="/admin" className="nav-link">ADMIN</a>
+                    )}
                 </div>
 
                 {/* authentication & region controls */}
@@ -47,15 +54,16 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuthModal, onNavigateHome 
                     
                     {isAuthenticated && user ? ( 
                         <div className="user-profile-summary"> 
-                        <span className="user-name">{user.full_name || 'User 1'}</span>  
-                        
-                        <button onClick={() => dispatch(logout())} className="btn-auth-signin">LOGOUT</button>
+                            <a href="/profile" className="user-name">
+                                {user.full_name || 'User 1'}
+                            </a>  
+                            <button onClick={() => dispatch(logout())} className="btn-auth-signin">LOGOUT</button>
                         </div> 
                     ) : (  
                         <button onClick={onOpenAuthModal} className="btn-auth-signin">SIGN IN</button>
-                    )} </div>
+                    )} 
+                </div>
             </div>
         </nav>
     );
-
 };
