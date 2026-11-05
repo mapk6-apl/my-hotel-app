@@ -142,4 +142,19 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
             <span>Apple</span>
           </button>
         </div>
+
+        {/* toggle sign-in/sign-up link */}
+        <div className="auth-toggle-container">
+          <button type="button" onClick={() => {
+              setIsSignUp(!isSignUp);
+              setErrorMessage(null);
+            }}
+            className="auth-toggle-btn"> 
+            {isSignUp ? 'Already have an account? Sign In' : "Don't have an account? Sign Up"}
+          </button>
+        </div>
+
+      </div>
+    </div>
+  );
 };          
