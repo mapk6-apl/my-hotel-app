@@ -9,7 +9,6 @@ export type PropertiesTableProps = {
 };
 
 export const PropertiesTable: React.FC<PropertiesTableProps> = ({ onOpenAddModal, onEditProperty, onDeleteProperty }) => {
-
     const mockProperties = [
         { id: 1, name: 'Hotel 1', city: 'Polokwane', price: 1800, rating: 5, status: 'Available' },
         { id: 2, name: 'Hotel 2', city: 'Durban', price: 2400, rating: 4, status: 'Available' },
