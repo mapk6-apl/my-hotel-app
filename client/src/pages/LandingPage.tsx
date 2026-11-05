@@ -13,3 +13,22 @@ export type LandingPageProps = {
   onOpenAuthModal: () => void;
   onSelectHotel: (hotelId: number) => void;
 };
+
+export const LandingPage: React.FC<LandingPageProps> = ({ onOpenAuthModal, onSelectHotel }) => {
+  const dispatch = useDispatch<AppDispatch>();
+  const { hotels, loading, filters } = useSelector((state: RootState) => state.hotels);
+
+  const [destination, setDestination] = useState<string>('');
+  const [guests, setGuests] = useState<number>(2);
+
+  useEffect(() => {
+    dispatch(fetchHotels(filters));
+  }, [dispatch]);
+
+  const handleHeroSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    const exploreSection = document.getElementById('explore');
+    if (exploreSection) {
+      exploreSection.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
