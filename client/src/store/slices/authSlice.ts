@@ -20,7 +20,8 @@ const initialState: AuthState = {
     token: localStorage.getItem('token'), 
     user: null, 
     isAuthenticated: !!localStorage.getItem('token'), 
-    loading: false, error: null, 
+    loading: false, 
+    error: null, 
 };
 
 // Async Thunk: Fetch logged-in user details using JWT Token 
@@ -54,6 +55,9 @@ const authSlice = createSlice({
             state.isAuthenticated = true; 
             localStorage.setItem('token', action.payload); 
         }, 
+        setUser: (state, action: PayloadAction<UserProfile | null>) => {
+            state.user = action.payload;
+        },
         logout: (state) => { 
             state.token = null; 
             state.user = null; 
@@ -81,5 +85,5 @@ const authSlice = createSlice({
     }, 
 }); 
 
-export const { setToken, logout } = authSlice.actions; 
+export const { setToken, setUser, logout } = authSlice.actions; 
 export default authSlice.reducer;
