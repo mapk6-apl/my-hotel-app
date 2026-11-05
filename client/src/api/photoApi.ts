@@ -1,38 +1,21 @@
-//Helper to fetch dynamic hotel photos from external API or return local fallback asset paths.
+// client/src/api/photoApi.ts
 
-const FALLBACK_HOTEL_PHOTOS = [
-  '/assets/hotel-hero.jpg',
-  '/assets/hotel-room-1.jpg',
-  '/assets/hotel-room-2.jpg',
-  '/assets/hotel-pool.jpg',
-  '/assets/hotel-lounge.jpg',
-];
-
-export const fetchHotelPhotos = async (query: string = 'luxury hotel', count: number = 5): Promise<string[]> => {
-  const env = (import.meta as ImportMeta & { env: Record<string, string | undefined> }).env;
-  const PHOTO_API_URL = env.VITE_PHOTO_API_URL;
-  const ACCESS_KEY = env.VITE_UNSPLASH_ACCESS_KEY;
-
-  if (PHOTO_API_URL && ACCESS_KEY) {
-    try {
-      const response = await fetch(
-        `${PHOTO_API_URL}?query=${encodeURIComponent(query)}&per_page=${count}&orientation=landscape`,
-        {
-          headers: {
-            Authorization: `Client-ID ${ACCESS_KEY}`,
-          },
-        }
-      );
-      if (response.ok) {
-        const data = await response.json();
-        if (data.results && data.results.length > 0) {
-          return data.results.map((item: { urls: { regular: string } }) => item.urls.regular);
-        }
-      }
-    } catch (error) {
-      console.warn('Failed to fetch photos from API, using fallback assets:', error);
-    }
-  }
-
-  return FALLBACK_HOTEL_PHOTOS.slice(0, count);
+export const getHotelPhotoUrl = (hotelId: number, index: number = 0): string => {
+  const seeds = ['hotel1', 'hotel2', 'hotel3', 'hotel4', 'hotel5', 'hotel6', 'hotel7', 'hotel8'];
+  const seed = seeds[(hotelId + index) % seeds.length];
+  const domain = 'picsum.photos';
+  return 'https://' + domain + '/seed/' + seed + '/800/533';
 };
+
+export const getHotelGallery = (hotelId: number, count: number = 4): string[] => {
+  return Array.from({ length: count }, (_, i) => getHotelPhotoUrl(hotelId, i));
+};
+
+export const getFallbackSvgDataUri = (title: string = 'Break-Away Hotel'): string => { const cleanTitle = title.replace(/[<>&gt'"]/g, ''); return 'data:image/svg+xml;utf8,'; };
+
+export const photoApi = {
+  getHotelPhotoUrl,
+  getHotelGallery,
+};
+
+export default photoApi;

@@ -1,18 +1,14 @@
-/* client/src/styles/screen1.css */
-
-/* ==========================================================================
-   5-COLOR EARTHY PALETTE SYSTEM
-   ========================================================================== */
+/* ==========================================================================\n   5-COLOR EARTHY PALETTE VARIABLES\n   ========================================================================== */
 :root {
-  --dark-khaki: #514B23; /* Primary header text, brand logo, dark accents */
-  --olive-leaf: #656839; /* Primary CTA buttons (EXPLORE STAYS, SEARCH, VIEW DETAILS) */
-  --dry-sage:   #CBC9AD; /* Search filter container background and borders */
-  --ash-grey:   #CBD0B9; /* Card surface backgrounds and secondary elements */
-  --mint-sage:  #BDDBD0; /* Badges, rating highlights, count pills */
-  --bg-ivory:   #F4F9E9; /* Main application background */
+  --dark-khaki: #514B23; /* Primary header, main title text, dark accents */
+  --olive-leaf: #656839; /* Primary CTA buttons (SEARCH, VIEW DETAILS, Book Now) */
+  --dry-sage:   #CBC9AD; /* Search sidebar container and input borders */
+  --ash-grey:   #CBD0B9; /* Property card surfaces and secondary backgrounds */
+  --mint-sage:  #BDDBD0; /* Rating badges, active highlights, badges */
+  --bg-ivory:   #F4F9E9; /* Main app canvas background */
 }
 
-/* Base Page Container */
+/* Base Page Layout */
 .page-container {
   min-height: 100vh;
   background-color: var(--bg-ivory);
@@ -20,12 +16,9 @@
   display: flex;
   flex-direction: column;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  box-sizing: border-box;
 }
 
-/* ==========================================================================
-   1. NAVBAR STYLES
-   ========================================================================== */
+/* ==========================================================================\n   1. NAVBAR STYLES (client/src/components/common/Navbar.tsx)\n   ========================================================================== */
 .navbar {
   background-color: var(--dark-khaki);
   color: #ffffff;
@@ -53,8 +46,6 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  color: #ffffff;
-  user-select: none;
 }
 
 .logo-badge {
@@ -78,15 +69,15 @@
   font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.05em;
 }
 
 .nav-link {
   color: #ffffff;
   text-decoration: none;
+  transition: color 0.2s ease;
   display: flex;
   align-items: center;
-  transition: color 0.2s ease;
 }
 
 .nav-link:hover {
@@ -94,11 +85,11 @@
 }
 
 .favorites-counter {
-  background-color: var(--mint-sage);
-  color: var(--dark-khaki);
+  background-color: #f43f5e;
+  color: #ffffff;
   font-size: 0.65rem;
   font-weight: 900;
-  padding: 0.15rem 0.5rem;
+  padding: 0.1rem 0.45rem;
   border-radius: 9999px;
   margin-left: 0.35rem;
 }
@@ -109,12 +100,24 @@
   gap: 1.25rem;
 }
 
-.currency-tag {
-  font-size: 0.625rem;
+.currency-tag-btn {
+  background-color: rgba(255, 255, 255, 0.12);
+  color: var(--mint-sage);
+  border: 1px solid rgba(189, 219, 208, 0.3);
+  padding: 0.35rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.7rem;
   font-weight: 700;
   letter-spacing: 0.05em;
-  color: var(--ash-grey);
-  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+}
+
+.currency-tag-btn:hover {
+  background-color: var(--mint-sage);
+  color: var(--dark-khaki);
 }
 
 .user-profile-summary {
@@ -137,15 +140,15 @@
 .btn-auth-signin {
   background-color: var(--olive-leaf);
   color: #ffffff;
-  font-weight: 800;
+  font-weight: 700;
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  padding: 0.55rem 1.15rem;
+  padding: 0.5rem 1rem;
   border-radius: 8px;
   border: none;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background-color 0.2s ease;
 }
 
 .btn-auth-signin:hover {
@@ -153,24 +156,100 @@
   color: var(--dark-khaki);
 }
 
-/* ==========================================================================
-   2. HERO LANDING SECTION (FIRST VIEW FOR VISITORS)
-   ========================================================================== */
+/* REGIONAL MODAL OVERLAY */
+.region-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.region-modal-card {
+  background-color: #ffffff;
+  color: var(--dark-khaki);
+  border-radius: 20px;
+  padding: 1.5rem;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+}
+
+.region-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--ash-grey);
+}
+
+.region-modal-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 800;
+}
+
+.region-close-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--dark-khaki);
+}
+
+.region-section {
+  margin-bottom: 1.25rem;
+}
+
+.region-label {
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--olive-leaf);
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+.region-options-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+}
+
+.region-opt-btn {
+  padding: 0.5rem;
+  border-radius: 8px;
+  border: 1px solid var(--ash-grey);
+  background-color: var(--bg-ivory);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--dark-khaki);
+  cursor: pointer;
+}
+
+.region-opt-btn.active {
+  background-color: var(--olive-leaf);
+  color: #ffffff;
+  border-color: var(--dark-khaki);
+}
+
+/* ==========================================================================\n   2. HERO LANDING SECTION (client/src/pages/LandingPage.tsx)\n   ========================================================================== */
 .hero-section {
   background-color: var(--dark-khaki);
   color: #ffffff;
-  padding: 4rem 1.5rem 4.5rem;
+  padding: 3.5rem 1.5rem 4rem 1.5rem;
   text-align: center;
   position: relative;
-  overflow: hidden;
 }
 
 .hero-content-wrapper {
-  max-width: 960px;
+  max-width: 1000px;
   margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
 }
 
 .hero-badge {
@@ -178,28 +257,22 @@
   align-items: center;
   gap: 0.5rem;
   background-color: rgba(189, 219, 208, 0.15);
-  border: 1px solid var(--mint-sage);
   color: var(--mint-sage);
-  padding: 0.35rem 0.9rem;
+  border: 1px solid rgba(189, 219, 208, 0.3);
+  padding: 0.35rem 1rem;
   border-radius: 9999px;
   font-size: 0.7rem;
   font-weight: 800;
   letter-spacing: 0.08em;
-  text-transform: uppercase;
   margin-bottom: 1.25rem;
 }
 
-.badge-icon {
-  color: var(--mint-sage);
-}
-
 .hero-main-title {
-  font-size: 2.5rem;
+  font-size: 2.25rem;
   font-weight: 900;
   line-height: 1.2;
-  margin: 0 0 1rem;
+  margin: 0 0 1rem 0;
   color: #ffffff;
-  letter-spacing: -0.02em;
 }
 
 @media (min-width: 768px) {
@@ -216,19 +289,18 @@
   font-size: 0.95rem;
   color: var(--ash-grey);
   max-width: 680px;
+  margin: 0 auto 2.25rem auto;
   line-height: 1.6;
-  margin: 0 0 2.25rem;
-  font-weight: 400;
 }
 
-/* HERO SEARCH CARD ENGINE */
+/* HERO SEARCH ENGINE CARD */
 .hero-search-card {
-  width: 100%;
   background-color: #ffffff;
   border-radius: 20px;
-  padding: 0.85rem;
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
-  box-sizing: border-box;
+  padding: 1rem;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  max-width: 900px;
+  margin: 0 auto;
 }
 
 .hero-search-grid {
@@ -239,7 +311,7 @@
 
 @media (min-width: 768px) {
   .hero-search-grid {
-    grid-template-columns: 1.2fr 1fr 1fr 1.1fr;
+    grid-template-columns: 1.2fr 1fr 1fr 1.2fr;
     align-items: center;
   }
 }
@@ -250,44 +322,37 @@
   gap: 0.75rem;
   background-color: var(--bg-ivory);
   padding: 0.65rem 0.85rem;
-  border-radius: 14px;
-  border: 1px solid var(--dry-sage);
+  border-radius: 12px;
+  border: 1px solid var(--ash-grey);
   text-align: left;
-}
-
-.field-icon {
-  color: var(--olive-leaf);
-  flex-shrink: 0;
 }
 
 .field-content {
   display: flex;
   flex-direction: column;
-  width: 100%;
+  flex: 1;
 }
 
 .field-label {
   font-size: 0.6rem;
   font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.05em;
   color: var(--olive-leaf);
-  margin-bottom: 0.15rem;
 }
 
 .field-input {
   border: none;
   background: transparent;
-  font-size: 0.825rem;
+  font-size: 0.8rem;
   font-weight: 700;
   color: var(--dark-khaki);
-  width: 100%;
   outline: none;
-  padding: 0;
+  width: 100%;
 }
 
 .field-value-text {
-  font-size: 0.825rem;
+  font-size: 0.8rem;
   font-weight: 700;
   color: var(--dark-khaki);
 }
@@ -295,22 +360,19 @@
 .field-select {
   border: none;
   background: transparent;
-  font-size: 0.825rem;
+  font-size: 0.8rem;
   font-weight: 700;
   color: var(--dark-khaki);
   outline: none;
   cursor: pointer;
-  width: 100%;
-  padding: 0;
 }
 
 .hero-search-button {
   background-color: var(--olive-leaf);
   color: #ffffff;
   border: none;
-  height: 100%;
-  min-height: 48px;
-  border-radius: 14px;
+  padding: 0.9rem 1.25rem;
+  border-radius: 12px;
   font-weight: 800;
   font-size: 0.8rem;
   letter-spacing: 0.08em;
@@ -320,20 +382,20 @@
   justify-content: center;
   gap: 0.5rem;
   transition: background-color 0.2s ease;
-  width: 100%;
+  height: 100%;
 }
 
 .hero-search-button:hover {
-  background-color: #3e3a1a;
+  background-color: var(--dark-khaki);
 }
 
-/* HERO VALUE PROPOSITION BADGES */
 .hero-features-bar {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   justify-content: center;
   gap: 1.5rem;
-  margin-top: 2.25rem;
+  margin-top: 2rem;
 }
 
 .feature-pill {
@@ -341,17 +403,64 @@
   align-items: center;
   gap: 0.4rem;
   font-size: 0.75rem;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--mint-sage);
 }
 
-/* ==========================================================================
-   3. MAIN WORKSPACE LAYOUT (FILTER SIDEBAR & LIVE HOTEL LISTINGS)
-   ========================================================================== */
+/* ==========================================================================\n   3. FEATURED HOTELS PREVIEW SECTION (client/src/pages/LandingPage.tsx)\n   ========================================================================== */
+.featured-section {
+  padding: 3.5rem 1.5rem;
+  background-color: var(--bg-ivory);
+}
+
+.featured-container {
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.section-header-block {
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+
+.featured-title {
+  font-size: 1.75rem;
+  font-weight: 900;
+  color: var(--dark-khaki);
+  margin: 0 0 0.5rem 0;
+  text-transform: uppercase;
+}
+
+.featured-subtitle {
+  font-size: 0.875rem;
+  color: var(--olive-leaf);
+  margin: 0;
+  font-weight: 600;
+}
+
+.featured-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .featured-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1280px) {
+  .featured-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* ==========================================================================\n   4. PROTOTYPE SCREEN 1 MAIN LAYOUT & FILTER SIDEBAR\n   ========================================================================== */
 .main-content-layout {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 3rem 1.5rem;
+  padding: 2.5rem 1.5rem;
   width: 100%;
   flex: 1;
   display: flex;
@@ -369,16 +478,16 @@
 .filter-sidebar {
   width: 100%;
   background-color: var(--dry-sage);
-  padding: 1.25rem;
-  border-radius: 18px;
+  padding: 1.5rem;
+  border-radius: 20px;
   border: 1px solid rgba(81, 75, 35, 0.2);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.05);
   box-sizing: border-box;
 }
 
 @media (min-width: 1024px) {
   .filter-sidebar {
-    width: 18rem;
+    width: 18.5rem;
     flex-shrink: 0;
     align-self: flex-start;
   }
@@ -389,7 +498,7 @@
   justify-content: space-between;
   align-items: center;
   padding-bottom: 0.75rem;
-  border-bottom: 1px solid rgba(81, 75, 35, 0.2);
+  border-bottom: 1px solid rgba(81, 75, 35, 0.25);
   margin-bottom: 1.25rem;
 }
 
@@ -398,15 +507,15 @@
   font-size: 0.95rem;
   color: var(--dark-khaki);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
   margin: 0;
+  letter-spacing: 0.05em;
 }
 
 .btn-reset {
   background: none;
   border: none;
-  font-size: 0.725rem;
-  font-weight: 700;
+  font-size: 0.75rem;
+  font-weight: 800;
   color: var(--olive-leaf);
   cursor: pointer;
   text-decoration: underline;
@@ -421,26 +530,26 @@
   font-size: 0.65rem;
   font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.05em;
   color: var(--dark-khaki);
   margin-bottom: 0.35rem;
 }
 
 .filter-input-text {
   width: 100%;
-  background-color: rgba(255, 255, 255, 0.9);
+  background-color: rgba(255, 255, 255, 0.95);
   border: 1px solid var(--ash-grey);
   border-radius: 10px;
-  padding: 0.55rem 0.75rem;
-  font-size: 0.775rem;
-  font-weight: 600;
+  padding: 0.6rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 700;
   color: var(--dark-khaki);
   box-sizing: border-box;
   outline: none;
 }
 
 .price-readout {
-  font-size: 0.775rem;
+  font-size: 0.75rem;
   font-weight: 800;
   color: var(--olive-leaf);
 }
@@ -458,14 +567,15 @@
 }
 
 .star-btn {
-  padding: 0.5rem;
-  border-radius: 8px;
+  padding: 0.55rem;
+  border-radius: 10px;
   font-size: 0.75rem;
-  font-weight: 700;
+  font-weight: 800;
   border: 1px solid var(--ash-grey);
-  background-color: rgba(255, 255, 255, 0.7);
+  background-color: rgba(255, 255, 255, 0.75);
   color: var(--dark-khaki);
   cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 .star-btn.active {
@@ -478,7 +588,7 @@
   width: 100%;
   background-color: var(--olive-leaf);
   color: #ffffff;
-  font-weight: 800;
+  font-weight: 900;
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -493,7 +603,7 @@
   background-color: var(--dark-khaki);
 }
 
-/* LISTINGS SECTION */
+/* ==========================================================================\n   5. HOTEL LISTINGS GRID & CARD STYLES\n   ========================================================================== */
 .listings-section {
   flex: 1;
 }
@@ -508,29 +618,21 @@
   gap: 0.5rem;
 }
 
-.listings-icon {
-  color: var(--olive-leaf);
-}
-
 .section-title {
   font-size: 1.15rem;
   font-weight: 900;
+  margin: 0;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: var(--dark-khaki);
-  margin: 0;
 }
 
-/* ==========================================================================
-   4. HOTEL GRID & HOTEL CARD STYLES
-   ========================================================================== */
 .hotel-grid-container {
   display: grid;
   grid-template-columns: 1fr;
   gap: 1.5rem;
 }
 
-@media (min-width: 640px) {
+@media (min-width: 768px) {
   .hotel-grid-container {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -544,24 +646,24 @@
 
 .hotel-card {
   background-color: var(--ash-grey);
-  border-radius: 18px;
+  border-radius: 20px;
   overflow: hidden;
   border: 1px solid rgba(81, 75, 35, 0.15);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .hotel-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.12);
 }
 
 .card-image-wrapper {
   position: relative;
-  height: 13rem;
+  height: 12.5rem;
   width: 100%;
   background-color: #d1d5db;
 }
@@ -572,25 +674,6 @@
   object-fit: cover;
 }
 
-.card-image-placeholder {
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(135deg, var(--ash-grey), var(--dry-sage));
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  color: var(--dark-khaki);
-}
-
-.placeholder-text {
-  font-size: 0.8rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
 .star-badge {
   position: absolute;
   top: 0.75rem;
@@ -598,11 +681,13 @@
   background-color: var(--mint-sage);
   color: var(--dark-khaki);
   font-size: 0.65rem;
-  font-weight: 800;
+  font-weight: 900;
   text-transform: uppercase;
   padding: 0.25rem 0.65rem;
   border-radius: 9999px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
 }
 
 .favorite-toggle-btn {
@@ -611,13 +696,13 @@
   right: 0.75rem;
   background-color: rgba(255, 255, 255, 0.9);
   border: none;
-  padding: 0.5rem;
+  padding: 0.45rem;
   border-radius: 9999px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
 .card-content {
@@ -628,23 +713,30 @@
   justify-content: space-between;
 }
 
+.card-location-group {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-bottom: 0.2rem;
+}
+
 .card-location {
   font-size: 0.65rem;
   font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
   color: var(--olive-leaf);
+  letter-spacing: 0.05em;
 }
 
 .card-title {
   font-size: 1.05rem;
-  font-weight: 800;
+  font-weight: 900;
   color: var(--dark-khaki);
-  margin: 0.25rem 0;
+  margin: 0.2rem 0;
 }
 
 .card-description {
-  font-size: 0.775rem;
+  font-size: 0.75rem;
   color: rgba(81, 75, 35, 0.85);
   margin: 0;
   line-height: 1.45;
@@ -652,7 +744,7 @@
 
 .card-footer {
   margin-top: 1rem;
-  padding-top: 0.85rem;
+  padding-top: 0.75rem;
   border-top: 1px solid rgba(81, 75, 35, 0.15);
   display: flex;
   align-items: center;
@@ -663,10 +755,12 @@
   font-size: 0.6rem;
   text-transform: uppercase;
   display: block;
+  font-weight: 700;
+  color: var(--olive-leaf);
 }
 
 .price-amount {
-  font-size: 1.05rem;
+  font-size: 1rem;
   font-weight: 900;
   color: var(--dark-khaki);
 }
@@ -677,8 +771,7 @@
   font-weight: 800;
   font-size: 0.75rem;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  padding: 0.55rem 1.15rem;
+  padding: 0.55rem 1rem;
   border-radius: 10px;
   border: none;
   cursor: pointer;
@@ -694,49 +787,43 @@
   padding: 5rem 0;
   font-weight: 800;
   color: var(--olive-leaf);
-  font-size: 1rem;
 }
 
 .empty-state {
   background-color: var(--ash-grey);
-  padding: 3rem 1.5rem;
-  border-radius: 18px;
+  padding: 2.5rem;
+  border-radius: 20px;
   text-align: center;
-  font-size: 0.9rem;
+  font-size: 0.875rem;
   font-weight: 700;
-  color: var(--dark-khaki);
-  border: 1px solid rgba(81, 75, 35, 0.15);
 }
 
-/* ==========================================================================
-   5. FOOTER STYLES
-   ========================================================================== */
+/* FOOTER */
 .app-footer {
   background-color: var(--dark-khaki);
   color: var(--ash-grey);
   padding: 2.5rem 1.5rem;
   text-align: center;
-  font-size: 0.775rem;
-  margin-top: 4rem;
+  font-size: 0.75rem;
+  margin-top: 3rem;
   border-top: 1px solid rgba(101, 104, 57, 0.3);
 }
 
 .footer-brand {
   font-weight: 900;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
   color: #ffffff;
   margin: 0;
-  font-size: 1rem;
+  letter-spacing: 0.05em;
 }
 
 .footer-subtitle {
   color: var(--mint-sage);
-  margin: 0.35rem 0;
+  margin: 0.25rem 0;
 }
 
 .footer-copy {
   opacity: 0.6;
   font-size: 0.65rem;
-  margin: 0.5rem 0 0;
+  margin: 0;
 }

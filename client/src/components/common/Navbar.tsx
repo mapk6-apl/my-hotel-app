@@ -1,40 +1,48 @@
-import React from 'react';
+// client/src/components/common/Navbar.tsx
+
+import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import type { RootState } from '../../store/store.js';
 import { logout } from '../../store/slices/authSlice.js';
-import { Heart, User, Shield, LogOut, Hotel as HotelIcon } from 'lucide-react';
+import { Heart, Globe, DollarSign, X } from 'lucide-react';
 import '../../styles/screen1.css';
 
-//callback props are optional (?) to prevent runtime errors if a parent component doesn't pass them
 export type NavbarProps = {
     onOpenAuthModal?: () => void;
     onNavigateHome?: () => void;
 };
 
 export const Navbar: React.FC<NavbarProps> = ({ onOpenAuthModal, onNavigateHome }) => {
-    const dispatch = useDispatch(); //initialize Redux dispatch function to trigger actions. ex. logging out.
+    const dispatch = useDispatch();
 
-    // Extract user authentication state and favourite property list from the global Redux store. 
+    // Extract user authentication state and favourite property list from Redux
     const { isAuthenticated, user } = useSelector((state: RootState) => state.auth);
     const { favorites } = useSelector((state: RootState) => state.hotels);
+
+    // Regional settings state (Defaulted for South Africa as requested)
+    const [currency, setCurrency] = useState<string>('ZAR (R)');
+    const [language, setLanguage] = useState<string>('EN');
+    const [isRegionModalOpen, setIsRegionModalOpen] = useState<boolean>(false);
 
     return (
         <nav className="navbar">
             <div className="nav-container">
-                {/* clicking the app logo will take a user back to the home page/view */}
-                <div className="brand-logo" onClick={onNavigateHome || (() => { window.location.href = '/'; })}>
+                {/* BRAND LOGO: clicking takes user back to home page */}
+                <div 
+                  className="brand-logo" 
+                  onClick={onNavigateHome || (() => { window.location.href = '/'; })}
+                >
                     <span className="logo-badge">BA</span>
-                    <span>BREAK-AWAY <span className="logo-text-light">HOTELS</span>
-                    </span>
+                    <span>BREAK-AWAY <span className="logo-text-light">HOTELS</span></span>
                 </div>
 
-                {/* navigation links */}
+                {/* NAVIGATION LINKS */}
                 <div className="nav-links">
                     <a href="/" className="nav-link">HOME</a>
                     <a href="#explore" className="nav-link">EXPLORE</a>
                     <a href="#about" className="nav-link">ABOUT</a>
 
-                    {/* favourites count badge */}
+                    {/* FAVORITES COUNT BADGE */}
                     <a href="/favorites" className="nav-link">
                         <span>FAVORITES</span>
                         {favorites && favorites.length > 0 && (
@@ -42,28 +50,100 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuthModal, onNavigateHome 
                         )}
                     </a>
 
-                    {/* admin link visible to admins */}
+                    {/* ADMIN DASHBOARD LINK (FOR ADMIN USERS) */}
                     {isAuthenticated && user?.role === 'admin' && (
                         <a href="/admin" className="nav-link">ADMIN</a>
                     )}
                 </div>
 
-                {/* authentication & region controls */}
+                {/* AUTHENTICATION & REGION CONTROLS */}
                 <div className="nav-actions"> 
-                    <span className="currency-tag">ZAR (R) | EN</span> 
+                    {/* CLICKABLE CURRENCY & LANGUAGE SELECTOR */}
+                    <button 
+                      type="button"
+                      onClick={() => setIsRegionModalOpen(true)}
+                      className="currency-tag-btn"
+                      title="Change Currency and Language"
+                    >
+                        <Globe size={13} className="inline mr-1" />
+                        <span>{currency} | {language}</span>
+                    </button> 
                     
                     {isAuthenticated && user ? ( 
                         <div className="user-profile-summary"> 
                             <a href="/profile" className="user-name">
                                 {user.full_name || 'User 1'}
                             </a>  
-                            <button onClick={() => dispatch(logout())} className="btn-auth-signin">LOGOUT</button>
+                            <button onClick={() => dispatch(logout())} className="btn-auth-signin">
+                                LOGOUT
+                            </button>
                         </div> 
                     ) : (  
-                        <button onClick={onOpenAuthModal} className="btn-auth-signin">SIGN IN</button>
+                        <button onClick={onOpenAuthModal} className="btn-auth-signin">
+                            SIGN IN
+                        </button>
                     )} 
                 </div>
             </div>
+
+            {/* INTERACTIVE CURRENCY & LANGUAGE REGIONAL MODAL */}
+            {isRegionModalOpen && (
+                <div className="region-modal-overlay" onClick={() => setIsRegionModalOpen(false)}>
+                    <div className="region-modal-card" onClick={(e) => e.stopPropagation()}>
+                        <div className="region-modal-header">
+                            <h3>Regional Settings</h3>
+                            <button onClick={() => setIsRegionModalOpen(false)} className="region-close-btn">
+                                <X size={18} />
+                            </button>
+                        </div>
+                        
+                        <div className="region-section">
+                            <label className="region-label">Currency (Default: South Africa)</label>
+                            <div className="region-options-grid">
+                                {['ZAR (R)', 'USD ($)', 'EUR (€)'].map((curr) => (
+                                    <button
+                                        key={curr}
+                                        type="button"
+                                        onClick={() => setCurrency(curr)}
+                                        className={`region-opt-btn ${currency === curr ? 'active' : ''}`}
+                                    >
+                                        {curr}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="region-section">
+                            <label className="region-label">Language</label>
+                            <div className="region-options-grid">
+                                {[
+                                    { code: 'EN', name: 'English' },
+                                    { code: 'AF', name: 'Afrikaans' },
+                                    { code: 'ZU', name: 'isiZulu' }
+                                ].map((lang) => (
+                                    <button
+                                        key={lang.code}
+                                        type="button"
+                                        onClick={() => setLanguage(lang.code)}
+                                        className={`region-opt-btn ${language === lang.code ? 'active' : ''}`}
+                                    >
+                                        {lang.code} - {lang.name}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        <button 
+                            type="button" 
+                            onClick={() => setIsRegionModalOpen(false)}
+                            className="btn-search-submit"
+                            style={{ marginTop: '1rem' }}
+                        >
+                            SAVE REGIONAL SETTINGS
+                        </button>
+                    </div>
+                </div>
+            )}
         </nav>
     );
 };
