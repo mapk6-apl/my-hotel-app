@@ -64,3 +64,86 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onNavigateHome, onOpen
           </div>
 
         </aside>
+
+        {/* Right: main tab content*/}
+        <section style={{ flex: 1 }}>
+          
+          {/* Tab 1: My Booking History*/}
+          {activeTab === 'bookings' && (
+            <div>
+              <h2 className="filter-title" style={{ fontSize: '1.25rem', marginBottom: '1.25rem' }}> Reservation History</h2>
+
+              {/* Upcoming stay card */}
+              <div className="booking-history-card">
+                <div>
+                  <span className="status-tag confirmed">Upcoming Stay</span>
+                  <h3 style={{ fontWeight: 800, fontSize: '1.125rem', margin: '0.35rem 0 0.1rem', color: 'var(--dark-khaki)' }}>
+                    Hotel 1
+                  </h3>
+                  <div style={{ fontSize: '0.75rem', opacity: 0.8, display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                    <MapPin size={12} color="#656839" />
+                    <span>Polokwane, South Africa</span>
+                  </div>
+                  <div style={{ fontSize: '0.75rem', fontWeight: 700, marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                    <Clock size={12} color="#656839" />
+                    <span>24 Oct 2026 - 28 Oct 2026 (4 Nights)</span>
+                  </div>
+                </div>
+
+                <div style={{ textAlign: 'right' }}>
+                  <span style={{ fontSize: '1.125rem', fontWeight: 900, color: 'var(--dark-khaki)', display: 'block' }}>
+                    R8,370
+                  </span>
+                  <button className="btn-view-details" style={{ marginTop: '0.5rem' }}>
+                    View Voucher
+                  </button>
+                </div>
+              </div>
+
+              {/* Past stay card*/}
+              <div className="booking-history-card">
+                <div>
+                  <span className="status-tag completed">Completed Stay</span>
+                  <h3 style={{ fontWeight: 800, fontSize: '1.125rem', margin: '0.35rem 0 0.1rem', color: 'var(--dark-khaki)' }}>
+                    Cape Town Bay Resort
+                  </h3>
+                  <div style={{ fontSize: '0.75rem', opacity: 0.8, display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                    <MapPin size={12} color="#656839" />
+                    <span>Cape Town, South Africa</span>
+                  </div>
+                  <div style={{ fontSize: '0.75rem', fontWeight: 700, marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                    <Clock size={12} color="#656839" />
+                    <span>10 Aug 2026 - 14 Aug 2026 (4 Nights)</span>
+                  </div>
+                </div>
+
+                <div style={{ textAlign: 'right' }}>
+                  <span style={{ fontSize: '1.125rem', fontWeight: 900, color: 'var(--dark-khaki)', display: 'block' }}>
+                    R12,400
+                  </span>
+                  <button className="btn-view-details" style={{ marginTop: '0.5rem', backgroundColor: 'var(--dark-khaki)' }}>
+                    Book Again
+                  </button>
+                </div>
+              </div>
+
+            </div>
+          )}
+
+          {/* Tab 2: Favorites */}
+          {activeTab === 'favorites' && (
+            <div>
+              <h2 className="filter-title" style={{ fontSize: '1.25rem', marginBottom: '1.25rem' }}>
+                Saved Properties ({favorites.length})
+              </h2>
+              {favorites.length === 0 ? (
+                <div style={{ backgroundColor: 'var(--ash-grey)', padding: '2.5rem', borderRadius: '16px', textAlign: 'center' }}>
+                  You haven't saved any break-away properties yet.
+                </div>
+              ) : (
+                <div style={{ fontSize: '0.875rem', color: 'var(--dark-khaki)' }}>
+                  You have {favorites.length} property saved to your favorites.
+                </div>
+              )}
+            </div>
+          )}
