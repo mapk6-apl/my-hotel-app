@@ -9,7 +9,7 @@ DROP TABLE IF EXISTS rooms CASCADE;
 DROP TABLE IF EXISTS accommodations CASCADE; 
 DROP TABLE IF EXISTS users CASCADE;
 
--- 1. USERS TABLE - Stores guest and admin profiles authenticated via OAuth.
+-- 1. USERS TABLE - Stores guest and admin profiles authenticated via OAuth or email/password.
 CREATE TABLE users (
 id SERIAL PRIMARY KEY, -- auto-incrementing unique user ID 
 oauth_provider VARCHAR(50) NOT NULL, -- Authentication provider ('google', etc.) 
@@ -18,6 +18,7 @@ email VARCHAR(255) UNIQUE NOT NULL, -- user email address
 full_name VARCHAR(255) NOT NULL, -- user's full display name 
 avatar_url TEXT, -- Profile picture URL from OAuth 
 role VARCHAR(20) DEFAULT 'guest', -- Role-Based Access Control: 'guest' or 'admin' 
+password_hash TEXT, -- Scrypt password hash for local accounts; NULL for OAuth-only accounts
 phone VARCHAR(50), -- Optional contact phone number 
 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP -- Account creation timestamp 
 );

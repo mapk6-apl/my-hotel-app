@@ -146,6 +146,77 @@
   font-weight: 600;
 }
 
+.auth-divider {
+  position: relative;
+  margin: 1.5rem 0;
+  text-align: center;
+}
+
+.auth-divider-line {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  border-top: 1px solid rgba(81, 75, 35, 0.2);
+}
+
+.auth-divider-text {
+  position: relative;
+  background-color: var(--ash-grey, #CBD0B9);
+  padding: 0 0.75rem;
+  font-size: 0.625rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: rgba(81, 75, 35, 0.7);
+}
+
+.sso-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.sso-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.65rem;
+  border-radius: 10px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  border: 1px solid var(--dry-sage, #CBC9AD);
+  font-family: inherit;
+  white-space: nowrap;
+}
+
+.sso-btn-google {
+  background-color: #ffffff;
+  color: var(--dark-khaki, #514B23);
+}
+
+.sso-btn-google:hover {
+  background-color: #f9fafb;
+}
+
+.sso-btn-apple {
+  background-color: #000000;
+  color: #ffffff;
+  border-color: #000000;
+}
+
+.sso-btn-apple:hover {
+  background-color: #1a1a1a;
+}
+
+@media (max-width: 400px) {
+  .sso-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .auth-demo-divider {
   text-align: center;
   margin: 1.25rem 0 0.75rem;

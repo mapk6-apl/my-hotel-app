@@ -15,9 +15,13 @@ export type ProtectedRouteProps = {
 
 export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, adminOnly = false }) => {
   const location = useLocation();
-  
+
   //Extract authentication status and current user profile from Redux store
-  const { isAuthenticated, user, token } = useSelector((state: RootState) => state.auth);
+  const { isAuthenticated, user, token, loading } = useSelector((state: RootState) => state.auth);
+
+  if (loading || (token && !user)) {
+    return <div style={{ padding: '1rem', color: '#2f3a2a' }}>Loading your session...</div>;
+  }
 
   // 1. Unauthenticated check: Redirect to home if user is not logged in
   if (!isAuthenticated && !token) {
