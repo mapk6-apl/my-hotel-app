@@ -7,49 +7,41 @@ export type ToastType = 'success' | 'error' | 'info';
 export type ToastProps = {
   message: string;
   type?: ToastType;
-  isVisible: boolean;
+  isOpen: boolean;
   onClose: () => void;
-  duration?: number;
 };
 
-export const Toast: React.FC<ToastProps> = ({
-  message,
-  type = 'info',
-  isVisible,
-  onClose,
-  duration = 3500,
-}) => {
+export const Toast: React.FC<ToastProps> = ({ message, type = 'success', isOpen, onClose }) => {
   useEffect(() => {
-    if (isVisible && duration > 0) {
+    if (isOpen) {
       const timer = setTimeout(() => {
         onClose();
-      }, duration);
+      }, 4000);
       return () => clearTimeout(timer);
     }
-  }, [isVisible, duration, onClose]);
+  }, [isOpen, onClose]);
 
-  if (!isVisible) return null;
+  if (!isOpen) return null;
 
-  const renderIcon = () => {
-    switch (type) {
-      case 'success':
-        return <CheckCircle2 size={18} className="toast-icon text-emerald-600" />;
-      case 'error':
-        return <AlertCircle size={18} className="toast-icon text-rose-600" />;
-      default:
-        return <Info size={18} className="toast-icon text-amber-600" />;
-    }
+  const bgStyles: Record<ToastType, string> = {
+    success: 'bg-[#656839] text-[#F4F9E9] border-[#514B23]',
+    error: 'bg-[#991b1b] text-white border-red-800',
+    info: 'bg-[#514B23] text-[#F4F9E9] border-[#656839]',
   };
 
   return (
-    <div className={`toast-notification toast-${type}`}>
-      <div className="toast-content">
-        {renderIcon()}
-        <span className="toast-message">{message}</span>
+    <div className="toast-notification-banner">
+      <div className={'toast-inner ' + type}>
+        {type === 'success' && <CheckCircle2 size={18} color="#BDDBD0" />}
+        {type === 'error' && <AlertCircle size={18} color="#fee2e2" />}
+        {type === 'info' && <Info size={18} color="#BDDBD0" />}
+
+        <span className="toast-message-text">{message}</span>
+
+        <button type="button" onClick={onClose} className="toast-close-btn" aria-label="Dismiss">
+          <X size={14} />
+        </button>
       </div>
-      <button onClick={onClose} className="toast-close-btn" aria-label="Dismiss Notification">
-        <X size={14} />
-      </button>
     </div>
   );
 };

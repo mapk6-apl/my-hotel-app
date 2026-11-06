@@ -1,175 +1,200 @@
+// client/src/pages/ProfilePage.tsx
+
 import React, { useState } from 'react';
-import { Calendar, Heart, User, Settings, LogOut, Clock, MapPin, CreditCard } from 'lucide-react'; // Using Lucide React icons
 import { useSelector, useDispatch } from 'react-redux';
 import { Navbar } from '../components/common/Navbar.js';
 import { Footer } from '../components/common/Footer.js';
-import { logout } from '../store/slices/authSlice.js';
-import { type RootState } from '../store/store.js';
+import { logout, setUser } from '../store/slices/authSlice.js';
+import type { RootState, AppDispatch } from '../store/store.js';
+import { User, Mail, Calendar, Compass, Shield, LogOut, CheckCircle2, Building, Clock } from 'lucide-react';
 import '../styles/screen5.css';
 
-export type ProfilePageProps = {
-  onNavigateHome: () => void;
-  onOpenAuthModal: () => void;
-};
-
-export const ProfilePage: React.FC<ProfilePageProps> = ({ onNavigateHome, onOpenAuthModal }) => {
-  const dispatch = useDispatch();
+export const ProfilePage: React.FC = () => {
+  const dispatch = useDispatch<AppDispatch>();
   const { user } = useSelector((state: RootState) => state.auth);
-  const { favorites } = useSelector((state: RootState) => state.hotels);
+  const bookings = useSelector((state: RootState) =>
+    (state.hotels as RootState['hotels'] & { bookings?: any[] } | undefined)?.bookings ?? []
+  );
 
-  //Active Tab state (bookings, favorites, settings)
-  const [activeTab, setActiveTab] = useState<'bookings' | 'favorites' | 'account'>('bookings');
+  const [activeTab, setActiveTab] = useState<'bookings' | 'settings'>('bookings');
+  
+  const [fullName, setFullName] = useState<string>(user?.full_name || 'Traveler');
+  const [email, setEmail] = useState<string>(user?.email || 'traveler@breakaway.co.za');
+  const [saveSuccess, setSaveSuccess] = useState<boolean>(false);
+
+  // Filter bookings for current logged-in user
+  const userBookings = (bookings || []).filter((b: any) => b.user_id === user?.id || b.userId === user?.id);
+
+  const handleUpdateProfile = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (user) {
+      dispatch(setUser({
+        ...user,
+        full_name: fullName,
+        email: email
+      }));
+      setSaveSuccess(true);
+      setTimeout(() => setSaveSuccess(false), 3000);
+    }
+  };
 
   return (
     <div className="page-container">
-      <Navbar onOpenAuthModal={onOpenAuthModal} onNavigateHome={onNavigateHome} />
+      <Navbar />
 
-      <main className="main-content-layout">
-        
-        {/* Left: profile tabs sidebar */}
-        <aside style={{ width: '100%' }} className="lg:w-64 shrink-0">
-          
-          {/* Profile user header card */}
-          <div className="profile-header-card" style={{ flexDirection: 'column', textAlign: 'center', padding: '1.5rem' }}>
-            <div className="profile-avatar-circle" style={{ margin: '0 auto' }}>
-              {user?.full_name?.charAt(0) || 'U'}
+      <main className="profile-page-wrapper">
+        {/* USER PROFILE HEADER BANNER */}
+        <header className="profile-banner">
+          <div className="profile-user-badge">
+            <div className="profile-avatar-circle">
+              {(user?.full_name || user?.email || 'U').charAt(0).toUpperCase()}
             </div>
-            <div>
-              <h2 className="profile-name" style={{ fontSize: '1.125rem' }}>{user?.full_name || 'User 1'}</h2>
-              <p className="profile-email">{user?.email || 'user1@example.com'}</p>
+            <div className="profile-user-info">
+              <h1 className="profile-user-name">{user?.full_name || 'Traveler'}</h1>
+              <p className="profile-user-email">{user?.email || 'traveler@breakaway.co.za'}</p>
+              <div className="profile-user-role-tag">
+                <Shield size={12} />
+                <span>{user?.role === 'admin' ? 'Administrator' : 'Verified Traveler'}</span>
+              </div>
             </div>
           </div>
 
-          {/* Tab buttons */}
-          <div className="profile-tabs-sidebar">
-            <button onClick={() => setActiveTab('bookings')} className={`profile-tab-btn ${activeTab === 'bookings' ? 'active' : ''}`} >
-              <Calendar size={18} />
-              <span>My Bookings</span>
-            </button>
+          <button
+            type="button"
+            onClick={() => dispatch(logout())}
+            className="btn-profile-logout"
+          >
+            <LogOut size={16} />
+            <span>LOGOUT</span>
+          </button>
+        </header>
 
-            <button onClick={() => setActiveTab('favorites')}  className={`profile-tab-btn ${activeTab === 'favorites' ? 'active' : ''}`}>
-              <Heart size={18} />
-              <span>Favourites ({favorites.length})</span>
-            </button>
+        {/* PROFILE TABS (MY BOOKINGS & ACCOUNT SETTINGS) */}
+        <div className="profile-tab-bar">
+          <button
+            type="button"
+            onClick={() => setActiveTab('bookings')}
+            className={'profile-tab-btn ' + (activeTab === 'bookings' ? 'active' : '')}
+          >
+            <Calendar size={16} />
+            <span>My Reservations ({userBookings.length})</span>
+          </button>
 
-            <button onClick={() => setActiveTab('account')} className={`profile-tab-btn ${activeTab === 'account' ? 'active' : ''}`}>
-              <User size={18} />
-              <span>Account Settings</span>
-            </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('settings')}
+            className={'profile-tab-btn ' + (activeTab === 'settings' ? 'active' : '')}
+          >
+            <User size={16} />
+            <span>Account Settings</span>
+          </button>
+        </div>
 
-            <button onClick={() => dispatch(logout())} className="profile-tab-btn" style={{ color: '#e11d48', marginTop: '1rem' }}>
-              <LogOut size={18} />
-              <span>Logout</span>
-            </button>
-          </div>
+        {/* TAB 1: RESERVATIONS */}
+        {activeTab === 'bookings' && (
+          <section className="profile-content-section">
+            {userBookings.length > 0 ? (
+              <div className="bookings-grid">
+                {userBookings.map((b: any, idx: number) => (
+                  <div key={b.id || idx} className="booking-card">
+                    <div className="booking-card-header">
+                      <div>
+                        <span className="booking-ref-code">Ref: #{b.id || ('BA-' + (idx + 101))}</span>
+                        <h3 className="booking-hotel-name">{b.hotel_name || b.hotelName || 'Luxury Hotel Suite'}</h3>
+                      </div>
+                      <span className="booking-status-badge">Confirmed</span>
+                    </div>
 
-        </aside>
+                    <div className="booking-details-list">
+                      <div className="booking-detail-row">
+                        <Calendar size={14} color="#656839" />
+                        <span>Dates: {b.check_in || b.checkIn} &rarr; {b.check_out || b.checkOut}</span>
+                      </div>
+                      <div className="booking-detail-row">
+                        <Clock size={14} color="#656839" />
+                        <span>Duration: {b.nights || 3} Nights ({b.guests || 2} Travelers)</span>
+                      </div>
+                    </div>
 
-        {/* Right: main tab content*/}
-        <section style={{ flex: 1 }}>
-          
-          {/* Tab 1: My Booking History*/}
-          {activeTab === 'bookings' && (
-            <div>
-              <h2 className="filter-title" style={{ fontSize: '1.25rem', marginBottom: '1.25rem' }}> Reservation History</h2>
-
-              {/* Upcoming stay card */}
-              <div className="booking-history-card">
-                <div>
-                  <span className="status-tag confirmed">Upcoming Stay</span>
-                  <h3 style={{ fontWeight: 800, fontSize: '1.125rem', margin: '0.35rem 0 0.1rem', color: 'var(--dark-khaki)' }}>
-                    Hotel 1
-                  </h3>
-                  <div style={{ fontSize: '0.75rem', opacity: 0.8, display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                    <MapPin size={12} color="#656839" />
-                    <span>Polokwane, South Africa</span>
+                    <div className="booking-card-footer">
+                      <div>
+                        <span className="booking-total-label">Total Paid (ZAR)</span>
+                        <span className="booking-total-amount">R{(b.total_amount || b.totalAmount || 5400).toLocaleString()}</span>
+                      </div>
+                      <button type="button" className="btn-view-voucher">View Voucher</button>
+                    </div>
                   </div>
-                  <div style={{ fontSize: '0.75rem', fontWeight: 700, marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                    <Clock size={12} color="#656839" />
-                    <span>24 Oct 2026 - 28 Oct 2026 (4 Nights)</span>
-                  </div>
-                </div>
-
-                <div style={{ textAlign: 'right' }}>
-                  <span style={{ fontSize: '1.125rem', fontWeight: 900, color: 'var(--dark-khaki)', display: 'block' }}>
-                    R8,370
-                  </span>
-                  <button className="btn-view-details" style={{ marginTop: '0.5rem' }}>
-                    View Voucher
-                  </button>
-                </div>
+                ))}
               </div>
-
-              {/* Past stay card*/}
-              <div className="booking-history-card">
-                <div>
-                  <span className="status-tag completed">Completed Stay</span>
-                  <h3 style={{ fontWeight: 800, fontSize: '1.125rem', margin: '0.35rem 0 0.1rem', color: 'var(--dark-khaki)' }}>
-                    Cape Town Bay Resort
-                  </h3>
-                  <div style={{ fontSize: '0.75rem', opacity: 0.8, display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                    <MapPin size={12} color="#656839" />
-                    <span>Cape Town, South Africa</span>
-                  </div>
-                  <div style={{ fontSize: '0.75rem', fontWeight: 700, marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                    <Clock size={12} color="#656839" />
-                    <span>10 Aug 2026 - 14 Aug 2026 (4 Nights)</span>
-                  </div>
-                </div>
-
-                <div style={{ textAlign: 'right' }}>
-                  <span style={{ fontSize: '1.125rem', fontWeight: 900, color: 'var(--dark-khaki)', display: 'block' }}>
-                    R12,400
-                  </span>
-                  <button className="btn-view-details" style={{ marginTop: '0.5rem', backgroundColor: 'var(--dark-khaki)' }}>
-                    Book Again
-                  </button>
-                </div>
+            ) : (
+              <div className="profile-empty-card">
+                <Compass size={48} color="#656839" style={{ margin: '0 auto 1rem' }} />
+                <h3 className="empty-title">No Active Reservations</h3>
+                <p className="empty-subtitle">
+                  Hello {user?.full_name || 'Traveler'}! You haven't made any hotel bookings yet.
+                  Explore our luxury suites and resorts across South Africa to plan your next break-away!
+                </p>
+                <a href="/explore" className="btn-explore-cta">
+                  <Building size={16} />
+                  <span>EXPLORE ACCOMMODATIONS</span>
+                </a>
               </div>
+            )}
+          </section>
+        )}
 
-            </div>
-          )}
+        {/* TAB 2: ACCOUNT SETTINGS */}
+        {activeTab === 'settings' && (
+          <section className="profile-content-section">
+            <div className="settings-card">
+              <h3 className="settings-card-title">Personal Profile Details</h3>
+              <p className="settings-card-subtitle">
+                Update your registered account name and contact email address.
+              </p>
 
-          {/* Tab 2: Favorites */}
-          {activeTab === 'favorites' && (
-            <div>
-              <h2 className="filter-title" style={{ fontSize: '1.25rem', marginBottom: '1.25rem' }}>
-                Saved Properties ({favorites.length})
-              </h2>
-              {favorites.length === 0 ? (
-                <div style={{ backgroundColor: 'var(--ash-grey)', padding: '2.5rem', borderRadius: '16px', textAlign: 'center' }}>
-                  You haven't saved any break-away properties yet.
-                </div>
-              ) : (
-                <div style={{ fontSize: '0.875rem', color: 'var(--dark-khaki)' }}>
-                  You have {favorites.length} property saved to your favorites.
+              {saveSuccess && (
+                <div className="settings-success-alert">
+                  <CheckCircle2 size={16} />
+                  <span>Profile updated successfully!</span>
                 </div>
               )}
-            </div>
-          )}
 
-          {/* Tab 3: ACcount settings */}
-          {activeTab === 'account' && (
-            <div className="checkout-form-card">
-              <h2 className="checkout-card-header">Account Details</h2>
-              <div className="checkout-form-grid">
-                <div>
-                  <label className="filter-label">Full Name</label>
-                  <input type="text" defaultValue={user?.full_name || 'User 1'} className="filter-input-text" />
+              <form onSubmit={handleUpdateProfile} className="settings-form">
+                <div className="settings-field-group">
+                  <label className="settings-field-label">Full Name</label>
+                  <div className="settings-input-wrapper">
+                    <User size={16} color="#656839" />
+                    <input
+                      type="text"
+                      required
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      className="settings-input"
+                    />
+                  </div>
                 </div>
-                <div>
-                  <label className="filter-label">Email Address</label>
-                  <input type="email" defaultValue={user?.email || 'user1@example.com'} className="filter-input-text" />
+
+                <div className="settings-field-group">
+                  <label className="settings-field-label">Email Address</label>
+                  <div className="settings-input-wrapper">
+                    <Mail size={16} color="#656839" />
+                    <input
+                      type="email"
+                      required
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="settings-input"
+                    />
+                  </div>
                 </div>
-              </div>
-              <button className="btn-search-submit" style={{ marginTop: '1.5rem', width: 'auto' }}>
-                Save Profile Changes
-              </button>
+
+                <button type="submit" className="btn-save-settings">
+                  Save Changes
+                </button>
+              </form>
             </div>
-          )}
-
-        </section>
-
+          </section>
+        )}
       </main>
 
       <Footer />
