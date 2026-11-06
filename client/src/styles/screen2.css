@@ -1,21 +1,10 @@
-/* ==========================================================================
-   SCREEN 2: AUTHENTICATION MODAL STYLES
-   Uses the 5-color Earthy Palette:
-   --dark-khaki: #514B23
-   --olive-leaf: #656839
-   --dry-sage:   #CBC9AD
-   --ash-grey:   #CBD0B9
-   --mint-sage:  #BDDBD0
-   ========================================================================== */
-
-/* Fullscreen Backdrop Overlay */
 .auth-modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.6);
+  background-color: rgba(0, 0, 0, 0.65);
   backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
@@ -24,59 +13,67 @@
   padding: 1rem;
 }
 
-/* Modal Window Container */
 .auth-modal-card {
   background-color: var(--ash-grey, #CBD0B9);
   width: 100%;
   max-width: 420px;
   border-radius: 20px;
   padding: 2rem;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
-  border: 1px solid rgba(81, 75, 35, 0.2);
+  box-shadow: 0 20px 30px rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(81, 75, 35, 0.25);
   position: relative;
   color: var(--dark-khaki, #514B23);
   font-family: system-ui, -apple-system, sans-serif;
 }
 
-/* Close Button (X) */
 .auth-close-btn {
   position: absolute;
   top: 1.25rem;
   right: 1.25rem;
   background: none;
   border: none;
-  font-size: 1.25rem;
-  font-weight: 800;
   color: var(--dark-khaki, #514B23);
   cursor: pointer;
-  transition: color 0.2s ease;
+  opacity: 0.8;
+  transition: opacity 0.2s ease;
 }
 
 .auth-close-btn:hover {
-  color: var(--olive-leaf, #656839);
+  opacity: 1;
 }
 
-/* Modal Title & Subtitle */
 .auth-header {
   text-align: center;
   margin-bottom: 1.5rem;
 }
 
+.auth-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background-color: var(--olive-leaf, #656839);
+  color: #ffffff;
+  font-size: 0.625rem;
+  font-weight: 800;
+  padding: 0.25rem 0.65rem;
+  border-radius: 9999px;
+  margin-bottom: 0.5rem;
+}
+
 .auth-title {
   font-size: 1.5rem;
-  font-weight: 800;
+  font-weight: 900;
   margin: 0;
   color: var(--dark-khaki, #514B23);
 }
 
 .auth-subtitle {
   font-size: 0.75rem;
-  color: rgba(81, 75, 35, 0.8);
+  color: rgba(81, 75, 35, 0.85);
   margin-top: 0.35rem;
   font-weight: 600;
 }
 
-/* Form Groups & Inputs */
 .auth-form {
   display: flex;
   flex-direction: column;
@@ -97,30 +94,31 @@
   margin-bottom: 0.35rem;
 }
 
-.auth-input {
-  width: 100%;
-  background-color: rgba(255, 255, 255, 0.9);
+.auth-input-icon-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: rgba(255, 255, 255, 0.95);
   border: 1px solid var(--dry-sage, #CBC9AD);
   border-radius: 10px;
   padding: 0.65rem 0.85rem;
+}
+
+.auth-input-styled {
+  width: 100%;
+  border: none;
+  background: transparent;
   font-size: 0.875rem;
+  font-weight: 600;
   color: var(--dark-khaki, #514B23);
-  box-sizing: border-box;
   outline: none;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-.auth-input:focus {
-  border-color: var(--olive-leaf, #656839);
-  box-shadow: 0 0 0 2px rgba(101, 104, 57, 0.2);
-}
-
-/* Submit Action Button */
 .auth-submit-btn {
   width: 100%;
   background-color: var(--olive-leaf, #656839);
   color: #ffffff;
-  font-weight: 800;
+  font-weight: 900;
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -136,92 +134,53 @@
   background-color: var(--dark-khaki, #514B23);
 }
 
-.auth-submit-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-/* Error Notification Alert */
 .auth-error-alert {
   background-color: #fee2e2;
   border: 1px solid #f87171;
   color: #991b1b;
   font-size: 0.75rem;
-  padding: 0.5rem 0.75rem;
+  padding: 0.6rem 0.85rem;
   border-radius: 8px;
   text-align: center;
   margin-bottom: 1rem;
+  font-weight: 600;
 }
 
-/* Divider Line ("Or continue with") */
-.auth-divider {
-  position: relative;
-  margin: 1.5rem 0;
+.auth-demo-divider {
   text-align: center;
-}
-
-.auth-divider-line {
-  position: absolute;
-  top: 50%;
-  left: 0;
-  right: 0;
-  border-top: 1px solid rgba(81, 75, 35, 0.2);
-}
-
-.auth-divider-text {
+  margin: 1.25rem 0 0.75rem;
   position: relative;
+}
+
+.auth-demo-divider span {
   background-color: var(--ash-grey, #CBD0B9);
-  padding: 0 0.75rem;
+  padding: 0 0.5rem;
   font-size: 0.625rem;
   font-weight: 800;
   text-transform: uppercase;
   color: rgba(81, 75, 35, 0.7);
 }
 
-/* Third-Party SSO Buttons (Google & Apple) */
-.sso-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.75rem;
-}
-
-.sso-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
+.btn-demo-kayden {
+  width: 100%;
+  background-color: rgba(255, 255, 255, 0.8);
+  border: 1px dashed var(--olive-leaf, #656839);
+  color: var(--dark-khaki, #514B23);
+  font-weight: 800;
+  font-size: 0.75rem;
   padding: 0.65rem;
   border-radius: 10px;
-  font-size: 0.75rem;
-  font-weight: 700;
   cursor: pointer;
   transition: background-color 0.2s ease;
-  border: 1px solid var(--dry-sage, #CBC9AD);
 }
 
-.sso-btn-google {
+.btn-demo-kayden:hover {
   background-color: #ffffff;
-  color: var(--dark-khaki, #514B23);
 }
 
-.sso-btn-google:hover {
-  background-color: #f9fafb;
-}
-
-.sso-btn-apple {
-  background-color: #000000;
-  color: #ffffff;
-  border-color: #000000;
-}
-
-.sso-btn-apple:hover {
-  background-color: #1a1a1a;
-}
-
-/* Toggle Sign In / Sign Up Link */
 .auth-toggle-container {
   text-align: center;
-  margin-top: 1.5rem;
+  margin-top: 1.25rem;
 }
 
 .auth-toggle-btn {
@@ -232,8 +191,4 @@
   color: var(--dark-khaki, #514B23);
   cursor: pointer;
   text-decoration: underline;
-}
-
-.auth-toggle-btn:hover {
-  color: var(--olive-leaf, #656839);
 }
