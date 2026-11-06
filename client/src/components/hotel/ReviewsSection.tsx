@@ -1,5 +1,5 @@
 import React from 'react';
-import { Star, ThumbsUp, MessageSquare } from 'lucide-react'; 
+import { Star, MessageSquare } from 'lucide-react'; 
 import '../../styles/screen3.css';
 
 export type ReviewsSectionProps = {
@@ -15,7 +15,6 @@ export const ReviewsSection: React.FC<ReviewsSectionProps> = ({ rating, reviewCo
         <span>Guest Reviews & Rating</span>
       </h3>
 
-      {/* Reviews score summary */}
       <div className="reviews-summary-container">
         <div className="review-score-badge">
           {rating}
@@ -26,7 +25,6 @@ export const ReviewsSection: React.FC<ReviewsSectionProps> = ({ rating, reviewCo
         </div>
       </div>
 
-      {/* preview reviews list*/}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
         <div style={{ backgroundColor: 'rgba(255, 255, 255, 0.7)', padding: '1rem', borderRadius: '12px', border: '1px solid rgba(81, 75, 35, 0.1)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
@@ -56,7 +54,6 @@ export const ReviewsSection: React.FC<ReviewsSectionProps> = ({ rating, reviewCo
           </p>
         </div>
       </div>
-
     </div>
   );
 };

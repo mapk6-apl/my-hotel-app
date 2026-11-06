@@ -19,7 +19,6 @@ export const MapWidget: React.FC<MapWidgetProps> = ({ address, city }) => {
         {address}, {city}, South Africa
       </p>
 
-      {/* map placeholder canvas */}
       <div 
         style={{
           width: '100%',

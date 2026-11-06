@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { toggleFavoriteLocal, type Hotel } from '../../store/slices/hotelSlice.js';
 import { type RootState } from '../../store/store.js';
 import { getHotelPhotoUrl, getFallbackSvgDataUri } from '../../api/photoApi.js';
-import { Heart, Star, MapPin } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Heart, Star, MapPin } from 'lucide-react';
 import '../../styles/screen1.css';
 
 export type HotelCardProps = {
@@ -13,90 +13,164 @@ export type HotelCardProps = {
   onViewDetails: (hotelId: number) => void;
 };
 
-/**
- * HotelCard Component (Screen 1 Individual Property Listing Tile)
- * Displays property photo, location, star rating badge, price, favorite button, and VIEW DETAILS action.
- */
 export const HotelCard: React.FC<HotelCardProps> = ({ hotel, onViewDetails }) => {
   const dispatch = useDispatch();
 
-  // Read favorites list from Redux
+  // Read favorite properties list from Redux
   const favorites = useSelector((state: RootState) => state.hotels.favorites);
   const isFavorite = favorites.includes(hotel.id);
 
-  // Dynamic image resolution using Photo API with automatic fallback
-  const initialPhotoUrl = hotel.hero_image && !hotel.hero_image.includes('suspicious')
-    ? hotel.hero_image
-    : getHotelPhotoUrl(hotel.id, 0);
+  // Array of property images for the carousel (uses hotel.images or generates a gallery for hotel.id)
+  const hotelImages = (hotel as Hotel & { images?: string[] }).images;
+  const images: string[] = hotelImages && hotelImages.length > 0
+    ? hotelImages
+    : getHotelGallery(hotel.id, 4);
 
-  const [imgSrc, setImgSrc] = useState<string>(initialPhotoUrl);
+  // Local state for active carousel image index
+  const [currentImageIndex, setCurrentImageIndex] = useState<number>(0);
 
-  const handleImageError = () => {
-    // Fall back to clean SVG Data URI if the external image URL fails to load
-    setImgSrc(getFallbackSvgDataUri(hotel.name));
+  // Touch swipe state for mobile gesture handling
+  const [touchStartX, setTouchStartX] = useState<number | null>(null);
+
+  // Next image handler
+  const handleNextImage = (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    setCurrentImageIndex((prev) => (prev + 1) % images.length);
+  };
+
+  // Previous image handler
+  const handlePrevImage = (e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    setCurrentImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
+  };
+
+  // Touch Swipe Handlers
+  const handleTouchStart = (e: React.TouchEvent) => {
+    e.stopPropagation();
+    const touchX = e.touches[0]?.clientX ?? null;
+    setTouchStartX(touchX);
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    e.stopPropagation();
+    if (touchStartX === null) return;
+
+    const touchEndX = e.changedTouches[0]?.clientX;
+    if (touchEndX === undefined) {
+      setTouchStartX(null);
+      return;
+    }
+
+    const diff = touchStartX - touchEndX;
+
+    // Swipe left (next) or right (prev) threshold > 40px
+    if (diff > 40) {
+      handleNextImage();
+    } else if (diff < -40) {
+      handlePrevImage();
+    }
+    setTouchStartX(null);
   };
 
   return (
     <div className="hotel-card">
       
-      {/* PROPERTY HERO IMAGE & OVERLAY BADGES */}
-      <div className="card-image-wrapper">
+      {/* CAROUSEL IMAGE CONTAINER */}
+      <div 
+        className="card-image-wrapper relative"
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+      >
         <img
-          src={imgSrc}
-          alt={hotel.name}
+          src={images[currentImageIndex]}
+          alt={`${hotel.name} - Photo ${currentImageIndex + 1}`}
           className="card-image"
-          onError={handleImageError}
+          onError={(e) => {
+            (e.target as HTMLImageElement).src = getFallbackSvgDataUri(hotel.name);
+          }}
         />
 
         {/* STAR RATING BADGE */}
         <div className="star-badge">
-          <Star size={11} className="inline fill-current mr-1" />
-          <span>{hotel.star_rating} Stars</span>
+          <Star size={12} className="inline mr-1 fill-current" />
+          {hotel.star_rating} Stars
         </div>
 
         {/* FAVORITE TOGGLE BUTTON */}
         <button
+          type="button"
           onClick={(e) => {
             e.stopPropagation();
             dispatch(toggleFavoriteLocal(hotel.id));
           }}
           className="favorite-toggle-btn"
-          aria-label={isFavorite ? "Remove from Favorites" : "Add to Favorites"}
+          aria-label="Toggle Favorite"
         >
           <Heart 
             size={16} 
-            fill={isFavorite ? "#f43f5e" : "none"} 
-            color={isFavorite ? "#f43f5e" : "#514B23"} 
+            className={isFavorite ? "fill-red-500 text-red-500" : "text-gray-600"} 
           />
         </button>
+
+        {/* CAROUSEL ARROWS & CONTROLS */}
+        {images.length > 1 && (
+          <>
+            <button
+              type="button"
+              onClick={handlePrevImage}
+              className="carousel-arrow left-arrow"
+              aria-label="Previous Image"
+            >
+              <ChevronLeft size={16} />
+            </button>
+            <button
+              type="button"
+              onClick={handleNextImage}
+              className="carousel-arrow right-arrow"
+              aria-label="Next Image"
+            >
+              <ChevronRight size={16} />
+            </button>
+
+            {/* DOT INDICATORS & IMAGE COUNTER BADGE */}
+            <div className="carousel-dots-container">
+              {images.map((_, idx) => (
+                <span
+                  key={idx}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setCurrentImageIndex(idx);
+                  }}
+                  className={`carousel-dot ${idx === currentImageIndex ? 'active' : ''}`}
+                />
+              ))}
+            </div>
+
+            <div className="carousel-counter-badge">
+              {currentImageIndex + 1}/{images.length}
+            </div>
+          </>
+        )}
       </div>
 
       {/* CARD CONTENT */}
       <div className="card-content">
         <div>
-          <div className="card-location-group">
-            <MapPin size={12} color="#656839" />
-            <span className="card-location">{hotel.city || 'South Africa'}</span>
-          </div>
-
+          <span className="card-location">{hotel.city}</span>
           <h4 className="card-title">{hotel.name}</h4>
-          
           <p className="card-description">
-            {hotel.description || 'Luxury break-away accommodation with premium facilities and verified guest reviews.'}
+            {hotel.description || 'Luxury break-away accommodation with premium facilities.'}
           </p>
         </div>
 
         {/* PRICING & VIEW DETAILS CTA */}
         <div className="card-footer">
           <div>
-            <span className="price-label">Starting from</span>
+            <span style={{ fontSize: '0.6rem', textTransform: 'uppercase', display: 'block', color: 'rgba(81, 75, 35, 0.7)' }}>Starting from</span>
             <span className="price-amount">R{hotel.starting_price} / night</span>
           </div>
 
-          <button
-            onClick={() => onViewDetails(hotel.id)}
-            className="btn-view-details"
-          >
+          <button onClick={() => onViewDetails(hotel.id)} className="btn-view-details">
             VIEW DETAILS
           </button>
         </div>
@@ -105,3 +179,9 @@ export const HotelCard: React.FC<HotelCardProps> = ({ hotel, onViewDetails }) =>
     </div>
   );
 };
+function getHotelGallery(id: number, imageCount: number): string[] {
+  return Array.from({ length: Math.max(0, imageCount) }, (_, index) =>
+    getHotelPhotoUrl(id, index),
+  );
+}
+
