@@ -1,6 +1,6 @@
 import React, { useState } from 'react'; 
 import { useDispatch, useSelector } from 'react-redux'; 
-import { setFilters, fetchHotels, resetFilters } from '../../store/slices/hotelSlice.js'; 
+import { setFilters, resetFilters } from '../../store/slices/hotelSlice.js';
 import type { RootState, AppDispatch } from '../../store/store.js'; 
 import '../../styles/screen1.css'; 
 
@@ -14,31 +14,26 @@ export const SearchFilterBar: React.FC = () => {
 
     //local state is managed directly inside input change handlers. 
     //I will not use the useEffect state syncing to avoid redundant double re-renders
-    const [cityInput, setCityInput] = useState(currentFilters.city || ''); 
     const [maxPrice, setMaxPrice] = useState<number>(
         typeof currentFilters.maxPrice === 'number' ? currentFilters.maxPrice : 4000);
     const [starRating, setStarRating] = useState<number | ''> (currentFilters.starRating || '');
 
-    //Updates Redux and fetches filtered backend data on form submit 
+    //Filter changes trigger the page's single fetch effect.
     const handleSearchSubmit = (e: React.FormEvent) => { 
         e.preventDefault(); 
         const updatedFilters = { 
             ...currentFilters, 
-            city: cityInput.trim(), 
             maxPrice: maxPrice, 
             starRating: starRating, 
         }; 
         dispatch(setFilters(updatedFilters)); 
-        dispatch(fetchHotels(updatedFilters)); 
     };
 
     //Resets local form inputs and restores default unfiltered hotel list 
     const handleReset = () => { 
-        setCityInput(''); 
         setMaxPrice(4000); 
         setStarRating(''); 
         dispatch(resetFilters()); 
-        dispatch(fetchHotels({ city: '', minPrice: '', maxPrice: '', starRating: '' })); 
     };
 
     return (
@@ -48,12 +43,6 @@ export const SearchFilterBar: React.FC = () => {
                 <div className="filter-header">
                     <h3 className="filter-title">Search & Filter</h3>
                     <button type='button' onClick={handleReset} className='btn-reset'>Reset</button>
-                </div>
-
-                {/* destination city input */}
-                <div className="filter-group">
-                    <label className="filter-label">Destination/City</label>
-                    <input type='text' placeholder='ex. Durban, Pretoria, Cape Town...' value={cityInput} onChange={(e) => setCityInput(e.target.value)} className='filter-input-text'/>
                 </div>
 
                 {/* budget range slider */}
@@ -70,7 +59,7 @@ export const SearchFilterBar: React.FC = () => {
                     <label className="filter-label">Star Rating</label>
                     <div className="star-rating-grid">
                         {[3,4,5].map((stars) => (
-                            <button key={stars} type='button' onClick={() => setStarRating (starRating === stars ? '' : stars)} className="{`star-btn ${starRating === stars ? 'active' : ''}`}">{stars}</button> 
+                            <button key={stars} type='button' onClick={() => setStarRating(starRating === stars ? '' : stars)} className={`star-btn ${starRating === stars ? 'active' : ''}`} aria-pressed={starRating === stars}>{stars}</button>
                         ))}
                     </div>
                 </div>

@@ -1,224 +1,194 @@
 import React, { useState } from 'react';
-import { CreditCard, Lock, CheckCircle2, User, Mail, Phone, ShieldCheck, Calendar, Building } from 'lucide-react';
+import { useDispatch, useSelector } from 'react-redux';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { Calendar, CheckCircle2, User } from 'lucide-react';
 import { Navbar } from '../components/common/Navbar.js';
 import { Footer } from '../components/common/Footer.js';
+import { createReservation, type Booking } from '../store/slices/bookingSlice.js';
+import type { AppDispatch, RootState } from '../store/store.js';
+import { normalizePropertyImageUrl } from '../api/photoApi.js';
 import '../styles/screen4.css';
 
-export type CheckoutPageProps = {
-    onNavigateHome: () => void;
-    onOpenAuthModal: () => void;
+type BookingDraft = {
+  roomId: number;
+  roomType: string;
+  checkIn: string;
+  checkOut: string;
+  nights: number;
+  guests: number;
+  startingPrice: number;
+  grandTotal: number;
+  hotelId: number;
+  hotelName: string;
+  city: string;
+  heroImage: string | null;
 };
 
+type CheckoutLocationState = {
+  bookingDraft?: BookingDraft;
+};
+
+export type CheckoutPageProps = {
+  onNavigateHome: () => void;
+  onOpenAuthModal: () => void;
+};
+
+const formatCurrency = (amount: number): string =>
+  new Intl.NumberFormat('en-ZA', { style: 'currency', currency: 'ZAR' }).format(amount);
+
+const formatDate = (date: string): string =>
+  new Date(`${date}T00:00:00`).toLocaleDateString('en-ZA', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
+
 export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onNavigateHome, onOpenAuthModal }) => {
-    //1 = Reservation Details & Payment, 2 = Confirmation Success
-    const [currentStep, setCurrentStep] = useState<number>(1);
-    const [isProcessing, setIsProcessing] = useState<boolean>(false);
+  const dispatch = useDispatch<AppDispatch>();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const user = useSelector((state: RootState) => state.auth.user);
+  const bookingDraft = (location.state as CheckoutLocationState | null)?.bookingDraft;
+  const [reservation, setReservation] = useState<Booking | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [isProcessing, setIsProcessing] = useState(false);
 
-    // Local form state for guest and payment details
-    const [fullName, setFullName] = useState<string>('John Doe');
-    const [email, setEmail] = useState<string>('john.doe@example.com');
-    const [phone, setPhone] = useState<string>('+27 82 123 4567');
-    const [cardName, setCardName] = useState<string>('John Doe');
-    const [cardNumber, setCardNumber] = useState<string>('4532 •••• •••• 8892');
-    const [expiry, setExpiry] = useState<string>('08/28');
-    const [cvv, setCvv] = useState<string>('342');
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!bookingDraft) {
+      setError('Choose a property, room, and stay dates before continuing.');
+      return;
+    }
 
-    //Payment gateway submission
-    const handlePaymentSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        setIsProcessing(true);
+    setIsProcessing(true);
+    setError(null);
+    try {
+      const savedReservation = await dispatch(createReservation({
+        roomId: bookingDraft.roomId,
+        checkIn: bookingDraft.checkIn,
+        checkOut: bookingDraft.checkOut,
+        guestCount: bookingDraft.guests,
+      })).unwrap();
+      setReservation(savedReservation);
+    } catch (requestError: unknown) {
+      setError(typeof requestError === 'string' ? requestError : 'Unable to save this reservation. Please try again.');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
 
-        //simulate backend payment authorization delay (1.5s)
-        setTimeout(() => {
-            setIsProcessing(false);
-            setCurrentStep(2); //transition to Step 2: Confirmation
-        }, 1500);
-    };
+  const returnToProperty = () => {
+    if (bookingDraft) {
+      navigate(`/hotel/${bookingDraft.hotelId}`, {
+        state: {
+          bookingSearch: {
+            checkIn: bookingDraft.checkIn,
+            checkOut: bookingDraft.checkOut,
+            guests: bookingDraft.guests,
+          },
+        },
+      });
+    }
+    else navigate('/explore');
+  };
 
-    return (
-        <div className="page-container">
-            <Navbar onOpenAuthModal={onOpenAuthModal} onNavigateHome={onNavigateHome} />
+  const currentStep = reservation ? 2 : 1;
 
-            <main className="main-content-layout" style={{ flexDirection: 'column' }}>
+  return (
+    <div className="page-container">
+      <Navbar onOpenAuthModal={onOpenAuthModal} onNavigateHome={onNavigateHome} />
+      <main className="main-content-layout" style={{ flexDirection: 'column' }}>
+        <div className="checkout-steps-bar">
+          <button type="button" className={`step-item ${currentStep === 1 ? 'active' : ''}`} onClick={returnToProperty}>
+            <span className="step-number-badge">1</span>
+            <span>Review reservation</span>
+          </button>
+          <div className="step-connector-line" />
+          <div className={`step-item ${currentStep === 2 ? 'active' : ''}`}>
+            <span className="step-number-badge">2</span>
+            <span>Confirmation</span>
+          </div>
+        </div>
 
-                {/* progress step bar*/}
-                <div className="checkout-steps-bar">
-                    <div className={`step-item ${currentStep >= 1 ? 'active' : ''}`}>
-                        <span className="step-number-badge">1</span>
-                        <span>Reservation & Guest Details</span>
-                    </div>
-
-                    <div className="step-connector-line"></div>
-
-                    <div className={`step-item ${currentStep >= 1 ? 'active' : ''}`}>
-                        <span className="step-number-badge">2</span>
-                        <span>Payment Gateway</span>
-                    </div>
-
-                    <div className="step-connector-line"></div>
-
-                    <div className={`step-item ${currentStep === 2 ? 'active' : ''}`}>
-                        <span className="step-number-badge">3</span>
-                        <span>Confirmation</span>
-                    </div>
-                </div>
-
-                {/* Step 1: Guest details and payment form */}
-                {currentStep === 1 ? (
-                    <form onSubmit={handlePaymentSubmit} className="checkout-layout-grid">
-
-                        {/* Left: guest and financial inouts*/}
-                        <div>
-                            {/* Guest details card */}
-                            <div className="checkout-form-card">
-                                <h2 className="checkout-card-header">
-                                    <User size={18} color="#656839" />
-                                    <span>1. Guest Information</span>
-                                </h2>
-
-                                <div className="checkout-form-grid">
-                                    <div className="form-full-width">
-                                        <label className="filter-label">Full Name</label>
-                                        <input type="text" required value={fullName} onChange={(e) => setFullName(e.target.value)} className="filter-input-text" />
-                                    </div>
-
-                                    <div>
-                                        <label className="filter-label">Email Address</label>
-                                        <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="filter-input-text" />
-                                    </div>
-
-                                    <div>
-                                        <label className="filter-label">Phone Number</label>
-                                        <input type="tel" required value={phone} onChange={(e) => setPhone(e.target.value)} className="filter-input-text" />
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Payment Gateway Card*/}
-                            <div className="checkout-form-card">
-                                <h2 className="checkout-card-header">
-                                    <CreditCard size={18} color="#656839" />
-                                    <span>2. Payment Gateway (Credit / Debit Card)</span>
-                                </h2>
-
-                                <p style={{ fontSize: '0.75rem', color: 'rgba(81, 75, 35, 0.8)', marginBottom: '1rem' }}>
-                                    Transactions are encrypted with 256-bit SSL security.
-                                </p>
-
-                                <div className="credit-card-inputs-wrapper">
-                                    <div className="checkout-form-grid">
-                                        <div className="form-full-width">
-                                            <label className="filter-label">Cardholder Name</label>
-                                            <input type="text" required value={cardName} onChange={(e) => setCardName(e.target.value)} className="filter-input-text" />
-                                        </div>
-
-                                        <div className="form-full-width">
-                                            <label className="filter-label">Card Number</label>
-                                            <input type="text" required value={cardNumber} onChange={(e) => setCardNumber(e.target.value)} className="filter-input-text" />
-                                        </div>
-
-                                        <div>
-                                            <label className="filter-label">Expiry Date</label>
-                                            <input type="text" required placeholder="MM/YY" value={expiry} onChange={(e) => setExpiry(e.target.value)} className="filter-input-text" />
-                                        </div>
-
-                                        <div>
-                                            <label className="filter-label">CVV Code</label>
-                                            <input type="password" required maxLength={4} value={cvv} onChange={(e) => setCvv(e.target.value)} className="filter-input-text" />
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Right: order summmary */}
-                        <div>
-                            <div className="order-summary-card">
-                                <h3 className="filter-title" style={{ marginBottom: '1rem' }}>Order Summary</h3>
-
-                                {/* Hotel mini preview */}
-                                <div className="summary-hotel-header">
-                                    <img src="" alt="Hotel Preview" className="summary-hotel-thumb" />
-                                    <div>
-                                        <h4 style={{ fontWeight: 800, fontSize: '0.9375rem', margin: 0, color: 'var(--dark-khaki)' }}>Hotel 1</h4>
-                                        <span style={{ fontSize: '0.75rem', color: 'var(--olive-leaf)', fontWeight: 700 }}>Polokwane</span>
-                                        <div style={{ fontSize: '0.6875rem', opacity: 0.8, marginTop: '0.25rem' }}>
-                                            4 Nights (24 Oct - 28 Oct 2026)
-                                        </div>
-                                    </div>
-                                </div>
-                                {/* cost breakdown */}
-                                <div className="cost-breakdown-list">
-                                    <div className="cost-item-row">
-                                        <span>R1,800 × 4 nights</span>
-                                        <span>R7,200</span>
-                                    </div>
-                                    <div className="cost-item-row">
-                                        <span>Cleaning Fee</span>
-                                        <span>R650</span>
-                                    </div>
-                                    <div className="cost-item-row">
-                                        <span>Service Fee</span>
-                                        <span>R520</span>
-                                    </div>
-                                    <div className="cost-item-row">
-                                        <span>VAT (15%)</span>
-                                        <span>Included</span>
-                                    </div>
-                                    <div className="cost-total-row">
-                                        <span>Grand Total (ZAR)</span>
-                                        <span>R8,370</span>
-                                    </div>
-                                </div>
-
-                                {/* Pay and Confirm CTA*/}
-                                <button type="submit" disabled={isProcessing} className="btn-pay-now">
-                                    <Lock size={16} />
-                                    <span>{isProcessing ? 'Authorizing Payment...' : 'Pay & Confirm Reservation'}</span>
-                                </button>
-
-                                <div style={{ textAlign: 'center', fontSize: '0.625rem', opacity: 0.7, marginTop: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.25rem' }}>
-                                    <ShieldCheck size={12} color="#656839" />
-                                    <span>Bank-grade secure checkout</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        </form>
-        ) : (
-          /* Step 2: confirmation success view*/
-          <div className="success-card">
+        {!bookingDraft ? (
+          <section className="success-card" role="alert">
+            <h1>No reservation selected</h1>
+            <p>Choose a property, room, and dates before opening checkout.</p>
+            <button type="button" className="btn-pay-now" onClick={() => navigate('/explore')}>
+              Browse properties
+            </button>
+          </section>
+        ) : reservation ? (
+          <section className="success-card" aria-live="polite">
             <CheckCircle2 size={56} color="#656839" style={{ margin: '0 auto 1rem' }} />
-            <h2 style={{ fontSize: '1.75rem', fontWeight: 900, color: 'var(--dark-khaki)', margin: 0 }}>
-              Reservation Confirmed!
-            </h2>
-            <p style={{ fontSize: '0.875rem', color: 'var(--dark-khaki)', marginTop: '0.5rem' }}>
-              Thank you, <span style={{ fontWeight: 800 }}>{fullName}</span>. Your stay at <span style={{ fontWeight: 800 }}>Hotel 1</span> has been booked.
+            <h1>Reservation saved</h1>
+            <p>
+              Thank you, <strong>{reservation.guest_name || user?.full_name || 'Guest'}</strong>.
+              Your reservation at <strong>{reservation.hotel_name || bookingDraft.hotelName}</strong> is recorded.
             </p>
-
-            <div style={{ backgroundColor: 'rgba(255, 255, 255, 0.7)', padding: '1rem', borderRadius: '12px', margin: '1.5rem 0', textAlign: 'left', fontSize: '0.75rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                <span style={{ opacity: 0.7 }}>Booking Reference:</span>
-                <span style={{ fontWeight: 800 }}>#BA-2026-9812</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                <span style={{ opacity: 0.7 }}>Total Amount Paid:</span>
-                <span style={{ fontWeight: 800 }}>R8,370</span>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ opacity: 0.7 }}>Confirmation Sent To:</span>
-                <span style={{ fontWeight: 800 }}>{email}</span>
-              </div>
+            <p>Payment has not been taken. Payment status: <strong>{reservation.payment_status}</strong>.</p>
+            <div className="order-summary-card" style={{ textAlign: 'left', margin: '1.5rem auto' }}>
+              <p>Booking reference: <strong>#{reservation.reservation_id}</strong></p>
+              <p>Room: <strong>{reservation.room_type || bookingDraft.roomType}</strong></p>
+              <p>Dates: <strong>{formatDate(reservation.check_in)} – {formatDate(reservation.check_out)}</strong></p>
+              <p>Travellers: <strong>{reservation.guest_count}</strong></p>
+              <p>Total: <strong>{formatCurrency(Number(reservation.total_amount))}</strong></p>
+              <p>Guest: <strong>{reservation.guest_name || user?.full_name}</strong> ({reservation.guest_email || user?.email})</p>
+              <p>Reservation status: <strong>{reservation.status}</strong></p>
             </div>
-
-            <button onClick={onNavigateHome} className="btn-pay-now" style={{ width: 'auto', margin: '0 auto', padding: '0.75rem 2rem' }}>
+            <button type="button" onClick={onNavigateHome} className="btn-pay-now" style={{ width: 'auto', margin: '0 auto', padding: '0.75rem 2rem' }}>
               Return to Home
             </button>
-          </div>
+          </section>
+        ) : (
+          <form onSubmit={handleSubmit} className="checkout-layout-grid">
+            <section className="checkout-form-card">
+              <h1 className="checkout-card-header">
+                <User size={18} color="#656839" />
+                <span>Review guest and stay details</span>
+              </h1>
+              <p><strong>Guest:</strong> {user?.full_name || 'Account holder'}</p>
+              <p><strong>Email:</strong> {user?.email}</p>
+              <p><strong>Room:</strong> {bookingDraft.roomType}</p>
+              <p><strong>Travellers:</strong> {bookingDraft.guests}</p>
+              <p><Calendar size={16} aria-hidden="true" /> {formatDate(bookingDraft.checkIn)} – {formatDate(bookingDraft.checkOut)} ({bookingDraft.nights} {bookingDraft.nights === 1 ? 'night' : 'nights'})</p>
+              <p>This reservation will be saved with payment pending. No card is charged because a payment provider is not configured.</p>
+              <button type="button" className="btn-reset" onClick={returnToProperty}>Back to property</button>
+            </section>
+
+            <aside className="order-summary-card">
+              <h2 className="filter-title">Reservation summary</h2>
+              <div className="summary-hotel-header">
+                {bookingDraft.heroImage && (
+                  <img
+                    src={normalizePropertyImageUrl(bookingDraft.heroImage)}
+                    alt={bookingDraft.hotelName}
+                    className="summary-hotel-thumb"
+                  />
+                )}
+                <div>
+                  <h3>{bookingDraft.hotelName}</h3>
+                  <span>{bookingDraft.city}</span>
+                </div>
+              </div>
+              <div className="cost-breakdown-list">
+                <div className="cost-item-row">
+                  <span>{formatCurrency(bookingDraft.startingPrice)} × {bookingDraft.nights} nights</span>
+                  <span>{formatCurrency(bookingDraft.startingPrice * bookingDraft.nights)}</span>
+                </div>
+                <div className="cost-total-row">
+                  <span>Amount due (payment pending)</span>
+                  <span>{formatCurrency(bookingDraft.startingPrice * bookingDraft.nights)}</span>
+                </div>
+              </div>
+              {error && <p role="alert" className="auth-error-alert">{error}</p>}
+              <button type="submit" disabled={isProcessing} className="btn-pay-now">
+                {isProcessing ? 'Saving reservation…' : 'Save reservation'}
+              </button>
+            </aside>
+          </form>
         )}
-
       </main>
-
       <Footer />
     </div>
   );

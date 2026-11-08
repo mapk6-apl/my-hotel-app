@@ -1,13 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Heart, Share2, MapPin, ShieldCheck, Star } from 'lucide-react';
+import { useDispatch, useSelector } from 'react-redux';
 import { Navbar } from '../components/common/Navbar.js';
 import { PhotoGallery } from '../components/hotel/PhotoGallery.js';
 import { MapWidget } from '../components/hotel/MapWidget.js';
-import { ReviewsSection } from '../components/hotel/ReviewsSection.js';
+import { getAverageReviewRating, ReviewsSection } from '../components/hotel/ReviewsSection.js';
 import { StickyBookingCard } from '../components/hotel/StickyBookingCard.js';
+import type { BookingPayload } from '../components/hotel/StickyBookingCard.js';
 import { Footer } from '../components/common/Footer.js';
 import { hotelApi } from '../api/hotelApi.js';
+import { toggleFavoriteLocal } from '../store/slices/hotelSlice.js';
+import type { RootState } from '../store/store.js';
 import '../styles/screen3.css';
 
 type PropertyDetails = {
@@ -21,6 +25,7 @@ type PropertyDetails = {
   images: string[];
   amenities: string[];
   reviews: PropertyReview[];
+  rooms: PropertyRoom[];
 };
 
 type PropertyReview = {
@@ -30,8 +35,16 @@ type PropertyReview = {
   guest_name: string | null;
 };
 
-type PropertyDetailsResponse = Omit<PropertyDetails, 'starting_price' | 'images' | 'amenities'> & {
-  rooms?: { price_per_night: number | string }[];
+type PropertyRoom = {
+  id: number;
+  room_type: string;
+  capacity: number;
+  price_per_night: number | string;
+  is_available: boolean;
+};
+
+type PropertyDetailsResponse = Omit<PropertyDetails, 'starting_price' | 'images' | 'amenities' | 'rooms'> & {
+  rooms?: PropertyRoom[];
   images?: { image_url: string }[];
   amenities?: { name: string }[];
   reviews?: PropertyReview[];
@@ -39,24 +52,24 @@ type PropertyDetailsResponse = Omit<PropertyDetails, 'starting_price' | 'images'
 
 export type HotelDetailsPageProps = {
   hotelId?: number;
-  onNavigateToCheckout?: (bookingData?: any) => void;
   onOpenAuthModal?: () => void;
 };
 
 export const HotelDetailsPage: React.FC<HotelDetailsPageProps> = ({
   hotelId: propHotelId,
-  onNavigateToCheckout,
   onOpenAuthModal,
 }) => {
   const { id: urlParamId } = useParams<{ id: string }>();
   const activeId = propHotelId ?? (urlParamId ? Number.parseInt(urlParamId, 10) : Number.NaN);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const location = useLocation();
+  const isFavorite = useSelector((state: RootState) => state.hotels.favorites.includes(activeId));
+  const bookingSearch = (location.state as { bookingSearch?: { checkIn: string; checkOut: string; guests: number } } | null)?.bookingSearch;
 
   const [hotel, setHotel] = useState<PropertyDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [isFavorite, setIsFavorite] = useState<boolean>(false);
-  const [shareToast, setShareToast] = useState<boolean>(false);
 
   useEffect(() => {
     let active = true;
@@ -92,6 +105,7 @@ export const HotelDetailsPage: React.FC<HotelDetailsPageProps> = ({
             images: (property.images ?? []).map((image) => image.image_url),
             amenities: (property.amenities ?? []).map((amenity) => amenity.name),
             reviews: property.reviews ?? [],
+            rooms: property.rooms ?? [],
           });
         }
       } catch (error: unknown) {
@@ -109,19 +123,45 @@ export const HotelDetailsPage: React.FC<HotelDetailsPageProps> = ({
     };
   }, [activeId]);
 
-  const handleShare = () => {
-    setShareToast(true);
-    setTimeout(() => setShareToast(false), 3000);
-  };
-
-  const handleBookNow = (bookingDetails: any) => {
-    if (!hotel) return;
-    if (onNavigateToCheckout) {
-      onNavigateToCheckout({ ...bookingDetails, hotelId: hotel.id, hotelName: hotel.name });
-    } else {
-      window.location.href = '/checkout';
+  const handleShare = async () => {
+    const shareData = { title: hotel?.name ?? 'Property', url: window.location.href };
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(shareData.url);
+        window.dispatchEvent(new CustomEvent('app-toast', {
+          detail: { message: 'Property link copied to clipboard.', type: 'success' },
+        }));
+      } else {
+        window.dispatchEvent(new CustomEvent('app-toast', {
+          detail: { message: 'Sharing is not available in this browser.', type: 'error' },
+        }));
+      }
+    } catch (error: unknown) {
+      if (error instanceof DOMException && error.name === 'AbortError') return;
+      window.dispatchEvent(new CustomEvent('app-toast', {
+        detail: { message: 'Unable to share this property. Please try again.', type: 'error' },
+      }));
     }
   };
+
+  const handleBookNow = (bookingDetails: BookingPayload) => {
+    if (!hotel) return;
+    navigate('/checkout', {
+      state: {
+        bookingDraft: {
+          ...bookingDetails,
+          hotelId: hotel.id,
+          hotelName: hotel.name,
+          city: hotel.city,
+          heroImage: hotel.images[0] ?? null,
+        },
+      },
+    });
+  };
+
+  const guestReviewRating = hotel ? getAverageReviewRating(hotel.reviews) : null;
 
   return (
     <div className="page-container">
@@ -141,12 +181,6 @@ export const HotelDetailsPage: React.FC<HotelDetailsPageProps> = ({
           </div>
         ) : (
           <>
-        {shareToast && (
-          <div className="share-toast-alert">
-            <span>Link copied to clipboard! Share {hotel.name} with friends.</span>
-          </div>
-        )}
-
         {/* PROPERTY HEADER & TITLE */}
         <div className="hotel-details-header">
           <div>
@@ -164,7 +198,7 @@ export const HotelDetailsPage: React.FC<HotelDetailsPageProps> = ({
           <div className="action-buttons-group">
             <button
               type="button"
-              onClick={() => setIsFavorite(!isFavorite)}
+              onClick={() => dispatch(toggleFavoriteLocal(hotel.id))}
               className={'icon-action-btn ' + (isFavorite ? 'active' : '')}
               aria-label="Save to Favorites"
             >
@@ -203,14 +237,14 @@ export const HotelDetailsPage: React.FC<HotelDetailsPageProps> = ({
                 {hotel.amenities.length > 0 ? hotel.amenities.map((amenity) => (
                   <div className="facility-item" key={amenity}>
                     <ShieldCheck size={16} color="#656839" />
-                    <span>{amenity}</span>
+                    <span>{amenity.replace(/&amp;/g, '&')}</span>
                   </div>
                 )) : <p>No amenities are listed for this property.</p>}
               </div>
             </section>
 
             {/* MAP WIDGET */}
-            <MapWidget address={hotel.address || hotel.city} city={hotel.city} />
+            <MapWidget address={hotel.address} city={hotel.city} />
 
             {/* REVIEWS SECTION */}
             <ReviewsSection reviews={hotel.reviews} />
@@ -221,7 +255,13 @@ export const HotelDetailsPage: React.FC<HotelDetailsPageProps> = ({
             {hotel.starting_price > 0 ? (
               <StickyBookingCard
                 startingPrice={hotel.starting_price}
-                rating={hotel.star_rating}
+                rooms={hotel.rooms}
+                {...(bookingSearch ? {
+                  initialCheckIn: bookingSearch.checkIn,
+                  initialCheckOut: bookingSearch.checkOut,
+                  initialGuests: bookingSearch.guests,
+                } : {})}
+                {...(guestReviewRating !== null ? { rating: guestReviewRating } : {})}
                 reviewCount={hotel.reviews.length}
                 onBookNow={handleBookNow}
               />

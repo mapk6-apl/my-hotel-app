@@ -157,7 +157,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onShowToa
         <div className="auth-header">
           <div className="auth-badge">
             <Sparkles size={14} />
-            <span>MEMBER PORTAL</span>
+            <span>ACCOUNT ACCESS</span>
           </div>
           <h2 className="auth-title">
             {isSignUp ? 'Create an Account' : 'Welcome Back'}

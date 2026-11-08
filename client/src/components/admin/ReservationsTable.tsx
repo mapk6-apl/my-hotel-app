@@ -1,5 +1,5 @@
-import React from 'react';
-import { Calendar, User, RefreshCw } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Calendar, User, RefreshCw, Save } from 'lucide-react';
 import type { AdminBooking } from '../../api/adminApi.js';
 import '../../styles/screen6.css';
 
@@ -8,6 +8,7 @@ export type ReservationsTableProps = {
   loading: boolean;
   error: string | null;
   onRefresh: () => void;
+  onUpdateStatus: (reservationId: number, status: string) => Promise<void>;
 };
 
 const formatDate = (value: string): string => {
@@ -32,8 +33,45 @@ export const ReservationsTable: React.FC<ReservationsTableProps> = ({
   loading,
   error,
   onRefresh,
+  onUpdateStatus,
 }) => (
-  <div className="admin-table-container">
+  <ReservationsTableContent
+    bookings={bookings}
+    loading={loading}
+    error={error}
+    onRefresh={onRefresh}
+    onUpdateStatus={onUpdateStatus}
+  />
+);
+
+const ReservationsTableContent: React.FC<ReservationsTableProps> = ({
+  bookings,
+  loading,
+  error,
+  onRefresh,
+  onUpdateStatus,
+}) => {
+  const [selectedStatuses, setSelectedStatuses] = useState<Record<number, string>>({});
+  const [savingId, setSavingId] = useState<number | null>(null);
+
+  useEffect(() => {
+    setSelectedStatuses(Object.fromEntries(
+      bookings.map((booking) => [booking.reservation_id, booking.status])
+    ));
+  }, [bookings]);
+
+  const saveStatus = async (id: number, currentStatus: string) => {
+    const status = selectedStatuses[id] ?? currentStatus;
+    if (status === currentStatus) return;
+    setSavingId(id);
+    try {
+      await onUpdateStatus(id, status);
+    } finally {
+      setSavingId(null);
+    }
+  };
+
+  return <div className="admin-table-container">
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
       <div>
         <h2 className="filter-title" style={{ fontSize: '1.125rem', margin: 0 }}>
@@ -82,6 +120,7 @@ export const ReservationsTable: React.FC<ReservationsTableProps> = ({
             <th>Booking Amount</th>
             <th>Reservation</th>
             <th>Payment</th>
+            <th>Manage</th>
           </tr>
         </thead>
         <tbody>
@@ -91,13 +130,13 @@ export const ReservationsTable: React.FC<ReservationsTableProps> = ({
               <td>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                   <User size={12} color="#656839" />
-                  <span>{booking.guest_name}</span>
+                  <span>{booking.guest_name || 'Guest account unavailable'}</span>
                 </div>
-                <div style={{ fontSize: '0.7rem', opacity: 0.75, marginLeft: '1rem' }}>{booking.guest_email}</div>
+                <div style={{ fontSize: '0.7rem', opacity: 0.75, marginLeft: '1rem' }}>{booking.guest_email || 'Email unavailable'}</div>
               </td>
               <td>
-                <div>{booking.hotel_name}</div>
-                <div style={{ fontSize: '0.7rem', opacity: 0.75 }}>{booking.room_type}</div>
+                <div>{booking.hotel_name || 'Property unavailable'}</div>
+                <div style={{ fontSize: '0.7rem', opacity: 0.75 }}>{booking.room_type || 'Room unavailable'}</div>
               </td>
               <td>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
@@ -117,10 +156,35 @@ export const ReservationsTable: React.FC<ReservationsTableProps> = ({
                   {booking.payment_status}
                 </span>
               </td>
+              <td>
+                <div style={{ display: 'flex', gap: '0.35rem', alignItems: 'center' }}>
+                  <select
+                    aria-label={`Reservation status for booking ${booking.reservation_id}`}
+                    value={selectedStatuses[booking.reservation_id] ?? booking.status}
+                    onChange={(event) => setSelectedStatuses((current) => ({
+                      ...current,
+                      [booking.reservation_id]: event.target.value,
+                    }))}
+                  >
+                    {['pending', 'approved', 'completed', 'cancelled'].map((status) => (
+                      <option key={status} value={status}>{status}</option>
+                    ))}
+                  </select>
+                  <button
+                    type="button"
+                    aria-label={`Save status for booking ${booking.reservation_id}`}
+                    disabled={savingId === booking.reservation_id}
+                    onClick={() => void saveStatus(booking.reservation_id, booking.status)}
+                    className="btn-table-action"
+                  >
+                    <Save size={13} />
+                  </button>
+                </div>
+              </td>
             </tr>
           ))}
         </tbody>
       </table>
     )}
-  </div>
-);
+  </div>;
+};

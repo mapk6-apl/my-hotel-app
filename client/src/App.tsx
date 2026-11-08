@@ -124,6 +124,15 @@ export const App: React.FC = () => {
     }
   }, [dispatch, token, user, loading]);
 
+  useEffect(() => {
+    const handleAppToast = (event: Event) => {
+      const { message, type } = (event as CustomEvent<{ message: string; type: ToastType }>).detail;
+      setToastState({ message, type, isOpen: true });
+    };
+    window.addEventListener('app-toast', handleAppToast);
+    return () => window.removeEventListener('app-toast', handleAppToast);
+  }, []);
+
   const showToast = (message: string, type: ToastType = 'success') => {
     setToastState({ message, type, isOpen: true });
   };
@@ -144,7 +153,6 @@ export const App: React.FC = () => {
               element={
                 <LandingPage
                   onOpenAuthModal={() => setIsAuthOpen(true)}
-                  onSelectHotel={(id) => { window.location.href = `/hotel/${id}`; }}
                 />
               }
             />
@@ -155,7 +163,6 @@ export const App: React.FC = () => {
               element={
                 <ExplorePage
                   onOpenAuthModal={() => setIsAuthOpen(true)}
-                  onSelectHotel={(id) => { window.location.href = `/hotel/${id}`; }}
                 />
               }
             />
@@ -176,7 +183,6 @@ export const App: React.FC = () => {
               element={
                 <FavoritesPage
                   onOpenAuthModal={() => setIsAuthOpen(true)}
-                  onSelectHotel={(id) => { window.location.href = `/hotel/${id}`; }}
                 />
               }
             />
@@ -187,7 +193,6 @@ export const App: React.FC = () => {
               element={
                 <HotelDetailsPage
                   onOpenAuthModal={() => setIsAuthOpen(true)}
-                  onNavigateToCheckout={() => { window.location.href = '/checkout'; }}
                 />
               }
             />
@@ -222,6 +227,7 @@ export const App: React.FC = () => {
                 <ProtectedRoute adminOnly={true}>
                   <AdminDashboardPage
                     onNavigateHome={() => { window.location.href = '/'; }}
+                    onNotify={showToast}
                   />
                 </ProtectedRoute>
               }

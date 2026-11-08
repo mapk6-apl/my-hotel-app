@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Star, MessageSquare } from 'lucide-react'; 
 import '../../styles/screen3.css';
 
@@ -13,13 +13,20 @@ export type ReviewsSectionProps = {
   reviews: HotelReview[];
 };
 
-export const ReviewsSection: React.FC<ReviewsSectionProps> = ({ reviews }) => {
+export const getAverageReviewRating = (reviews: HotelReview[]): number | null => {
   const ratings = reviews
+    .filter((review) => review.rating !== null && review.rating !== '')
     .map((review) => Number(review.rating))
-    .filter((rating) => Number.isFinite(rating));
-  const averageRating = ratings.length > 0
-    ? (ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length).toFixed(1)
+    .filter((rating) => Number.isFinite(rating) && rating >= 0 && rating <= 5);
+  return ratings.length > 0
+    ? ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length
     : null;
+};
+
+export const ReviewsSection: React.FC<ReviewsSectionProps> = ({ reviews }) => {
+  const [showAllReviews, setShowAllReviews] = useState(false);
+  const averageRating = getAverageReviewRating(reviews)?.toFixed(1) ?? null;
+  const visibleReviews = showAllReviews ? reviews : reviews.slice(0, 3);
 
   return (
     <div className="info-section-card">
@@ -41,10 +48,10 @@ export const ReviewsSection: React.FC<ReviewsSectionProps> = ({ reviews }) => {
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
         {reviews.length === 0 ? (
           <p>No guest reviews are available for this property.</p>
-        ) : reviews.map((review) => {
+        ) : visibleReviews.map((review) => {
           const rating = Number(review.rating);
           return (
-            <div key={review.id} style={{ backgroundColor: 'rgba(255, 255, 255, 0.7)', padding: '1rem', borderRadius: '12px', border: '1px solid rgba(81, 75, 35, 0.1)' }}>
+            <div key={review.id} className="property-review">
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
                 <span style={{ fontWeight: 800, fontSize: '0.8125rem' }}>{review.guest_name || 'Guest'}</span>
                 <div style={{ display: 'flex', gap: '0.1rem' }}>
@@ -62,6 +69,11 @@ export const ReviewsSection: React.FC<ReviewsSectionProps> = ({ reviews }) => {
           );
         })}
       </div>
+      {reviews.length > 3 && (
+        <button type="button" className="read-reviews-button" onClick={() => setShowAllReviews((show) => !show)}>
+          {showAllReviews ? 'Show fewer reviews' : `Read all ${reviews.length} reviews`}
+        </button>
+      )}
     </div>
   );
 };

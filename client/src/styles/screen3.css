@@ -297,10 +297,7 @@
 }
 
 .info-section-card {
-  background-color: rgba(203, 208, 185, 0.4);
-  border: 1px solid rgba(81, 75, 35, 0.15);
-  border-radius: 16px;
-  padding: 1.5rem;
+  padding: 0;
   margin-bottom: 2rem;
 }
 
@@ -338,10 +335,41 @@
   font-size: 0.8125rem;
   font-weight: 700;
   color: var(--dark-khaki);
-  background-color: rgba(255, 255, 255, 0.7);
-  padding: 0.65rem 0.85rem;
-  border-radius: 10px;
-  border: 1px solid rgba(81, 75, 35, 0.1);
+  padding: 0.25rem 0;
+}
+
+.property-map-link,
+.read-reviews-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--dark-khaki);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 0.2rem;
+}
+
+.property-review {
+  padding: 1rem 0;
+  border-bottom: 1px solid rgba(81, 75, 35, 0.15);
+}
+
+.read-reviews-button {
+  margin-top: 1rem;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  font: inherit;
+}
+
+.gallery-empty-state {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  min-height: 20rem;
+  color: var(--dark-khaki);
+  background: rgba(203, 208, 185, 0.2);
 }
 
 /* STICKY BOOKING CARD */

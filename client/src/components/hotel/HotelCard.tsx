@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Heart, Star, MapPin } from 'lucide-react';
 import { toggleFavoriteLocal, type Hotel } from '../../store/slices/hotelSlice.js';
 import { type RootState } from '../../store/store.js';
-import { getFallbackSvgDataUri } from '../../api/photoApi.js';
+import { getFallbackSvgDataUri, normalizePropertyImageUrl } from '../../api/photoApi.js';
 import '../../styles/screen1.css';
 
 export type HotelCardProps = {
@@ -24,7 +24,7 @@ export const HotelCard: React.FC<HotelCardProps> = ({ hotel, onViewDetails }) =>
       {/* CAROUSEL IMAGE CONTAINER */}
       <div className="card-image-wrapper">
         <img
-          src={hotel.hero_image || placeholderImage}
+          src={hotel.hero_image ? normalizePropertyImageUrl(hotel.hero_image) : placeholderImage}
           alt={hotel.name}
           className="card-image"
           onError={(e) => {
@@ -46,11 +46,13 @@ export const HotelCard: React.FC<HotelCardProps> = ({ hotel, onViewDetails }) =>
             dispatch(toggleFavoriteLocal(hotel.id));
           }}
           className="favorite-toggle-btn"
+          aria-pressed={isFavorite}
           title={isFavorite ? 'Remove from Favorites' : 'Add to Favorites'}
         >
           <Heart
             size={16}
-            className={isFavorite ? 'fill-red-500 text-red-500' : 'text-gray-600'}
+            fill={isFavorite ? '#f43f5e' : 'none'}
+            color={isFavorite ? '#f43f5e' : '#4b5563'}
           />
         </button>
 

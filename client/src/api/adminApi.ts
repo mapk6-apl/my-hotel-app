@@ -20,10 +20,10 @@ export interface AdminBooking {
   payment_status: string;
   status: string;
   created_at: string;
-  guest_name: string;
-  guest_email: string;
-  hotel_name: string;
-  room_type: string;
+  guest_name: string | null;
+  guest_email: string | null;
+  hotel_name: string | null;
+  room_type: string | null;
 }
 
 export interface AdminStatistics {
@@ -51,6 +51,8 @@ export interface AccommodationPayload {
   description: string;
   starting_price: number;
   star_rating: number;
+  room_type: string;
+  capacity: number;
   hero_image?: string;
 }
 
@@ -87,6 +89,11 @@ export const adminApi = {
   //Fetches all guest reservations from the existing admin bookings endpoint.
   getAllReservations: async (): Promise<ApiListResponse<AdminBooking>> => {
     const response = await axiosClient.get<ApiListResponse<AdminBooking>>('/admin/bookings');
+    return response.data;
+  },
+
+  updateBookingStatus: async (id: number, status: string) => {
+    const response = await axiosClient.patch(`/admin/bookings/${id}/status`, { status });
     return response.data;
   },
 };

@@ -3,6 +3,13 @@ export interface HotelPhotoSet {
   gallery: string[];
 }
 
+export const normalizePropertyImageUrl = (url: string): string => {
+  const imageUrl = url.trim();
+  return imageUrl && !/^(?:[a-z][a-z\d+.-]*:|\/)/i.test(imageUrl)
+    ? `/${imageUrl}`
+    : imageUrl;
+};
+
 const DOMAIN = 'images.' + 'unsplash' + '.com';
 const BASE_URL = 'https://' + DOMAIN + '/';
 

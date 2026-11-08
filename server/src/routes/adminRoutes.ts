@@ -1,7 +1,14 @@
 import { Router } from 'express'; 
 import { authenticateToken } from '../middleware/authMiddleware.js'; 
 import { requireAdmin } from '../middleware/adminMiddleware.js'; 
-import { getAdminStats, getAllAdminBookings, updateBookingStatus, createHotelBranch, } from '../controllers/adminController.js';
+import {
+    getAdminStats,
+    getAllAdminBookings,
+    updateBookingStatus,
+    createHotelBranch,
+    updateHotelBranch,
+    deleteHotelBranch,
+} from '../controllers/adminController.js';
 
 const router = Router(); 
 
@@ -12,5 +19,7 @@ router.get('/stats', getAdminStats as any);
 router.get('/bookings', getAllAdminBookings as any); 
 router.patch('/bookings/:id/status', updateBookingStatus as any); 
 router.post('/hotels', createHotelBranch as any); 
+router.put('/hotels/:id', updateHotelBranch as any);
+router.delete('/hotels/:id', deleteHotelBranch as any);
 
 export default router;

@@ -1,89 +1,68 @@
 import React from 'react';
 import { Navbar } from '../components/common/Navbar.js';
 import { Footer } from '../components/common/Footer.js';
-import { Building2, ShieldCheck, Award, MapPin, Phone, Mail, Clock } from 'lucide-react';
+import { ArrowRight, Building2 } from 'lucide-react';
 import '../styles/screen1.css';
 
 export type AboutPageProps = {
   onOpenAuthModal: () => void;
 };
 
-export const AboutPage: React.FC<AboutPageProps> = ({ onOpenAuthModal }) => {
-  return (
-    <div className="page-container">
-      <Navbar onOpenAuthModal={onOpenAuthModal} />
+export const AboutPage: React.FC<AboutPageProps> = ({ onOpenAuthModal }) => (
+  <div className="page-container">
+    <Navbar onOpenAuthModal={onOpenAuthModal} />
 
-      <header className="hero-header" style={{ padding: '3rem 1.5rem', textAlign: 'center' }}>
-        <div className="hero-badge" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', backgroundColor: '#656839', padding: '0.35rem 0.85rem', borderRadius: '9999px', fontSize: '0.75rem', fontWeight: 700, color: '#F4F9E9', marginBottom: '0.75rem' }}>
-          <Building2 size={14} />
-          <span>ABOUT BREAK-AWAY HOTELS</span>
+    <header className="about-page-header">
+      <div className="hero-badge">
+        <Building2 size={14} />
+        <span>ABOUT BREAK-AWAY HOTELS</span>
+      </div>
+      <h1 className="hero-title">A clearer way to plan your next stay.</h1>
+      <p className="hero-subtitle">
+        Explore South African properties with the details you need to choose a stay that suits your trip.
+      </p>
+    </header>
+
+    <main className="about-page-content">
+      <section className="about-intro">
+        <div>
+          <span className="about-eyebrow">THE EXPERIENCE</span>
+          <h2>Make the important details easy to find.</h2>
         </div>
-        <h1 className="hero-title">Premier Lodging Network</h1>
-        <p className="hero-subtitle">
-          Connecting travelers to luxury accommodations, boutique stays, and safari resorts in South Africa.
+        <p>
+          Browse accommodation listings, compare available room rates, and review each property's
+          location, amenities, images, and guest feedback where available. Information is shown
+          from the property's current listing rather than a sample catalogue.
         </p>
-      </header>
+      </section>
 
-      <main className="main-content-layout" style={{ maxWidth: '1100px', margin: '0 auto', padding: '3rem 1.5rem' }}>
-        {/* BRAND MISSION & VISION */}
-        <section style={{ backgroundColor: '#CBD0B9', padding: '2.5rem', borderRadius: '20px', border: '1px solid rgba(81,75,35,0.2)', marginBottom: '2.5rem' }}>
-          <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#514B23', marginBottom: '1rem' }}>Our Story & Mission</h2>
-          <p style={{ fontSize: '0.95rem', lineHeight: '1.6', color: '#514B23', opacity: 0.9, marginBottom: '1rem' }}>
-            Founded in South Africa, Break-Away Hotels & Resorts provides travelers with a seamless online reservation platform designed to explore curated accommodations—from executive suites in Polokwane and waterfront resorts in Cape Town to safari lodges near Kruger National Park.
-          </p>
-          <p style={{ fontSize: '0.95rem', lineHeight: '1.6', color: '#514B23', opacity: 0.9 }}>
-            Our platform guarantees transparent ZAR (R) pricing, verified traveler reviews, interactive location mapping, and secure instant bookings.
-          </p>
-        </section>
-
-        {/* CORE PROPOSITIONS GRID */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem', marginBottom: '3rem' }}>
-          <div style={{ backgroundColor: '#CBC9AD', padding: '1.75rem', borderRadius: '16px', border: '1px solid rgba(81,75,35,0.15)' }}>
-            <ShieldCheck size={28} color="#656839" style={{ marginBottom: '0.75rem' }} />
-            <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#514B23', marginBottom: '0.5rem' }}>Best Price Guarantee</h3>
-            <p style={{ fontSize: '0.85rem', color: '#514B23', opacity: 0.85, lineHeight: '1.5' }}>
-              Direct rates with zero hidden fees. What you see on our booking card is what you pay.
-            </p>
-          </div>
-
-          <div style={{ backgroundColor: '#CBC9AD', padding: '1.75rem', borderRadius: '16px', border: '1px solid rgba(81,75,35,0.15)' }}>
-            <Award size={28} color="#656839" style={{ marginBottom: '0.75rem' }} />
-            <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#514B23', marginBottom: '0.5rem' }}>Verified Properties</h3>
-            <p style={{ fontSize: '0.85rem', color: '#514B23', opacity: 0.85, lineHeight: '1.5' }}>
-              Every hotel listing undergoes quality checks for guest comfort, cleanliness, and security.
-            </p>
-          </div>
-
-          <div style={{ backgroundColor: '#CBC9AD', padding: '1.75rem', borderRadius: '16px', border: '1px solid rgba(81,75,35,0.15)' }}>
-            <Clock size={28} color="#656839" style={{ marginBottom: '0.75rem' }} />
-            <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: '#514B23', marginBottom: '0.5rem' }}>Instant Confirmation</h3>
-            <p style={{ fontSize: '0.85rem', color: '#514B23', opacity: 0.85, lineHeight: '1.5' }}>
-              Reservations update instantly in your member profile dashboard with digital booking vouchers.
-            </p>
-          </div>
+      <section className="about-planning" aria-label="Planning a reservation">
+        <h2>Plan with confidence</h2>
+        <div className="about-planning-steps">
+          <article>
+            <span>01</span>
+            <h3>Find a property</h3>
+            <p>Search by destination and narrow the catalogue by your preferred price and rating.</p>
+          </article>
+          <article>
+            <span>02</span>
+            <h3>Review your stay</h3>
+            <p>Choose an available room and check the dates, guest capacity, and current nightly rate.</p>
+          </article>
+          <article>
+            <span>03</span>
+            <h3>Save a reservation</h3>
+            <p>Your reservation is recorded with its status. Online payment is not currently available.</p>
+          </article>
         </div>
+      </section>
 
-        {/* CONTACT & HEADQUARTERS */}
-        <section style={{ backgroundColor: '#514B23', color: '#F4F9E9', padding: '2.5rem', borderRadius: '20px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#ffffff' }}>Customer Support & Operations</h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem', fontSize: '0.875rem' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <MapPin size={18} color="#BDDBD0" />
-              <span>Polokwane & Johannesburg, South Africa</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <Phone size={18} color="#BDDBD0" />
-              <span>+27 (0) 15 290 1000</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <Mail size={18} color="#BDDBD0" />
-              <span>support@breakawayhotels.co.za</span>
-            </div>
-          </div>
-        </section>
-      </main>
+      <a href="/explore" className="about-explore-link">
+        <span>Explore properties</span>
+        <ArrowRight size={17} />
+      </a>
+    </main>
 
-      <Footer />
-    </div>
-  );
-};
+    <Footer />
+  </div>
+);

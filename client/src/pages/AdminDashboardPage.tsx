@@ -1,7 +1,11 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import axios from 'axios';
-import { Building, Calendar, Users, Home, ShieldCheck } from 'lucide-react';
+import { useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+import { Building, Calendar, Users, Home, ShieldCheck, LogOut } from 'lucide-react';
 import { adminApi, type AdminAccommodation, type AdminBooking, type AdminStatistics } from '../api/adminApi.js';
+import { logout } from '../store/slices/authSlice.js';
+import type { AppDispatch } from '../store/store.js';
 import { PropertiesTable } from '../components/admin/PropertiesTable.js';
 import { ReservationsTable } from '../components/admin/ReservationsTable.js';
 import { AccommodationModal } from '../components/admin/AccommodationModal.js';
@@ -9,11 +13,17 @@ import '../styles/screen6.css';
 
 export type AdminDashboardPageProps = {
   onNavigateHome: () => void;
+  onNotify: (message: string, type: 'success' | 'error') => void;
 };
 
-export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNavigateHome }) => {
+export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNavigateHome, onNotify }) => {
+  const dispatch = useDispatch<AppDispatch>();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'properties' | 'reservations'>('properties');
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [editingProperty, setEditingProperty] = useState<AdminAccommodation | null>(null);
+  const [propertyToDelete, setPropertyToDelete] = useState<AdminAccommodation | null>(null);
+  const [deletingProperty, setDeletingProperty] = useState(false);
   const [statistics, setStatistics] = useState<AdminStatistics | null>(null);
   const [statisticsLoading, setStatisticsLoading] = useState(true);
   const [statisticsError, setStatisticsError] = useState<string | null>(null);
@@ -23,6 +33,14 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNaviga
   const [bookings, setBookings] = useState<AdminBooking[]>([]);
   const [bookingsLoading, setBookingsLoading] = useState(true);
   const [bookingsError, setBookingsError] = useState<string | null>(null);
+  const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
+
+  const confirmLogout = () => {
+    dispatch(logout());
+    setIsLogoutConfirmOpen(false);
+    onNotify('You have been signed out.', 'success');
+    navigate('/', { replace: true });
+  };
 
   const getRequestError = (error: unknown, fallback: string): string => {
     if (axios.isAxiosError<{ error?: string }>(error)) {
@@ -79,6 +97,44 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNaviga
     }
   }, []);
 
+  const saveBookingStatus = async (reservationId: number, status: string) => {
+    try {
+      await adminApi.updateBookingStatus(reservationId, status);
+      onNotify(`Reservation #${reservationId} updated to ${status}.`, 'success');
+      await loadBookings();
+    } catch (error: unknown) {
+      onNotify(getRequestError(error, 'Unable to update reservation status.'), 'error');
+    }
+  };
+
+  const confirmDeleteProperty = async () => {
+    if (!propertyToDelete) return;
+    setDeletingProperty(true);
+    try {
+      await adminApi.deleteAccommodation(propertyToDelete.id);
+      onNotify(`${propertyToDelete.name} deleted.`, 'success');
+      setPropertyToDelete(null);
+      await Promise.all([loadProperties(), loadStatistics()]);
+    } catch (error: unknown) {
+      onNotify(getRequestError(error, 'Unable to delete property.'), 'error');
+    } finally {
+      setDeletingProperty(false);
+    }
+  };
+
+  const openAddProperty = () => {
+    setEditingProperty(null);
+    setIsModalOpen(true);
+  };
+
+  const openEditProperty = (id: number) => {
+    const property = properties.find((item) => item.id === id);
+    if (property) {
+      setEditingProperty(property);
+      setIsModalOpen(true);
+    }
+  };
+
   useEffect(() => {
     void loadStatistics();
     void loadProperties();
@@ -122,6 +178,10 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNaviga
         </button>
 
         <div style={{ marginTop: 'auto', paddingTop: '1rem', borderTop: '1px solid rgba(255, 255, 255, 0.1)' }}>
+          <button onClick={() => setIsLogoutConfirmOpen(true)} className="admin-sidebar-link">
+            <LogOut size={18} />
+            <span>Sign out</span>
+          </button>
           <button onClick={onNavigateHome} className="admin-sidebar-link">
             <Home size={18} />
             <span>Public Site Home</span>
@@ -198,9 +258,12 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNaviga
             loading={propertiesLoading}
             error={propertiesError}
             onRetry={() => void loadProperties()}
-            onOpenAddModal={() => setIsModalOpen(true)}
-            onEditProperty={(id: number) => alert(`Edit property #${id}`)}
-            onDeleteProperty={(id: number) => alert(`Delete property #${id}`)}
+            onOpenAddModal={openAddProperty}
+            onEditProperty={openEditProperty}
+            onDeleteProperty={(id) => {
+              const property = properties.find((item) => item.id === id);
+              if (property) setPropertyToDelete(property);
+            }}
           />
         ) : (
           <ReservationsTable
@@ -208,16 +271,54 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNaviga
             loading={bookingsLoading}
             error={bookingsError}
             onRefresh={() => void loadBookings()}
+            onUpdateStatus={saveBookingStatus}
           />
         )}
 
         {/* 3. Add Property Modal */}
         <AccommodationModal
           isOpen={isModalOpen}
+          property={editingProperty}
           onClose={() => setIsModalOpen(false)}
+          onSaved={() => {
+            setIsModalOpen(false);
+            void Promise.all([loadProperties(), loadStatistics()]);
+          }}
+          onNotify={onNotify}
         />
 
       </main>
+
+      {propertyToDelete && (
+        <div className="auth-modal-overlay" role="presentation">
+          <section className="auth-modal-card" role="dialog" aria-modal="true" aria-labelledby="delete-property-title">
+            <h2 id="delete-property-title" className="auth-title">Delete property?</h2>
+            <p>
+              Delete <strong>{propertyToDelete.name}</strong>? Properties with reservation history cannot be deleted.
+            </p>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
+              <button type="button" className="btn-reset" onClick={() => setPropertyToDelete(null)} disabled={deletingProperty}>
+                Keep property
+              </button>
+              <button type="button" className="btn-search-submit" onClick={() => void confirmDeleteProperty()} disabled={deletingProperty}>
+                {deletingProperty ? 'Checking…' : 'Delete property'}
+              </button>
+            </div>
+          </section>
+        </div>
+      )}
+      {isLogoutConfirmOpen && (
+        <div className="auth-modal-overlay" role="presentation">
+          <section className="auth-modal-card" role="dialog" aria-modal="true" aria-labelledby="admin-logout-title">
+            <h2 id="admin-logout-title" className="auth-title">Sign out?</h2>
+            <p className="auth-subtitle">You can sign in again at any time.</p>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
+              <button type="button" className="btn-reset" onClick={() => setIsLogoutConfirmOpen(false)}>Stay signed in</button>
+              <button type="button" className="btn-search-submit" onClick={confirmLogout}>Sign out</button>
+            </div>
+          </section>
+        </div>
+      )}
 
     </div>
   );

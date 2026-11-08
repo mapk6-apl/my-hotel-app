@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Maximize2, X, ChevronLeft, ChevronRight, ArrowLeft } from 'lucide-react';
+import { normalizePropertyImageUrl } from '../../api/photoApi.js';
 import '../../styles/screen3.css';
 
 export type PhotoGalleryProps = {
@@ -11,13 +12,16 @@ export const PhotoGallery: React.FC<PhotoGalleryProps> = ({
   images = [],
   hotelName = 'Break-Away Hotel',
 }) => {
-  const galleryImages = images && images.length > 0 ? images : [];
+  const galleryImages = images?.map(normalizePropertyImageUrl) ?? [];
 
   const [currentIndex, setCurrentIndex] = useState<number>(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState<boolean>(false);
 
-  const heroImage = galleryImages[currentIndex] || galleryImages[0] || '/assets/hotel-placeholder.jpg';
-  const sideThumbnails = galleryImages.slice(0, 4);
+  const heroImage = galleryImages[currentIndex] || galleryImages[0];
+  const sideThumbnails = galleryImages
+    .map((image, index) => ({ image, index }))
+    .filter(({ index }) => index !== currentIndex)
+    .slice(0, 4);
 
   const handleNext = () => {
     if (galleryImages.length === 0) return;
@@ -36,37 +40,39 @@ export const PhotoGallery: React.FC<PhotoGalleryProps> = ({
         {/* MAIN HERO FEATURED IMAGE */}
         <div
           className="gallery-hero-image-wrapper"
-          onClick={() => setIsLightboxOpen(true)}
+          onClick={() => galleryImages.length > 0 && setIsLightboxOpen(true)}
         >
-          <img
-            src={heroImage}
-            alt={hotelName + ' Hero View'}
-            className="gallery-hero-image"
-          />
-          <button
-            type="button"
-            className="gallery-expand-btn"
-            onClick={(e) => {
-              e.stopPropagation();
-              setIsLightboxOpen(true);
-            }}
-          >
-            <Maximize2 size={14} />
-            <span>View Fullscreen Gallery ({galleryImages.length})</span>
-          </button>
+          {heroImage ? (
+            <img src={heroImage} alt={hotelName + ' Hero View'} className="gallery-hero-image" />
+          ) : (
+            <div className="gallery-empty-state">No property images are available.</div>
+          )}
+          {galleryImages.length > 0 && (
+            <button
+              type="button"
+              className="gallery-expand-btn"
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsLightboxOpen(true);
+              }}
+            >
+              <Maximize2 size={14} />
+              <span>View Fullscreen Gallery ({galleryImages.length})</span>
+            </button>
+          )}
         </div>
 
         {/* THUMBNAIL GRID (4 Sub-photos) */}
         <div className="gallery-thumbs-grid">
-          {sideThumbnails.map((imgUrl, idx) => (
+          {sideThumbnails.map(({ image: imgUrl, index }) => (
             <div
-              key={idx}
-              className={'gallery-thumb-item ' + (currentIndex === idx ? 'active-thumb' : '')}
-              onClick={() => setCurrentIndex(idx)}
+              key={index}
+              className="gallery-thumb-item"
+              onClick={() => setCurrentIndex(index)}
             >
               <img
                 src={imgUrl}
-                alt={hotelName + ' Room Photo ' + (idx + 1)}
+                alt={hotelName + ' Room Photo ' + (index + 1)}
                 className="gallery-thumb-image"
               />
             </div>

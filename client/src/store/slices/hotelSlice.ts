@@ -37,7 +37,19 @@ const initialState: HotelState = {
         maxPrice: '',
         starRating: '',
     },
-    favorites: [],
+    favorites: (() => {
+        const stored = localStorage.getItem('favorite-property-ids');
+        if (!stored) return [];
+        try {
+            const parsed: unknown = JSON.parse(stored);
+            return Array.isArray(parsed)
+                ? parsed.filter((id): id is number => Number.isInteger(id) && id > 0)
+                : [];
+        } catch {
+            localStorage.removeItem('favorite-property-ids');
+            return [];
+        }
+    })(),
     loading: false,
     error: null,
 };
@@ -102,6 +114,7 @@ const hotelSlice = createSlice({
             } else {
                 state.favorites.push(hotelId);
             }
+            localStorage.setItem('favorite-property-ids', JSON.stringify(state.favorites));
         },
     },
 extraReducers: (builder) => { 

@@ -13,14 +13,34 @@ export const createBooking = async (req: AuthenticatedRequest, res: Response): P
             return;
         }
 
-        if (!roomId || !checkIn || !checkOut || !guestCount) {
+        const parsedRoomId = Number(roomId);
+        const parsedGuestCount = Number(guestCount);
+        if (
+            !Number.isInteger(parsedRoomId) || parsedRoomId <= 0 ||
+            !Number.isInteger(parsedGuestCount) || parsedGuestCount <= 0 ||
+            typeof checkIn !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(checkIn) ||
+            typeof checkOut !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(checkOut)
+        ) {
             res.status(400).json({ error: 'Missing required booking fields (roomId, checkIn, checkOut, guestCount)' });
+            return;
+        }
+
+        const startDate = new Date(`${checkIn}T00:00:00.000Z`);
+        const endDate = new Date(`${checkOut}T00:00:00.000Z`);
+        if (
+            !Number.isFinite(startDate.getTime()) ||
+            !Number.isFinite(endDate.getTime()) ||
+            startDate.toISOString().slice(0, 10) !== checkIn ||
+            endDate.toISOString().slice(0, 10) !== checkOut ||
+            endDate <= startDate
+        ) {
+            res.status(400).json({ error: 'Check-in and check-out must be valid dates, and check-out must be later.' });
             return;
         }
 
         // 1.Fetch room details and price per night in ZAR 
         const roomQuery = 'SELECT price_per_night, capacity, is_available FROM rooms WHERE id = $1';
-        const roomResult = await pool.query(roomQuery, [roomId]);
+        const roomResult = await pool.query(roomQuery, [parsedRoomId]);
 
         if (roomResult.rows.length === 0) { 
             res.status(404).json({ error: 'Selected room category does not exist' }); 
@@ -34,18 +54,16 @@ export const createBooking = async (req: AuthenticatedRequest, res: Response): P
             return; 
         } 
         
-        if (guestCount > room.capacity) { 
+        if (parsedGuestCount > room.capacity) {
             res.status(400).json({ error: `Guest count exceeds maximum room capacity of ${room.capacity}` }); 
             return; 
         }
 
         // 2. Calculate stay duration in nights 
-        const startDate = new Date(checkIn); 
-        const endDate = new Date(checkOut); 
-        const diffTime = endDate.getTime() - startDate.getTime(); 
-        const nights = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); //
+        const diffTime = endDate.getTime() - startDate.getTime();
+        const nights = Math.round(diffTime / (1000 * 60 * 60 * 24));
         
-        if (nights <= 0) { 
+        if (!Number.isFinite(nights) || nights <= 0) {
             res.status(400).json({ error: 'Check-out date must be greater than check-in date' }); 
             return; 
         }
@@ -54,11 +72,41 @@ export const createBooking = async (req: AuthenticatedRequest, res: Response): P
         const totalAmount = (nights * Number(room.price_per_night)).toFixed(2);
 
         //4. Insert reservation into PostgreSQL 
-        const insertQuery = ` INSERT INTO reservations (user_id, room_id, check_in, check_out, guest_count, total_amount, payment_status, status) 
-        VALUES ($1, $2, $3, $4, $5, $6, 'pending', 'approved') 
-        RETURNING * `; 
+        const insertQuery = `
+        WITH new_reservation AS (
+            INSERT INTO reservations
+                (user_id, room_id, check_in, check_out, guest_count, total_amount, payment_status, status)
+            VALUES ($1, $2, $3, $4, $5, $6, 'pending', 'pending')
+            RETURNING *
+        )
+        SELECT
+            nr.id AS reservation_id,
+            nr.check_in,
+            nr.check_out,
+            nr.guest_count,
+            nr.total_amount,
+            nr.payment_status,
+            nr.status,
+            nr.created_at,
+            u.full_name AS guest_name,
+            u.email AS guest_email,
+            r.room_type,
+            r.price_per_night,
+            a.id AS accommodation_id,
+            a.name AS hotel_name,
+            a.city,
+            (SELECT image_url FROM accommodation_images
+             WHERE accommodation_id = a.id AND is_hero = true
+             ORDER BY id ASC LIMIT 1) AS hero_image
+        FROM new_reservation nr
+        JOIN users u ON nr.user_id = u.id
+        JOIN rooms r ON nr.room_id = r.id
+        JOIN accommodations a ON r.accommodation_id = a.id
+        `;
         
-        const newBooking = await pool.query(insertQuery, [ userId, roomId, checkIn, checkOut, guestCount, totalAmount, ]); 
+        const newBooking = await pool.query(insertQuery, [
+            userId, parsedRoomId, checkIn, checkOut, parsedGuestCount, totalAmount,
+        ]);
         res.status(201).json({ 
             success: true, 
             message: 'Reservation created successfully!', 
@@ -80,7 +128,7 @@ export const getUserBookings = async (req: AuthenticatedRequest, res: Response):
             return;
         }
 
-        const bookingsQuery = ` SELECT 
+        const bookingsQuery = ` SELECT
         res.id AS reservation_id, 
         res.check_in, res.check_out, 
         res.guest_count, 
@@ -89,17 +137,20 @@ export const getUserBookings = async (req: AuthenticatedRequest, res: Response):
         res.status, 
         res.created_at, 
         r.room_type, 
-        r.price_per_night, 
+        r.price_per_night,
+        guest.full_name AS guest_name,
+        guest.email AS guest_email,
         acc.id AS accommodation_id, 
         acc.name AS hotel_name, 
-        acc.city, 
-        acc.address, 
-        img.image_url AS hero_image 
+        acc.city,
+        acc.address,
+        (SELECT image_url FROM accommodation_images
+         WHERE accommodation_id = acc.id AND is_hero = true
+         ORDER BY id ASC LIMIT 1) AS hero_image
         FROM reservations res 
         JOIN rooms r ON res.room_id = r.id 
         JOIN accommodations acc ON r.accommodation_id = acc.id 
-        LEFT JOIN accommodation_images img ON acc.id = img.accommodation_id 
-        AND img.is_hero = true 
+        JOIN users guest ON res.user_id = guest.id
         WHERE res.user_id = $1 
         ORDER BY res.created_at DESC `; 
         
@@ -146,4 +197,3 @@ export const cancelBooking = async (req: AuthenticatedRequest, res: Response): P
         res.status(500).json({ error: 'Failed to cancel reservation' });
     }
 };
-

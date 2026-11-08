@@ -7,6 +7,7 @@ export interface UserProfile {
     full_name: string; 
     avatar_url: string; 
     role: 'guest' | 'admin'; 
+    phone?: string | null;
 } 
 
 export interface AuthState { 
