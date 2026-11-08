@@ -1,4 +1,5 @@
 import { createSlice, createAsyncThunk, type PayloadAction } from '@reduxjs/toolkit';
+import { API_BASE_URL } from '../../api/axiosClient.js';
 
 export interface Hotel {
     id: number;
@@ -41,7 +42,7 @@ const initialState: HotelState = {
     error: null,
 };
 
-// Async Thunk: Fetch filtered hotel listings from backend (Port 5001)
+// Async Thunk: Fetch filtered hotel listings from the backend
 export const fetchHotels = createAsyncThunk(
     'hotels/fetchHotels',
     async (filters: SearchFilters, { rejectWithValue }) => {
@@ -52,7 +53,7 @@ export const fetchHotels = createAsyncThunk(
             if (filters.maxPrice) params.append('maxPrice', String(filters.maxPrice));
             if (filters.starRating) params.append('starRating', String(filters.starRating));
 
-            const response = await fetch(`http://localhost:5001/api/hotels?${params.toString()}`);
+            const response = await fetch(`${API_BASE_URL}/hotels?${params.toString()}`);
             const data = await response.json() as { error?: string; data: Hotel[] };
 
             if (!response.ok) throw new Error(data.error || 'Failed to fetch hotels');
@@ -68,7 +69,7 @@ const fetchHotelById = createAsyncThunk(
     'hotels/fetchHotelById',
     async (id: number, { rejectWithValue }) => {
         try {
-            const response = await fetch(`http://localhost:5001/api/hotels/${id}`);
+            const response = await fetch(`${API_BASE_URL}/hotels/${id}`);
             const data = await response.json() as { error?: string; data: Hotel };
 
             if (!response.ok) throw new Error(data.error || 'Hotel not found');

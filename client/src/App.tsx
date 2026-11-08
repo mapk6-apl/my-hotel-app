@@ -19,6 +19,7 @@ import { AdminDashboardPage } from './pages/AdminDashboardPage.js';
 import { AuthModal } from './components/common/AuthModal.js';
 import { ProtectedRoute } from './components/common/ProtectedRoute.js';
 import { Toast, type ToastType } from './components/common/Toast.js';
+import { API_BASE_URL } from './api/axiosClient.js';
 
 const GoogleAuthCallbackPage: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -44,7 +45,7 @@ const GoogleAuthCallbackPage: React.FC = () => {
 
     const completeGoogleSignIn = async () => {
       try {
-        const response = await fetch('http://localhost:5001/api/auth/google/exchange', {
+        const response = await fetch(`${API_BASE_URL}/auth/google/exchange`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ code }),

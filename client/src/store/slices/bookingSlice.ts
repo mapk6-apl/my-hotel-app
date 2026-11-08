@@ -1,4 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { API_BASE_URL } from '../../api/axiosClient.js';
 
 export interface Booking {
     reservation_id: number;
@@ -40,7 +41,7 @@ export const createReservation = createAsyncThunk(
         { rejectWithValue }) => {
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch('http://localhost:5001/api/bookings', {
+            const response = await fetch(`${API_BASE_URL}/bookings`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -64,7 +65,7 @@ export const fetchUserBookings = createAsyncThunk(
     async (_, { rejectWithValue }) => {
         try {
             const token = localStorage.getItem('token');
-            const response = await fetch('http://localhost:5001/api/bookings/my-bookings', {
+            const response = await fetch(`${API_BASE_URL}/bookings/my-bookings`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
             const data = await response.json() as { error?: string; data: Booking[] };

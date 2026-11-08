@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { setToken, setUser } from '../../store/slices/authSlice.js';
 import { X, Sparkles, User, Mail, Lock } from 'lucide-react';
+import { API_BASE_URL } from '../../api/axiosClient.js';
 import '../../styles/screen2.css';
 
 export type AuthModalProps = {
@@ -74,8 +75,8 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onShowToa
     setLoading(true);
 
     const endpoint = isSignUp
-      ? 'http://localhost:5001/api/auth/register'
-      : 'http://localhost:5001/api/auth/login';
+      ? `${API_BASE_URL}/auth/register`
+      : `${API_BASE_URL}/auth/login`;
 
     const payload = isSignUp
       ? { email, password, full_name: fullName }
@@ -135,7 +136,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onShowToa
   };
 
   const handleGoogleSignIn = () => {
-    window.location.assign('http://localhost:5001/api/auth/google');
+    window.location.assign(`${API_BASE_URL}/auth/google`);
   };
 
   const handleAppleSignIn = () => {
