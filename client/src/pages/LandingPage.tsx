@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import { Navbar } from '../components/common/Navbar.js';
 import { HotelCard } from '../components/hotel/HotelCard.js';
 import { Footer } from '../components/common/Footer.js';
 import { setFilters } from '../store/slices/hotelSlice.js';
 import type { AppDispatch } from '../store/store.js';
-import { MASTER_SOUTH_AFRICAN_HOTELS } from '../data/hotelData.js';
+import { hotelApi } from '../api/hotelApi.js';
+import type { Hotel } from '../store/slices/hotelSlice.js';
 import { Search, MapPin, Calendar, Users, Sparkles, ShieldCheck, Award, Clock, ArrowRight } from 'lucide-react';
 import '../styles/screen1.css';
 
@@ -16,19 +18,41 @@ export type LandingPageProps = {
 
 export const LandingPage: React.FC<LandingPageProps> = ({ onOpenAuthModal, onSelectHotel }) => {
   const dispatch = useDispatch<AppDispatch>();
+  const navigate = useNavigate();
 
   const [cityInput, setCityInput] = useState<string>('');
   const [guestsInput, setGuestsInput] = useState<number>(2);
+  const [featuredHotels, setFeaturedHotels] = useState<Hotel[]>([]);
+  const [featuredLoading, setFeaturedLoading] = useState(true);
+  const [featuredError, setFeaturedError] = useState<string | null>(null);
+
+  const loadFeaturedHotels = useCallback(async () => {
+    setFeaturedLoading(true);
+    setFeaturedError(null);
+    try {
+      const response = await hotelApi.getHotels();
+      if (!response?.success || !Array.isArray(response.data)) {
+        throw new Error('The server returned an invalid property list.');
+      }
+      setFeaturedHotels(response.data.slice(0, 4));
+    } catch (error: unknown) {
+      setFeaturedError(error instanceof Error ? error.message : 'Unable to load featured properties.');
+    } finally {
+      setFeaturedLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadFeaturedHotels();
+  }, [loadFeaturedHotels]);
 
   const handleHeroSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (cityInput.trim()) {
       dispatch(setFilters({ city: cityInput.trim() }));
     }
-    window.location.href = '/explore';
+    navigate('/explore');
   };
-
-  const featuredHotels = MASTER_SOUTH_AFRICAN_HOTELS.slice(0, 4);
 
   const handleSelect = (id: number) => {
     if (onSelectHotel) {
@@ -135,13 +159,26 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onOpenAuthModal, onSel
           </div>
 
           <div className="featured-grid">
-            {featuredHotels.map((hotel) => (
-              <HotelCard
-                key={hotel.id}
-                hotel={hotel}
-                onViewDetails={handleSelect}
-              />
-            ))}
+            {featuredLoading ? (
+              <p role="status">Loading featured properties…</p>
+            ) : featuredError ? (
+              <div role="alert">
+                <p>Featured properties could not be loaded: {featuredError}</p>
+                <button type="button" className="btn-view-all-link" onClick={() => void loadFeaturedHotels()}>
+                  Try again
+                </button>
+              </div>
+            ) : featuredHotels.length === 0 ? (
+              <p>No properties are currently available.</p>
+            ) : (
+              featuredHotels.map((hotel) => (
+                <HotelCard
+                  key={hotel.id}
+                  hotel={hotel}
+                  onViewDetails={handleSelect}
+                />
+              ))
+            )}
           </div>
         </div>
       </section>

@@ -6,7 +6,6 @@ import { HotelGrid } from '../components/hotel/HotelGrid.js';
 import { Footer } from '../components/common/Footer.js';
 import { fetchHotels } from '../store/slices/hotelSlice.js';
 import type { RootState, AppDispatch } from '../store/store.js';
-import { MASTER_SOUTH_AFRICAN_HOTELS } from '../data/hotelData.js';
 import { Compass, Filter } from 'lucide-react';
 import '../styles/screen1.css';
 
@@ -17,13 +16,11 @@ export type ExplorePageProps = {
 
 export const ExplorePage: React.FC<ExplorePageProps> = ({ onOpenAuthModal, onSelectHotel }) => {
   const dispatch = useDispatch<AppDispatch>();
-  const { hotels, loading, filters } = useSelector((state: RootState) => state.hotels);
+  const { hotels, loading, error, filters } = useSelector((state: RootState) => state.hotels);
 
   useEffect(() => {
     dispatch(fetchHotels(filters));
   }, [dispatch, filters]);
-
-  const activeHotels = hotels && hotels.length > 0 ? hotels : MASTER_SOUTH_AFRICAN_HOTELS;
 
   const handleSelect = (id: number) => {
     if (onSelectHotel) {
@@ -60,14 +57,16 @@ export const ExplorePage: React.FC<ExplorePageProps> = ({ onOpenAuthModal, onSel
             <div className="listings-title-group">
               <Filter size={18} color="#656839" />
               <h2 className="section-title">
-                Available Accommodations ({activeHotels.length})
+                Available Accommodations ({loading ? '…' : hotels.length})
               </h2>
             </div>
           </div>
 
           <HotelGrid
-            hotels={activeHotels}
+            hotels={hotels}
             loading={loading}
+            error={error}
+            onRetry={() => dispatch(fetchHotels(filters))}
             onSelectHotel={handleSelect}
           />
         </section>

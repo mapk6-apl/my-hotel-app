@@ -8,7 +8,7 @@ export interface Hotel {
     address: string;
     city: string;
     star_rating: number;
-    hero_image: string;
+    hero_image: string | null;
     starting_price: number;
 }
 
@@ -54,10 +54,15 @@ export const fetchHotels = createAsyncThunk(
             if (filters.starRating) params.append('starRating', String(filters.starRating));
 
             const response = await fetch(`${API_BASE_URL}/hotels?${params.toString()}`);
-            const data = await response.json() as { error?: string; data: Hotel[] };
+            const data = await response.json() as { error?: string; data?: Hotel[] };
 
             if (!response.ok) throw new Error(data.error || 'Failed to fetch hotels');
-            return data.data;
+            if (!Array.isArray(data.data)) throw new Error('The server returned an invalid property list.');
+            return data.data.map((hotel) => ({
+                ...hotel,
+                star_rating: Number(hotel.star_rating),
+                starting_price: Number(hotel.starting_price),
+            }));
         } catch (err: any) {
             return rejectWithValue(err.message);
         }

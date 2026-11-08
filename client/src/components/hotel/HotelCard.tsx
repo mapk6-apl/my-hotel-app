@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { ChevronLeft, ChevronRight, Heart, Star, MapPin } from 'lucide-react';
+import { Heart, Star, MapPin } from 'lucide-react';
 import { toggleFavoriteLocal, type Hotel } from '../../store/slices/hotelSlice.js';
 import { type RootState } from '../../store/store.js';
-import { getHotelPhotoSet } from '../../api/photoApi.js';
+import { getFallbackSvgDataUri } from '../../api/photoApi.js';
 import '../../styles/screen1.css';
 
 export type HotelCardProps = {
@@ -17,32 +17,18 @@ export const HotelCard: React.FC<HotelCardProps> = ({ hotel, onViewDetails }) =>
   const favorites = useSelector((state: RootState) => state.hotels.favorites);
   const isFavorite = favorites.includes(hotel.id);
 
-  // Retrieve unique photo set for this specific hotel
-  const photoSet = getHotelPhotoSet(hotel.id);
-  const images: string[] = photoSet.gallery;
-
-  const [currentImageIndex, setCurrentImageIndex] = useState<number>(0);
-
-  const handleNextImage = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setCurrentImageIndex((prev) => (prev + 1) % images.length);
-  };
-
-  const handlePrevImage = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setCurrentImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
-  };
+  const placeholderImage = getFallbackSvgDataUri(hotel.name);
 
   return (
     <div className="hotel-card">
       {/* CAROUSEL IMAGE CONTAINER */}
       <div className="card-image-wrapper">
         <img
-          src={images[currentImageIndex] || photoSet.hero}
-          alt={hotel.name + ' Photo ' + (currentImageIndex + 1)}
+          src={hotel.hero_image || placeholderImage}
+          alt={hotel.name}
           className="card-image"
           onError={(e) => {
-            (e.currentTarget as HTMLImageElement).src = photoSet.hero;
+            e.currentTarget.src = placeholderImage;
           }}
         />
 
@@ -68,42 +54,6 @@ export const HotelCard: React.FC<HotelCardProps> = ({ hotel, onViewDetails }) =>
           />
         </button>
 
-        {/* CAROUSEL CONTROLS */}
-        {images.length > 1 && (
-          <>
-            <button
-              type="button"
-              onClick={handlePrevImage}
-              className="carousel-btn left"
-              aria-label="Previous Photo"
-            >
-              <ChevronLeft size={16} />
-            </button>
-
-            <button
-              type="button"
-              onClick={handleNextImage}
-              className="carousel-btn right"
-              aria-label="Next Photo"
-            >
-              <ChevronRight size={16} />
-            </button>
-
-            {/* DOT INDICATORS */}
-            <div className="carousel-dots-row">
-              {images.map((_, idx) => (
-                <span
-                  key={idx}
-                  className={'carousel-dot ' + (idx === currentImageIndex ? 'active' : '')}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setCurrentImageIndex(idx);
-                  }}
-                />
-              ))}
-            </div>
-          </>
-        )}
       </div>
 
       {/* CARD CONTENT */}
@@ -115,7 +65,7 @@ export const HotelCard: React.FC<HotelCardProps> = ({ hotel, onViewDetails }) =>
           </div>
           <h4 className="card-title">{hotel.name}</h4>
           <p className="card-description">
-            {hotel.description || 'Luxury break-away accommodation with premium guest facilities.'}
+            {hotel.description || 'No property description is available.'}
           </p>
         </div>
 
@@ -123,7 +73,11 @@ export const HotelCard: React.FC<HotelCardProps> = ({ hotel, onViewDetails }) =>
         <div className="card-footer">
           <div>
             <span className="price-label">Starting from</span>
-            <span className="price-amount">R{hotel.starting_price.toLocaleString()} / night</span>
+            <span className="price-amount">
+              {hotel.starting_price > 0
+                ? `R${hotel.starting_price.toLocaleString()} / night`
+                : 'Pricing unavailable'}
+            </span>
           </div>
 
           <button

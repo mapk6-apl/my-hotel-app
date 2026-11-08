@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { Building, Calendar, DollarSign, TrendingUp, LogOut, Home, ShieldCheck 
-} from 'lucide-react'; // Using Lucide React icons
+import React, { useCallback, useEffect, useState } from 'react';
+import axios from 'axios';
+import { Building, Calendar, Users, Home, ShieldCheck } from 'lucide-react';
+import { adminApi, type AdminAccommodation, type AdminBooking, type AdminStatistics } from '../api/adminApi.js';
 import { PropertiesTable } from '../components/admin/PropertiesTable.js';
 import { ReservationsTable } from '../components/admin/ReservationsTable.js';
 import { AccommodationModal } from '../components/admin/AccommodationModal.js';
@@ -13,6 +14,81 @@ export type AdminDashboardPageProps = {
 export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNavigateHome }) => {
   const [activeTab, setActiveTab] = useState<'properties' | 'reservations'>('properties');
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [statistics, setStatistics] = useState<AdminStatistics | null>(null);
+  const [statisticsLoading, setStatisticsLoading] = useState(true);
+  const [statisticsError, setStatisticsError] = useState<string | null>(null);
+  const [properties, setProperties] = useState<AdminAccommodation[]>([]);
+  const [propertiesLoading, setPropertiesLoading] = useState(true);
+  const [propertiesError, setPropertiesError] = useState<string | null>(null);
+  const [bookings, setBookings] = useState<AdminBooking[]>([]);
+  const [bookingsLoading, setBookingsLoading] = useState(true);
+  const [bookingsError, setBookingsError] = useState<string | null>(null);
+
+  const getRequestError = (error: unknown, fallback: string): string => {
+    if (axios.isAxiosError<{ error?: string }>(error)) {
+      return error.response?.data?.error || error.message || fallback;
+    }
+    return error instanceof Error ? error.message : fallback;
+  };
+
+  const loadStatistics = useCallback(async () => {
+    setStatisticsLoading(true);
+    setStatisticsError(null);
+    try {
+      const response = await adminApi.getStatistics();
+      if (!response.success || !response.data) {
+        throw new Error('The server returned incomplete dashboard statistics.');
+      }
+      setStatistics(response.data);
+    } catch (error: unknown) {
+      setStatisticsError(getRequestError(error, 'Unable to load dashboard statistics.'));
+    } finally {
+      setStatisticsLoading(false);
+    }
+  }, []);
+
+  const loadProperties = useCallback(async () => {
+    setPropertiesLoading(true);
+    setPropertiesError(null);
+    try {
+      const response = await adminApi.getAllAccommodations();
+      if (!response.success || !Array.isArray(response.data)) {
+        throw new Error('The server returned an invalid properties list.');
+      }
+      setProperties(response.data);
+    } catch (error: unknown) {
+      setPropertiesError(getRequestError(error, 'Unable to load properties.'));
+    } finally {
+      setPropertiesLoading(false);
+    }
+  }, []);
+
+  const loadBookings = useCallback(async () => {
+    setBookingsLoading(true);
+    setBookingsError(null);
+    try {
+      const response = await adminApi.getAllReservations();
+      if (!response.success || !Array.isArray(response.data)) {
+        throw new Error('The server returned an invalid bookings list.');
+      }
+      setBookings(response.data);
+    } catch (error: unknown) {
+      setBookingsError(getRequestError(error, 'Unable to load customer bookings.'));
+    } finally {
+      setBookingsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadStatistics();
+    void loadProperties();
+    void loadBookings();
+  }, [loadBookings, loadProperties, loadStatistics]);
+
+  const formatCount = (value: number | undefined): string =>
+    typeof value === 'number' && Number.isFinite(value)
+      ? new Intl.NumberFormat('en-ZA').format(value)
+      : 'Unavailable';
 
   return (
     <div className="admin-layout-container">
@@ -34,7 +110,13 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNaviga
           <span>Properties</span>
         </button>
 
-        <button onClick={() => setActiveTab('reservations')} className={`admin-sidebar-link ${activeTab === 'reservations' ? 'active' : ''}`}>
+        <button
+          onClick={() => {
+            setActiveTab('reservations');
+            void loadBookings();
+          }}
+          className={`admin-sidebar-link ${activeTab === 'reservations' ? 'active' : ''}`}
+        >
           <Calendar size={18} />
           <span>Customer Bookings</span>
         </button>
@@ -55,7 +137,7 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNaviga
               Admin Management Portal
             </h1>
             <p style={{ fontSize: '0.8125rem', opacity: 0.8, color: 'var(--dark-khaki)', margin: '0.25rem 0 0' }}>
-              System Status: Connected to Node.ts & PostgreSQL Database
+              Manage live accommodation records and customer bookings.
             </p>
           </div>
 
@@ -65,50 +147,68 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNaviga
           </div>
         </div>
 
-        {/* 1. Analytics Metrics Card */}
+        {/* 1. Database-backed dashboard metrics */}
         <div className="analytics-cards-grid">
-          <div className="metric-card">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span className="metric-card-title">Total Revenue</span>
-              <DollarSign size={16} color="#656839" />
+          {statisticsError ? (
+            <div role="alert" style={{ gridColumn: '1 / -1', color: 'var(--dark-khaki)' }}>
+              <p>Dashboard statistics could not be loaded: {statisticsError}</p>
+              <button type="button" onClick={() => void loadStatistics()} className="btn-search-submit" style={{ width: 'auto' }}>
+                Try again
+              </button>
             </div>
-            <div className="metric-card-value">R148,500</div>
-          </div>
+          ) : (
+            <>
+              <div className="metric-card">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span className="metric-card-title">Properties</span>
+                  <Building size={16} color="#656839" />
+                </div>
+                <div className="metric-card-value">
+                  {statisticsLoading ? 'Loading…' : formatCount(statistics?.totalHotels)}
+                </div>
+              </div>
 
-          <div className="metric-card">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span className="metric-card-title">Active Properties</span>
-              <Building size={16} color="#656839" />
-            </div>
-            <div className="metric-card-value">8 Lodgings</div>
-          </div>
+              <div className="metric-card">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span className="metric-card-title">Total Bookings</span>
+                  <Calendar size={16} color="#656839" />
+                </div>
+                <div className="metric-card-value">
+                  {statisticsLoading ? 'Loading…' : formatCount(statistics?.totalBookings)}
+                </div>
+              </div>
 
-          <div className="metric-card">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span className="metric-card-title">Total Bookings</span>
-              <Calendar size={16} color="#656839" />
-            </div>
-            <div className="metric-card-value">42 Stays</div>
-          </div>
-
-          <div className="metric-card">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span className="metric-card-title">Occupancy Rate</span>
-              <TrendingUp size={16} color="#656839" />
-            </div>
-            <div className="metric-card-value">84%</div>
-          </div>
+              <div className="metric-card">
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span className="metric-card-title">Guest Accounts</span>
+                  <Users size={16} color="#656839" />
+                </div>
+                <div className="metric-card-value">
+                  {statisticsLoading ? 'Loading…' : formatCount(statistics?.totalGuests)}
+                </div>
+              </div>
+            </>
+          )}
         </div>
 
         {/* 2. Dynamic Table Section*/}
         {activeTab === 'properties' ? (
           <PropertiesTable
+            properties={properties}
+            loading={propertiesLoading}
+            error={propertiesError}
+            onRetry={() => void loadProperties()}
             onOpenAddModal={() => setIsModalOpen(true)}
-            onEditProperty={(id) => alert(`Edit property #${id}`)}
-            onDeleteProperty={(id) => alert(`Delete property #${id}`)}
+            onEditProperty={(id: number) => alert(`Edit property #${id}`)}
+            onDeleteProperty={(id: number) => alert(`Delete property #${id}`)}
           />
         ) : (
-          <ReservationsTable />
+          <ReservationsTable
+            bookings={bookings}
+            loading={bookingsLoading}
+            error={bookingsError}
+            onRefresh={() => void loadBookings()}
+          />
         )}
 
         {/* 3. Add Property Modal */}

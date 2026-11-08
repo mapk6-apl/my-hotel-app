@@ -1,5 +1,48 @@
 import axiosClient from './axiosClient.js';
 
+export interface AdminAccommodation {
+  id: number;
+  name: string;
+  description: string;
+  address: string;
+  city: string;
+  star_rating: number | string;
+  hero_image: string | null;
+  starting_price: number | string;
+}
+
+export interface AdminBooking {
+  reservation_id: number;
+  check_in: string;
+  check_out: string;
+  guest_count: number;
+  total_amount: number | string;
+  payment_status: string;
+  status: string;
+  created_at: string;
+  guest_name: string;
+  guest_email: string;
+  hotel_name: string;
+  room_type: string;
+}
+
+export interface AdminStatistics {
+  totalBookings: number;
+  totalHotels: number;
+  totalGuests: number;
+}
+
+interface ApiListResponse<T> {
+  success: boolean;
+  count: number;
+  data: T[];
+}
+
+interface ApiDataResponse<T> {
+  success: boolean;
+  data: T;
+}
+
 //TypeScript definitions for creating or updating a property
 export interface AccommodationPayload {
   name: string;
@@ -12,9 +55,14 @@ export interface AccommodationPayload {
 }
 
 export const adminApi = {
-   //Fetches all properties in the system for administrative oversight.
-  getAllAccommodations: async () => {
-    const response = await axiosClient.get('/admin/hotels');
+  // Uses the existing public endpoint, which returns database-backed accommodation records.
+  getAllAccommodations: async (): Promise<ApiListResponse<AdminAccommodation>> => {
+    const response = await axiosClient.get<ApiListResponse<AdminAccommodation>>('/hotels');
+    return response.data;
+  },
+
+  getStatistics: async (): Promise<ApiDataResponse<AdminStatistics>> => {
+    const response = await axiosClient.get<ApiDataResponse<AdminStatistics>>('/admin/stats');
     return response.data;
   },
 
@@ -36,9 +84,9 @@ export const adminApi = {
     return response.data;
   },
 
-  //Fetches all guest reservations across the entire system.
-  getAllReservations: async () => {
-    const response = await axiosClient.get('/admin/reservations');
+  //Fetches all guest reservations from the existing admin bookings endpoint.
+  getAllReservations: async (): Promise<ApiListResponse<AdminBooking>> => {
+    const response = await axiosClient.get<ApiListResponse<AdminBooking>>('/admin/bookings');
     return response.data;
   },
 };

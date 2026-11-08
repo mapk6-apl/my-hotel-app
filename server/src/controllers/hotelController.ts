@@ -7,9 +7,12 @@ export const getAllHotels = async (req: Request, res: Response): Promise<void> =
         const { city, minPrice, maxPrice, starRating } = req.query; 
         
         let queryText = ` 
-        SELECT a.id, a.name, a.description, a.address, a.city, a.latitude, a.longitude, a.star_rating, img.image_url AS hero_image, COALESCE(MIN(r.price_per_night), 0) AS starting_price 
+        SELECT a.id, a.name, a.description, a.address, a.city, a.latitude, a.longitude, a.star_rating,
+        (SELECT img.image_url FROM accommodation_images img
+         WHERE img.accommodation_id = a.id AND img.is_hero = true
+         ORDER BY img.id ASC LIMIT 1) AS hero_image,
+        COALESCE(MIN(r.price_per_night), 0) AS starting_price
         FROM accommodations a 
-        LEFT JOIN accommodation_images img ON a.id = img.accommodation_id AND img.is_hero = true 
         LEFT JOIN rooms r ON a.id = r.accommodation_id `;
 
         const queryParams: any[] = []; 
@@ -29,7 +32,7 @@ export const getAllHotels = async (req: Request, res: Response): Promise<void> =
             queryText += ` WHERE ` + whereClauses.join(' AND '); 
         }
 
-        queryText += ` GROUP BY a.id, img.image_url`; 
+        queryText += ` GROUP BY a.id`;
         
         if (minPrice || maxPrice) { 
             const havingClauses: string[] = []; 
@@ -39,7 +42,7 @@ export const getAllHotels = async (req: Request, res: Response): Promise<void> =
             } 
             if (maxPrice) { 
                 queryParams.push(Number(maxPrice)); 
-                havingClauses.push(`MIN(r.price_per_night) >= $${queryParams.length}`); 
+                havingClauses.push(`MIN(r.price_per_night) <= $${queryParams.length}`);
             } queryText += ` HAVING ` + havingClauses.join(' AND '); 
         } 
         queryText += ` ORDER BY a.star_rating DESC`; 
