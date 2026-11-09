@@ -1,6 +1,7 @@
 //This middleware verifies incoming JWT Bearer tokens and attaches the authenticated user profile (req.user) to protected requests.
 import type {Request, Response, NextFunction} from 'express'
 import jwt from 'jsonwebtoken'
+import { getJwtSecret } from '../config/env.js'
 
 //extend Express Request to include user payload
 export interface AuthenticatedRequest extends Request {
@@ -10,8 +11,6 @@ export interface AuthenticatedRequest extends Request {
         role: string;
     };
 }
-
-const JWT_SECRET = process.env.JWT_SECRET || 'breakaway_jwt_secret_key_2026';
 
 //this middleware protects private API endpoints
 export const authenticateToken = (req: AuthenticatedRequest, res: Response, next: NextFunction): void => {
@@ -30,7 +29,7 @@ export const authenticateToken = (req: AuthenticatedRequest, res: Response, next
     }
 
     try {
-        const decoded = jwt.verify(token, JWT_SECRET) as unknown as {
+        const decoded = jwt.verify(token, getJwtSecret()) as unknown as {
             id: number;
             email: string;
             role: string;

@@ -36,7 +36,12 @@ export const ExplorePage: React.FC<ExplorePageProps> = ({ onOpenAuthModal, onSel
   };
 
   const handleSearch = (search: BookingSearch) => {
-    dispatch(setFilters({ city: search.city }));
+    dispatch(setFilters({
+      city: search.city,
+      guests: search.guests,
+      checkIn: search.checkIn,
+      checkOut: search.checkOut,
+    }));
     navigate('/explore', { replace: true, state: { bookingSearch: search } });
   };
 
@@ -57,11 +62,15 @@ export const ExplorePage: React.FC<ExplorePageProps> = ({ onOpenAuthModal, onSel
         <SearchBar
           initialSearch={{
             city: filters.city,
-            ...(searchDetails ? {
-              checkIn: searchDetails.checkIn,
-              checkOut: searchDetails.checkOut,
-              guests: searchDetails.guests,
-            } : {}),
+            ...(searchDetails?.checkIn || filters.checkIn
+              ? { checkIn: searchDetails?.checkIn || filters.checkIn }
+              : {}),
+            ...(searchDetails?.checkOut || filters.checkOut
+              ? { checkOut: searchDetails?.checkOut || filters.checkOut }
+              : {}),
+            ...(searchDetails
+              ? { guests: searchDetails.guests }
+              : typeof filters.guests === 'number' ? { guests: filters.guests } : {}),
           }}
           onSearch={handleSearch}
         />

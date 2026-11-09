@@ -1,32 +1,26 @@
-import {Pool} from 'pg'
-import dotenv from 'dotenv'
+import { Pool } from 'pg';
+import dotenv from 'dotenv';
 
-//loading the environment variables from the .env fie into process.env
 dotenv.config();
 
-//PostgreSQL connection pool configuration; a pool maintains a group of reusable database connections
-export const pool = new Pool ({
-    connectionString: process.env.DATABASE_URL, //ex. postgresql://user:password@localhost:5432/hotel_db
-    max: 20, //max number of active clients in pool
-    idleTimeoutMillis: 30000, //time (in ms) a client can remain idle before being closed
-    connectionTimeoutMillis: 2000, //time (in ms) to wait before timing out when connecting
+export const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  max: 20,
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 5000,
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : undefined,
 });
 
-//event listener for background pool errors; if idle client in pool encounters error, callback catches it so my node.ts server doesnt crash silently
-pool.on('error', (err: Error) => {
-    console.error('Unexpected error on idle PostgreSQL client:', err)
-    process.exit(-1); //exit process with failure code
+pool.on('error', (error: Error) => {
+  console.error('Unexpected error on idle PostgreSQL client:', error);
 });
 
-//helper function to test and verify database connectivity
 export const testDatabaseConnection = async (): Promise<void> => {
-    try {
-        const client = await pool.connect(); //we acquire a test client from the pool
-        const result = await client.query('SELECT NOW()'); //execute simple query that returns current time from PostgreSQL server
-        console.log('PostgreSQL connected successfully at:', result.rows[0].now);
-        client.release(); //release client back into pool for incoming API requests 
-    } catch (error) {
-        console.error('Failed to connect to PostgreSQL database:', error);
-        process.exit(1);
-    }
-}
+  const client = await pool.connect();
+  try {
+    const result = await client.query('SELECT NOW()');
+    console.log('PostgreSQL connected successfully at:', result.rows[0].now);
+  } finally {
+    client.release();
+  }
+};

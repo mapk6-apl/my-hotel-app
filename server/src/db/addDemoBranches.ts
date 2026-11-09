@@ -203,16 +203,6 @@ const run = async (): Promise<void> => {
       }
     }
 
-    await client.query(
-      `UPDATE accommodation_images
-       SET image_url = '/images/cape-town-hotel.jpg'
-       WHERE image_url = 'https://localhost:5001'
-         AND accommodation_id = (
-           SELECT id FROM accommodations
-           WHERE name = 'Break-Away Hotel Cape Town Waterfront'
-           ORDER BY id ASC LIMIT 1
-         )`
-    );
     await client.query('COMMIT');
     console.log('Demo branch records are ready.');
   } catch (error) {

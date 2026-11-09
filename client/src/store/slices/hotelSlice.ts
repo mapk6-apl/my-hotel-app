@@ -30,6 +30,8 @@ export interface SearchFilters {
     starRating: number | '';
     guests: number | '';
     amenities: string[];
+    checkIn?: string;
+    checkOut?: string;
 }
 
 export interface HotelState {
@@ -51,6 +53,8 @@ const initialState: HotelState = {
         starRating: '',
         guests: '',
         amenities: [],
+        checkIn: '',
+        checkOut: '',
     },
     favorites: (() => {
         const stored = localStorage.getItem('favorite-property-ids');
@@ -80,6 +84,8 @@ export const fetchHotels = createAsyncThunk(
             if (filters.maxPrice) params.append('maxPrice', String(filters.maxPrice));
             if (filters.starRating) params.append('starRating', String(filters.starRating));
             if (filters.guests) params.append('guests', String(filters.guests));
+            if (filters.checkIn) params.append('checkIn', filters.checkIn);
+            if (filters.checkOut) params.append('checkOut', filters.checkOut);
             filters.amenities.forEach((amenity) => params.append('amenity', amenity));
 
             const response = await fetch(`${API_BASE_URL}/hotels?${params.toString()}`);

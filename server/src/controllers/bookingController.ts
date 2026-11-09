@@ -38,11 +38,14 @@ export const createBooking = async (req: AuthenticatedRequest, res: Response): P
             return;
         }
 
-        // 1.Fetch room details and price per night in ZAR 
-        const roomQuery = 'SELECT price_per_night, capacity, is_available FROM rooms WHERE id = $1';
-        const roomResult = await pool.query(roomQuery, [parsedRoomId]);
+        const client = await pool.connect();
+        try {
+        await client.query('BEGIN');
+        const roomQuery = 'SELECT price_per_night, capacity, is_available FROM rooms WHERE id = $1 FOR UPDATE';
+        const roomResult = await client.query(roomQuery, [parsedRoomId]);
 
         if (roomResult.rows.length === 0) { 
+            await client.query('ROLLBACK');
             res.status(404).json({ error: 'Selected room category does not exist' }); 
             return; 
         } 
@@ -50,13 +53,31 @@ export const createBooking = async (req: AuthenticatedRequest, res: Response): P
         const room = roomResult.rows[0]; 
         
         if (!room.is_available) { 
+            await client.query('ROLLBACK');
             res.status(400).json({ error: 'Selected room is currently unavailable' }); 
             return; 
         } 
         
         if (parsedGuestCount > room.capacity) {
+            await client.query('ROLLBACK');
             res.status(400).json({ error: `Guest count exceeds maximum room capacity of ${room.capacity}` }); 
             return; 
+        }
+
+        const overlappingReservation = await client.query(
+            `SELECT id
+             FROM reservations
+             WHERE room_id = $1
+               AND status <> 'cancelled'
+               AND check_in < $3::date
+               AND check_out > $2::date
+             LIMIT 1`,
+            [parsedRoomId, checkIn, checkOut]
+        );
+        if (overlappingReservation.rows.length > 0) {
+            await client.query('ROLLBACK');
+            res.status(409).json({ error: 'This room is no longer available for the selected dates. Choose another room or dates.' });
+            return;
         }
 
         // 2. Calculate stay duration in nights 
@@ -64,6 +85,7 @@ export const createBooking = async (req: AuthenticatedRequest, res: Response): P
         const nights = Math.round(diffTime / (1000 * 60 * 60 * 24));
         
         if (!Number.isFinite(nights) || nights <= 0) {
+            await client.query('ROLLBACK');
             res.status(400).json({ error: 'Check-out date must be greater than check-in date' }); 
             return; 
         }
@@ -104,14 +126,22 @@ export const createBooking = async (req: AuthenticatedRequest, res: Response): P
         JOIN accommodations a ON r.accommodation_id = a.id
         `;
         
-        const newBooking = await pool.query(insertQuery, [
+        const newBooking = await client.query(insertQuery, [
             userId, parsedRoomId, checkIn, checkOut, parsedGuestCount, totalAmount,
         ]);
-        res.status(201).json({ 
-            success: true, 
-            message: 'Reservation created successfully!', 
-            data: newBooking.rows[0], 
-        }); 
+        await client.query('COMMIT');
+        res.status(201).json({
+            success: true,
+            message: 'Reservation created successfully!',
+            data: newBooking.rows[0],
+        });
+        return;
+        } catch (error) {
+            await client.query('ROLLBACK');
+            throw error;
+        } finally {
+            client.release();
+        }
     } catch (error) { 
         console.error('Error creating reservation:', error); 
         res.status(500).json({ error: 'Failed to create reservation' }); 

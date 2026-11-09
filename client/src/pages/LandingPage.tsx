@@ -46,7 +46,16 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onOpenAuthModal, onSel
   }, [loadFeaturedHotels]);
 
   const handleHeroSearch = (search: BookingSearch) => {
-    dispatch(setFilters({ city: search.city }));
+    dispatch(setFilters({
+      city: search.city,
+      minPrice: '',
+      maxPrice: '',
+      starRating: '',
+      guests: search.guests,
+      amenities: [],
+      checkIn: search.checkIn,
+      checkOut: search.checkOut,
+    }));
     navigate('/explore', { state: { bookingSearch: search } });
   };
 

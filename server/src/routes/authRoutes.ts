@@ -3,9 +3,10 @@ import passport from '../config/passport.js';
 import { exchangeGoogleAuthCode, googleCallback, getCurrentuser, loginWithEmail, registerWithEmail } from '../controllers/authController.js';
 import type { RequestHandler } from 'express';
 import { randomBytes, timingSafeEqual } from 'node:crypto';
+import { getClientUrl } from '../config/env.js';
 
 const router = Router(); 
-const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
+const clientUrl = getClientUrl();
 const googleFailureUrl = new URL('/auth/callback#error=google_auth_failed', clientUrl).toString();
 const googleStateCookie = 'google_oauth_state';
 const cookiePath = '/api/auth/google/callback';

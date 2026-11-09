@@ -9,14 +9,21 @@ type PropertyRecord = {
 
 type UnsplashPhoto = {
   id?: string;
-  urls?: { regular?: string };
+  width?: number;
+  height?: number;
+  orientation?: string;
+  urls?: { regular?: string; small?: string };
+  description?: string | null;
   alt_description?: string | null;
   links?: { html?: string; download_location?: string };
   user?: { name?: string; links?: { html?: string } };
+  tags?: Array<{ title?: string }>;
 };
 
 type UsableUnsplashPhoto = UnsplashPhoto & {
   id: string;
+  width: number;
+  height: number;
   urls: { regular: string };
   links: { html: string; download_location: string };
   user: { name: string; links: { html: string } };
@@ -63,12 +70,44 @@ const isUsablePhoto = (photo: UnsplashPhoto): photo is UsableUnsplashPhoto =>
   typeof photo.id === 'string' &&
   typeof photo.urls?.regular === 'string' &&
   isUnsplashPhotoUrl(photo.urls.regular) &&
+  typeof photo.width === 'number' &&
+  typeof photo.height === 'number' &&
+  photo.width >= 800 &&
+  photo.height >= 450 &&
+  photo.width / photo.height >= 1.25 &&
   typeof photo.links?.html === 'string' &&
   isUnsplashPageUrl(photo.links.html) &&
   typeof photo.links.download_location === 'string' &&
   typeof photo.user?.name === 'string' &&
   typeof photo.user.links?.html === 'string' &&
   isUnsplashPageUrl(photo.user.links.html);
+
+const isRelevantHotelPhoto = (photo: UsableUnsplashPhoto): boolean => {
+  const metadata = [
+    photo.description,
+    photo.alt_description,
+    ...(photo.tags ?? []).map((tag) => tag.title),
+  ].filter((value): value is string => typeof value === 'string').join(' ').toLowerCase();
+  const unsuitable = /\b(?:taxi|taxis|bus|buses|car|cars|vehicle|vehicles|van|truck|motorcycle|zebra|elephant|buffalo|wildlife|safari|lion|leopard|giraffe|bird|birds|portrait|selfie|headshot|people|person|street|road|traffic|forest|mountain|landscape|field|vineyard|lighthouse|ferris wheel|waterfall|sunset|beach|ocean|lake)\b/i;
+  const accommodation = /\b(?:hotel|resort|hospitality|bedroom|bed|guest room|hotel room|bathroom|suite|reception|front desk|lobby|hotel pool|swimming pool|restaurant|dining|breakfast room|hotel building|hotel exterior|hotel interior)\b/i;
+  return !unsuitable.test(metadata) && accommodation.test(metadata);
+};
+
+const getPhotoMetadata = (photo: UsableUnsplashPhoto): string =>
+  [photo.description, photo.alt_description, ...(photo.tags ?? []).map((tag) => tag.title)]
+    .filter((value): value is string => typeof value === 'string')
+    .join(' ')
+    .toLowerCase();
+
+const scorePhoto = (photo: UsableUnsplashPhoto, topic: RegExp, query: string): number => {
+  const metadata = getPhotoMetadata(photo);
+  const queryTerms = query.toLowerCase().split(/\s+/).filter((term) => term.length > 3);
+  const queryMatches = queryTerms.reduce((score, term) => score + (metadata.includes(term) ? 1 : 0), 0);
+  const topicMatch = topic.test(metadata) ? 20 : 0;
+  const descriptiveMetadata = photo.description || photo.alt_description ? 5 : 0;
+  const resolutionScore = Math.min(10, Math.floor((photo.width * photo.height) / 1_000_000));
+  return topicMatch + queryMatches + descriptiveMetadata + resolutionScore;
+};
 
 const searchUnsplash = async (
   query: string,
@@ -83,7 +122,8 @@ const searchUnsplash = async (
 
   const response = await fetch(searchUrl, { headers, signal: AbortSignal.timeout(15000) });
   if (!response.ok) {
-    if (response.status === 429) {
+    const errorBody = await response.text();
+    if (response.status === 429 || (response.status === 403 && /rate limit/i.test(errorBody))) {
       throw Object.assign(new Error('Image provider rate limit reached. Try again later.'), { status: 429 });
     }
     if (response.status === 401 || response.status === 403) {
@@ -172,26 +212,32 @@ export const importPropertyImages = async (req: AuthenticatedRequest, res: Respo
     const usedPhotoIds = new Set(usedImages.rows.map((image) => image.photo_id));
     const existingPhotoIds = new Set(savedImages.rows.map((image) => image.photo_id));
     const selectedPhotos: UsableUnsplashPhoto[] = [];
-    const queryTerms = [
-      `${property.city} hotel`,
-      `${property.city} South Africa`,
-      'hotel bedroom',
-      'hotel bathroom',
-      'hotel restaurant',
-      'hotel swimming pool',
-      'hotel interior',
-      'South Africa landscape',
+    const photoTopics = [
+      { query: `${property.name} ${property.city} South Africa hotel bedroom`, topic: /\b(?:bedroom|bed|guest room|hotel room)\b/i },
+      { query: `${property.name} ${property.city} South Africa hotel bathroom`, topic: /\b(?:bathroom|shower|bathtub)\b/i },
+      { query: `${property.name} ${property.city} South Africa hotel swimming pool`, topic: /\b(?:pool|swimming pool)\b/i },
+      { query: `${property.name} ${property.city} South Africa hotel restaurant`, topic: /\b(?:restaurant|dining|breakfast room)\b/i },
+      { query: `${property.name} ${property.city} South Africa hotel reception lobby`, topic: /\b(?:reception|front desk|lobby|hotel exterior|hotel building)\b/i },
+    ];
+    const fallbackTopics = [
+      { query: 'hotel bedroom interior', topic: /\b(?:bedroom|bed|guest room|hotel room)\b/i },
+      { query: 'hotel bathroom interior', topic: /\b(?:bathroom|shower|bathtub)\b/i },
+      { query: 'hotel swimming pool architecture', topic: /\b(?:pool|swimming pool)\b/i },
+      { query: 'hotel restaurant dining interior', topic: /\b(?:restaurant|dining|breakfast room)\b/i },
+      { query: 'hotel reception lobby exterior', topic: /\b(?:reception|front desk|lobby|hotel exterior|hotel building)\b/i },
     ];
     const headers = { Authorization: `Client-ID ${accessKey}`, 'Accept-Version': 'v1' };
 
-    for (const term of queryTerms) {
+    for (const topic of [...photoTopics, ...fallbackTopics]) {
       if (selectedPhotos.length >= 5 - savedImages.rows.length) break;
-      const results = await searchUnsplash(term, headers);
-      for (const photo of results) {
-        if (selectedPhotos.length >= 5 - savedImages.rows.length) break;
-        if (usedPhotoIds.has(photo.id) || existingPhotoIds.has(photo.id)) continue;
-        selectedPhotos.push(photo);
-        usedPhotoIds.add(photo.id);
+      const results = await searchUnsplash(topic.query, headers);
+      const candidate = results
+        .filter((photo) => isRelevantHotelPhoto(photo) && topic.topic.test(getPhotoMetadata(photo)))
+        .filter((photo) => !usedPhotoIds.has(photo.id) && !existingPhotoIds.has(photo.id))
+        .sort((left, right) => scorePhoto(right, topic.topic, topic.query) - scorePhoto(left, topic.topic, topic.query))[0];
+      if (candidate) {
+        selectedPhotos.push(candidate);
+        usedPhotoIds.add(candidate.id);
       }
     }
 
@@ -241,7 +287,10 @@ export const importPropertyImages = async (req: AuthenticatedRequest, res: Respo
           isHero: imported.length === 0,
           photographer: photo.user.name,
           photographerUrl: withUnsplashAttribution(photo.user.links.html),
-          altText: photo.alt_description || `Representative hotel image for ${property.name}; not a verified property photograph.`,
+          altText: [
+            `Representative hotel image for ${property.name}; not a verified property photograph.`,
+            photo.alt_description || photo.description || 'Hotel accommodation',
+          ].join(' '),
           displayOrder,
           photoId: photo.id,
           sourceUrl: withUnsplashAttribution(photo.links.html),

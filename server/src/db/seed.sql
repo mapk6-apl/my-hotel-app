@@ -38,14 +38,7 @@ INSERT INTO rooms (id, accommodation_id, room_type, capacity, price_per_night, i
 (8, 4, 'Sandton Penthouse Suite', 2, 3800.00, true)
 ON CONFLICT (id) DO NOTHING;
 
--- 4. SEED PHOTO GALLERIES 
-INSERT INTO accommodation_images (accommodation_id, image_url, is_hero) VALUES 
-(1, '/images/durban-hotel.jpg', true), 
-(2, '/images/pretoria-hotel.jpg', true), 
-(3, 'images/cape-town-hotel.jpg', true), 
-(4, '/images/sandton-hotel.jpg', true);
-
--- 5. LINK HOTEL AMENITIES (Junction Records) 
+-- 4. LINK HOTEL AMENITIES (Junction Records)
 INSERT INTO accommodation_amenities (accommodation_id, amenity_id) VALUES
 -- Break-Away Durban: Wi-Fi, Pool, Parking, AC, Breakfast, Spa 
 (1, 1), (1, 2), (1, 3), (1, 4), (1, 5), (1, 7),

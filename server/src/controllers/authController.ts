@@ -2,8 +2,8 @@ import type {Request, Response} from 'express' //always write type
 import jwt from 'jsonwebtoken'
 import { randomBytes, randomUUID, scrypt, timingSafeEqual } from 'node:crypto'
 import {pool} from '../config/db.js'
+import { getClientUrl, getJwtSecret } from '../config/env.js'
 
-const JWT_SECRET = process.env.JWT_SECRET || 'breakaway_jwt_secret_key_2026';
 const PASSWORD_HASH_BYTES = 64;
 const GOOGLE_AUTH_CODE_TTL_MS = 60_000;
 const googleAuthCodes = new Map<string, { userId: number; expiresAt: number }>();
@@ -57,7 +57,7 @@ const createAuthResponse = (user: AuthenticatedProfile) => ({
     success: true,
     token: jwt.sign(
         { id: user.id, email: user.email, role: user.role },
-        JWT_SECRET,
+        getJwtSecret(),
         { expiresIn: '7d' }
     ),
     user,
@@ -178,7 +178,7 @@ export const loginWithEmail = async (req: Request, res: Response): Promise<void>
 };
 
 const getFrontendAuthCallbackUrl = (query: string): string =>
-    new URL(`/auth/callback${query}`, process.env.CLIENT_URL || 'http://localhost:5173').toString();
+    new URL(`/auth/callback${query}`, getClientUrl()).toString();
 
 export const googleCallback = (req: Request, res: Response): void => {
     const user = req.user as { id?: number } | undefined;
@@ -228,7 +228,7 @@ export const exchangeGoogleAuthCode = async (req: Request, res: Response): Promi
 
         const token = jwt.sign(
             { id: user.id, email: user.email, role: user.role },
-            JWT_SECRET,
+            getJwtSecret(),
             { expiresIn: '7d' }
         );
         res.status(200).json({ success: true, token });
@@ -252,7 +252,7 @@ export const getCurrentuser = async (req: Request, res: Response): Promise<void>
             res.status(401).json({error: 'Unauthorized: Token missing'});
             return; 
         }
-        const decoded = jwt.verify(token, JWT_SECRET) as unknown as {id: number};
+        const decoded = jwt.verify(token, getJwtSecret()) as unknown as {id: number};
         const userQuery = 'SELECT id, email, full_name, avatar_url, role, phone, created_at FROM users WHERE id = $1';
         const userResult = await pool.query(userQuery, [decoded.id]);
 

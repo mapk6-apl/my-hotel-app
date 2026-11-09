@@ -5,6 +5,8 @@ import { pool } from '../config/db.js';
 export const getAllHotels = async (req: Request, res: Response): Promise<void> => {
     try {
         const { city, minPrice, maxPrice, starRating, guests } = req.query;
+        const checkIn = typeof req.query.checkIn === 'string' ? req.query.checkIn : '';
+        const checkOut = typeof req.query.checkOut === 'string' ? req.query.checkOut : '';
         const requestedAmenities = Array.isArray(req.query.amenity)
             ? req.query.amenity.map(String).filter(Boolean)
             : typeof req.query.amenity === 'string'
@@ -16,6 +18,58 @@ export const getAllHotels = async (req: Request, res: Response): Promise<void> =
             res.status(400).json({ error: 'Guest count must be a positive whole number.' });
             return;
         }
+        if (
+            (req.query.checkIn !== undefined && !checkIn) ||
+            (req.query.checkOut !== undefined && !checkOut) ||
+            Boolean(checkIn) !== Boolean(checkOut)
+        ) {
+            res.status(400).json({ error: 'Check-in and check-out dates must be supplied together.' });
+            return;
+        }
+        if (checkIn && checkOut) {
+            const startDate = new Date(`${checkIn}T00:00:00.000Z`);
+            const endDate = new Date(`${checkOut}T00:00:00.000Z`);
+            if (
+                !/^\d{4}-\d{2}-\d{2}$/.test(checkIn) ||
+                !/^\d{4}-\d{2}-\d{2}$/.test(checkOut) ||
+                !Number.isFinite(startDate.getTime()) ||
+                !Number.isFinite(endDate.getTime()) ||
+                startDate.toISOString().slice(0, 10) !== checkIn ||
+                endDate.toISOString().slice(0, 10) !== checkOut ||
+                endDate <= startDate
+            ) {
+                res.status(400).json({ error: 'Enter valid stay dates, with check-out after check-in.' });
+                return;
+            }
+        }
+
+        const queryParams: any[] = [];
+        let checkInParameter = '';
+        let checkOutParameter = '';
+        if (checkIn && checkOut) {
+            queryParams.push(checkIn, checkOut);
+            checkInParameter = `$${queryParams.length - 1}`;
+            checkOutParameter = `$${queryParams.length}`;
+        }
+        let guestParameter = '';
+        if (guestCount !== undefined) {
+            queryParams.push(guestCount);
+            guestParameter = `$${queryParams.length}`;
+        }
+        const roomCapacityClause = (alias: string): string =>
+            guestParameter ? ` AND ${alias}.capacity >= ${guestParameter}` : '';
+        const roomDateClause = (alias: string): string => checkInParameter
+            ? ` AND NOT EXISTS (
+                SELECT 1 FROM reservations booked
+                WHERE booked.room_id = ${alias}.id
+                  AND booked.status <> 'cancelled'
+                  AND booked.check_in < ${checkOutParameter}::date
+                  AND booked.check_out > ${checkInParameter}::date
+              )`
+            : '';
+        const startingPriceExpression = `MIN(r.price_per_night) FILTER (
+            WHERE r.is_available = TRUE${roomCapacityClause('r')}${roomDateClause('r')}
+        )`;
         
         let queryText = ` 
         SELECT a.id, a.name, a.description, a.address, a.city, a.latitude, a.longitude, a.star_rating,
@@ -40,11 +94,10 @@ export const getAllHotels = async (req: Request, res: Response): Promise<void> =
             FROM accommodation_images img
             WHERE img.accommodation_id = a.id
         ), '[]'::json) AS gallery_images,
-        COALESCE(MIN(r.price_per_night), 0) AS starting_price
+        COALESCE(${startingPriceExpression}, 0) AS starting_price
         FROM accommodations a 
         LEFT JOIN rooms r ON a.id = r.accommodation_id `;
 
-        const queryParams: any[] = []; 
         const whereClauses: string[] = []; 
         
         if (city) { 
@@ -57,13 +110,13 @@ export const getAllHotels = async (req: Request, res: Response): Promise<void> =
             whereClauses.push(`a.star_rating >= $${queryParams.length}`); 
         }
 
-        if (guestCount !== undefined) {
-            queryParams.push(guestCount);
+        if (guestCount !== undefined || (checkIn && checkOut)) {
             whereClauses.push(`EXISTS (
                 SELECT 1 FROM rooms guest_room
                 WHERE guest_room.accommodation_id = a.id
                   AND guest_room.is_available = true
-                  AND guest_room.capacity >= $${queryParams.length}
+                  ${roomCapacityClause('guest_room')}
+                  ${roomDateClause('guest_room')}
             )`);
         }
 
@@ -88,11 +141,11 @@ export const getAllHotels = async (req: Request, res: Response): Promise<void> =
             const havingClauses: string[] = []; 
             if (minPrice) { 
                 queryParams.push(Number(minPrice)); 
-                havingClauses.push(`MIN(r.price_per_night) >= $${queryParams.length}`); 
+                havingClauses.push(`${startingPriceExpression} >= $${queryParams.length}`);
             } 
             if (maxPrice) { 
                 queryParams.push(Number(maxPrice)); 
-                havingClauses.push(`MIN(r.price_per_night) <= $${queryParams.length}`);
+                havingClauses.push(`${startingPriceExpression} <= $${queryParams.length}`);
             } queryText += ` HAVING ` + havingClauses.join(' AND '); 
         } 
         queryText += ` ORDER BY a.star_rating DESC, a.id ASC`;

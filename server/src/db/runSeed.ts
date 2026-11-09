@@ -11,6 +11,11 @@ const runSqlFile = async (fileName: string) => {
 };
 
 const setupDatabase = async () => { 
+    if (process.env.NODE_ENV === 'production') {
+        console.error('Refusing to run the destructive schema/seed script in production. Use npm run migrate:prod.');
+        process.exitCode = 1;
+        return;
+    }
     try { console.log('1/2 Creating database tables from schema.sql...'); 
         await runSqlFile('schema.sql'); 
         console.log('Tables created successfully!'); 
