@@ -53,7 +53,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onOpenAuthModal, onSel
       if (!response?.success || !Array.isArray(response.data)) {
         throw new Error('The server returned an invalid property list.');
       }
-      setFeaturedHotels(response.data.slice(0, 4));
+      setFeaturedHotels(response.data.slice(0, 6));
     } catch (error: unknown) {
       setFeaturedError(error instanceof Error ? error.message : 'Unable to load featured properties.');
     } finally {
@@ -181,7 +181,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onOpenAuthModal, onSel
             </a>
           </div>
 
-          <div className="featured-grid">
+          <div className="featured-grid featured-hotel-grid">
             {featuredLoading ? (
               <p role="status">Loading featured properties…</p>
             ) : featuredError ? (

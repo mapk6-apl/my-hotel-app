@@ -9,6 +9,7 @@ import {
     updateHotelBranch,
     deleteHotelBranch,
 } from '../controllers/adminController.js';
+import { importPropertyImages } from '../controllers/propertyImageController.js';
 
 const router = Router(); 
 
@@ -21,5 +22,6 @@ router.patch('/bookings/:id/status', updateBookingStatus as any);
 router.post('/hotels', createHotelBranch as any); 
 router.put('/hotels/:id', updateHotelBranch as any);
 router.delete('/hotels/:id', deleteHotelBranch as any);
+router.post('/hotels/:id/images/import', importPropertyImages as any);
 
 export default router;

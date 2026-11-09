@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { Maximize2, X, ChevronLeft, ChevronRight, ArrowLeft } from 'lucide-react';
 import { normalizePropertyImageUrl } from '../../api/photoApi.js';
+import type { PropertyImage } from '../../store/slices/hotelSlice.js';
 import '../../styles/screen3.css';
 
 export type PhotoGalleryProps = {
-  images?: string[];
+  images?: PropertyImage[];
   hotelName?: string;
 };
 
@@ -12,7 +13,10 @@ export const PhotoGallery: React.FC<PhotoGalleryProps> = ({
   images = [],
   hotelName = 'Break-Away Hotel',
 }) => {
-  const galleryImages = images?.map(normalizePropertyImageUrl) ?? [];
+  const galleryImages = images?.map((image) => ({
+    ...image,
+    image_url: normalizePropertyImageUrl(image.image_url),
+  })) ?? [];
 
   const [currentIndex, setCurrentIndex] = useState<number>(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState<boolean>(false);
@@ -43,9 +47,20 @@ export const PhotoGallery: React.FC<PhotoGalleryProps> = ({
           onClick={() => galleryImages.length > 0 && setIsLightboxOpen(true)}
         >
           {heroImage ? (
-            <img src={heroImage} alt={hotelName + ' Hero View'} className="gallery-hero-image" />
+            <img src={heroImage.image_url} alt={heroImage.alt_text || `Representative image for ${hotelName}`} className="gallery-hero-image" />
           ) : (
             <div className="gallery-empty-state">No property images are available.</div>
+          )}
+          {heroImage?.attribution_name && (
+            <a
+              href={heroImage.attribution_url || undefined}
+              target="_blank"
+              rel="noreferrer"
+              className="gallery-image-credit"
+              onClick={(event) => event.stopPropagation()}
+            >
+              Photo by {heroImage.attribution_name} / {heroImage.source_name}
+            </a>
           )}
           {galleryImages.length > 0 && (
             <button
@@ -64,15 +79,15 @@ export const PhotoGallery: React.FC<PhotoGalleryProps> = ({
 
         {/* THUMBNAIL GRID (4 Sub-photos) */}
         <div className="gallery-thumbs-grid">
-          {sideThumbnails.map(({ image: imgUrl, index }) => (
+          {sideThumbnails.map(({ image, index }) => (
             <div
               key={index}
               className="gallery-thumb-item"
               onClick={() => setCurrentIndex(index)}
             >
               <img
-                src={imgUrl}
-                alt={hotelName + ' Room Photo ' + (index + 1)}
+                src={image.image_url}
+                alt={image.alt_text || `Representative image for ${hotelName}, photo ${index + 1}`}
                 className="gallery-thumb-image"
               />
             </div>
@@ -122,8 +137,8 @@ export const PhotoGallery: React.FC<PhotoGalleryProps> = ({
               </button>
 
               <img
-                src={galleryImages[currentIndex]}
-                alt={hotelName + ' Large Photo ' + (currentIndex + 1)}
+                src={galleryImages[currentIndex]?.image_url}
+                alt={galleryImages[currentIndex]?.alt_text || `Representative image for ${hotelName}, photo ${currentIndex + 1}`}
                 className="lightbox-featured-img"
               />
 
@@ -145,7 +160,7 @@ export const PhotoGallery: React.FC<PhotoGalleryProps> = ({
                   className={'lightbox-strip-thumb ' + (currentIndex === idx ? 'active' : '')}
                   onClick={() => setCurrentIndex(idx)}
                 >
-                  <img src={img} alt={'Thumb ' + (idx + 1)} />
+                  <img src={img.image_url} alt={img.alt_text || `${hotelName} representative photo ${idx + 1}`} />
                 </div>
               ))}
             </div>

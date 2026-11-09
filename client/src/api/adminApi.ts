@@ -9,6 +9,13 @@ export interface AdminAccommodation {
   star_rating: number | string;
   hero_image: string | null;
   starting_price: number | string;
+  gallery_images?: Array<{
+    image_url: string;
+    attribution_name?: string | null;
+    attribution_url?: string | null;
+    source_name?: string | null;
+    alt_text?: string | null;
+  }>;
 }
 
 export interface AdminBooking {
@@ -84,6 +91,11 @@ export const adminApi = {
   deleteAccommodation: async (id: number) => {
     const response = await axiosClient.delete(`/admin/hotels/${id}`);
     return response.data;
+  },
+
+  importPropertyImages: async (id: number) => {
+    const response = await axiosClient.post(`/admin/hotels/${id}/images/import`);
+    return response.data as { success: boolean; count: number };
   },
 
   //Fetches all guest reservations from the existing admin bookings endpoint.

@@ -11,6 +11,7 @@ import type { BookingPayload } from '../components/hotel/StickyBookingCard.js';
 import { Footer } from '../components/common/Footer.js';
 import { hotelApi } from '../api/hotelApi.js';
 import { toggleFavoriteLocal } from '../store/slices/hotelSlice.js';
+import type { PropertyImage } from '../store/slices/hotelSlice.js';
 import type { RootState } from '../store/store.js';
 import '../styles/screen3.css';
 
@@ -22,7 +23,7 @@ type PropertyDetails = {
   city: string;
   star_rating: number;
   starting_price: number;
-  images: string[];
+  images: PropertyImage[];
   amenities: string[];
   reviews: PropertyReview[];
   rooms: PropertyRoom[];
@@ -45,7 +46,7 @@ type PropertyRoom = {
 
 type PropertyDetailsResponse = Omit<PropertyDetails, 'starting_price' | 'images' | 'amenities' | 'rooms'> & {
   rooms?: PropertyRoom[];
-  images?: { image_url: string }[];
+  images?: PropertyImage[];
   amenities?: { name: string }[];
   reviews?: PropertyReview[];
 };
@@ -102,7 +103,7 @@ export const HotelDetailsPage: React.FC<HotelDetailsPageProps> = ({
             ...property,
             star_rating: Number(property.star_rating),
             starting_price: roomPrices.length > 0 ? Math.min(...roomPrices) : 0,
-            images: (property.images ?? []).map((image) => image.image_url),
+            images: property.images ?? [],
             amenities: (property.amenities ?? []).map((amenity) => amenity.name),
             reviews: property.reviews ?? [],
             rooms: property.rooms ?? [],
@@ -155,7 +156,7 @@ export const HotelDetailsPage: React.FC<HotelDetailsPageProps> = ({
           hotelId: hotel.id,
           hotelName: hotel.name,
           city: hotel.city,
-          heroImage: hotel.images[0] ?? null,
+          heroImage: hotel.images[0]?.image_url ?? null,
         },
       },
     });

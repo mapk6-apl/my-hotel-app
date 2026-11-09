@@ -702,6 +702,22 @@
   background-color: #ffffff;
 }
 
+.card-image-credit {
+  position: absolute;
+  right: 0.5rem;
+  bottom: 1.15rem;
+  z-index: 1;
+  max-width: 70%;
+  overflow: hidden;
+  padding: 0.2rem 0.35rem;
+  background: rgba(0, 0, 0, 0.62);
+  color: #ffffff;
+  font-size: 0.55rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-decoration: none;
+}
+
 .card-content {
   padding: 1rem;
   flex: 1;
@@ -816,6 +832,112 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 1.5rem;
+}
+
+.featured-hotel-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.featured-hotel-grid .card-image-wrapper {
+  height: 11rem;
+}
+
+.featured-hotel-grid .card-content {
+  padding: 0.85rem;
+}
+
+.featured-hotel-grid .card-description {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.carousel-dot {
+  padding: 0;
+  border: 0;
+}
+
+@media (min-width: 768px) {
+  .featured-hotel-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1400px) {
+  .featured-hotel-grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 0.75rem;
+  }
+
+  .featured-hotel-grid .card-image-wrapper {
+    height: 8.5rem;
+  }
+
+  .featured-hotel-grid .card-content {
+    padding: 0.65rem;
+  }
+
+  .featured-hotel-grid .card-title {
+    font-size: 0.875rem;
+  }
+
+  .featured-hotel-grid .card-description {
+    font-size: 0.68rem;
+    line-height: 1.3;
+    -webkit-line-clamp: 2;
+  }
+
+  .featured-hotel-grid .card-footer {
+    margin-top: 0.6rem;
+    padding-top: 0.5rem;
+  }
+
+  .featured-hotel-grid .price-amount,
+  .featured-hotel-grid .btn-view-details {
+    font-size: 0.65rem;
+  }
+
+  .featured-hotel-grid .btn-view-details {
+    padding: 0.4rem 0.5rem;
+  }
+}
+
+@media (min-width: 1400px) and (min-height: 780px) {
+  .hero-section {
+    padding: 1.25rem 1.5rem 1.5rem;
+  }
+
+  .hero-badge {
+    margin-bottom: 0.5rem;
+  }
+
+  .hero-main-title {
+    font-size: 2rem;
+    line-height: 1.08;
+  }
+
+  .hero-description {
+    margin-top: 0.35rem;
+  }
+
+  .hero-search-card {
+    margin-top: 0.8rem;
+  }
+
+  .hero-features-bar {
+    margin-top: 0.65rem;
+  }
+
+  .featured-section {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+  }
+
+  .section-header-block {
+    margin-bottom: 0.75rem;
+  }
 }
 
 .hero-date-inputs {

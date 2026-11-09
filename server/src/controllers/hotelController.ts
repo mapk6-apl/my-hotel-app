@@ -11,6 +11,22 @@ export const getAllHotels = async (req: Request, res: Response): Promise<void> =
         (SELECT img.image_url FROM accommodation_images img
          WHERE img.accommodation_id = a.id AND img.is_hero = true
          ORDER BY img.id ASC LIMIT 1) AS hero_image,
+        COALESCE((
+            SELECT json_agg(
+                json_build_object(
+                    'image_url', img.image_url,
+                    'attribution_name', to_jsonb(img)->>'attribution_name',
+                    'attribution_url', to_jsonb(img)->>'attribution_url',
+                    'source_name', to_jsonb(img)->>'source_name',
+                    'alt_text', to_jsonb(img)->>'alt_text'
+                )
+                ORDER BY img.is_hero DESC,
+                    (to_jsonb(img)->>'display_order')::integer NULLS LAST,
+                    img.id ASC
+            )
+            FROM accommodation_images img
+            WHERE img.accommodation_id = a.id
+        ), '[]'::json) AS gallery_images,
         COALESCE(MIN(r.price_per_night), 0) AS starting_price
         FROM accommodations a 
         LEFT JOIN rooms r ON a.id = r.accommodation_id `;
@@ -45,7 +61,7 @@ export const getAllHotels = async (req: Request, res: Response): Promise<void> =
                 havingClauses.push(`MIN(r.price_per_night) <= $${queryParams.length}`);
             } queryText += ` HAVING ` + havingClauses.join(' AND '); 
         } 
-        queryText += ` ORDER BY a.star_rating DESC`; 
+        queryText += ` ORDER BY a.star_rating DESC, a.id ASC`;
         
         const result = await pool.query(queryText, queryParams); 
         res.status(200).json({ 
@@ -74,9 +90,14 @@ export const getHotelById = async (req: Request, res: Response): Promise<void> =
             return; 
         }
 
-        const imagesQuery = `SELECT id, image_url, is_hero 
+        const imagesQuery = `SELECT id, image_url, is_hero,
+            to_jsonb(image_row)->>'attribution_name' AS attribution_name,
+            to_jsonb(image_row)->>'attribution_url' AS attribution_url,
+            to_jsonb(image_row)->>'source_name' AS source_name
         FROM accommodation_images 
-        WHERE accommodation_id = $1`; 
+        AS image_row
+        WHERE accommodation_id = $1
+        ORDER BY is_hero DESC, id ASC`;
         
         const imagesResult = await pool.query(imagesQuery, [id]); 
         const roomsQuery = `SELECT id, room_type, capacity, price_per_night, is_available 

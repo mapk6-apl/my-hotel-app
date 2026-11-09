@@ -34,6 +34,7 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNaviga
   const [bookingsLoading, setBookingsLoading] = useState(true);
   const [bookingsError, setBookingsError] = useState<string | null>(null);
   const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
+  const [importingImagesId, setImportingImagesId] = useState<number | null>(null);
 
   const confirmLogout = () => {
     dispatch(logout());
@@ -104,6 +105,19 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNaviga
       await loadBookings();
     } catch (error: unknown) {
       onNotify(getRequestError(error, 'Unable to update reservation status.'), 'error');
+    }
+  };
+
+  const importPropertyImages = async (propertyId: number) => {
+    setImportingImagesId(propertyId);
+    try {
+      const result = await adminApi.importPropertyImages(propertyId);
+      onNotify(`Imported ${result.count} representative property images.`, 'success');
+      await loadProperties();
+    } catch (error: unknown) {
+      onNotify(getRequestError(error, 'Unable to import property images.'), 'error');
+    } finally {
+      setImportingImagesId(null);
     }
   };
 
@@ -264,6 +278,8 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNaviga
               const property = properties.find((item) => item.id === id);
               if (property) setPropertyToDelete(property);
             }}
+            onImportImages={(id) => void importPropertyImages(id)}
+            importingImagesId={importingImagesId}
           />
         ) : (
           <ReservationsTable

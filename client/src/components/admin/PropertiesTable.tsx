@@ -1,5 +1,5 @@
 import React from 'react';
-import { Edit, Trash2, Plus, Star, MapPin } from 'lucide-react';
+import { Edit, Trash2, Plus, Star, MapPin, Images } from 'lucide-react';
 import type { AdminAccommodation } from '../../api/adminApi.js';
 import '../../styles/screen6.css';
 
@@ -11,6 +11,8 @@ export type PropertiesTableProps = {
     onOpenAddModal: () => void;
     onEditProperty: (hotelId: number) => void;
     onDeleteProperty: (hotelId: number) => void;
+    onImportImages: (hotelId: number) => void;
+    importingImagesId: number | null;
 };
 
 const formatStartingPrice = (price: number | string): string => {
@@ -31,6 +33,8 @@ export const PropertiesTable: React.FC<PropertiesTableProps> = ({
     onOpenAddModal,
     onEditProperty,
     onDeleteProperty,
+    onImportImages,
+    importingImagesId,
 }) => (
     <div className="admin-table-container">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
@@ -96,6 +100,16 @@ export const PropertiesTable: React.FC<PropertiesTableProps> = ({
                             <td>{property.address}</td>
                             <td style={{ textAlign: 'right' }}>
                                 <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
+                                    <button
+                                        type="button"
+                                        aria-label={`Import representative images for ${property.name}`}
+                                        title="Import representative Unsplash images"
+                                        onClick={() => onImportImages(property.id)}
+                                        disabled={importingImagesId === property.id}
+                                        className="btn-table-action"
+                                    >
+                                        <Images size={12} />
+                                    </button>
                                     <button
                                         type="button"
                                         aria-label={`Edit ${property.name}`}

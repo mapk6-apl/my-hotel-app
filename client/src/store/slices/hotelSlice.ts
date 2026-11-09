@@ -9,7 +9,16 @@ export interface Hotel {
     city: string;
     star_rating: number;
     hero_image: string | null;
+    gallery_images?: Array<string | PropertyImage>;
     starting_price: number;
+}
+
+export interface PropertyImage {
+    image_url: string;
+    attribution_name?: string | null;
+    attribution_url?: string | null;
+    source_name?: string | null;
+    alt_text?: string | null;
 }
 
 export interface SearchFilters {

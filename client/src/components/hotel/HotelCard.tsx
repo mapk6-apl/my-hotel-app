@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Heart, Star, MapPin } from 'lucide-react';
-import { toggleFavoriteLocal, type Hotel } from '../../store/slices/hotelSlice.js';
+import { Heart, Star, MapPin, ChevronLeft, ChevronRight } from 'lucide-react';
+import { toggleFavoriteLocal, type Hotel, type PropertyImage } from '../../store/slices/hotelSlice.js';
 import { type RootState } from '../../store/store.js';
 import { getFallbackSvgDataUri, normalizePropertyImageUrl } from '../../api/photoApi.js';
 import '../../styles/screen1.css';
@@ -18,19 +18,82 @@ export const HotelCard: React.FC<HotelCardProps> = ({ hotel, onViewDetails }) =>
   const isFavorite = favorites.includes(hotel.id);
 
   const placeholderImage = getFallbackSvgDataUri(hotel.name);
+  const gallery: PropertyImage[] = hotel.gallery_images?.length
+    ? hotel.gallery_images.map((image) => typeof image === 'string' ? { image_url: image } : image)
+    : hotel.hero_image ? [{ image_url: hotel.hero_image }] : [];
+  const [imageIndex, setImageIndex] = useState(() => {
+    try {
+      const stored: unknown = JSON.parse(localStorage.getItem('hotel-card-image-indices') || '{}');
+      if (stored && typeof stored === 'object' && hotel.id in stored) {
+        const index = (stored as Record<number, unknown>)[hotel.id];
+        if (typeof index === 'number' && Number.isInteger(index) && index >= 0) return index;
+      }
+    } catch {
+      localStorage.removeItem('hotel-card-image-indices');
+    }
+    return 0;
+  });
+
+  useEffect(() => {
+    if (imageIndex >= gallery.length && imageIndex !== 0) setImageIndex(0);
+  }, [gallery.length, imageIndex]);
+
+  const changeImage = (offset: number) => {
+    const nextIndex = (imageIndex + offset + gallery.length) % gallery.length;
+    setImageIndex(nextIndex);
+    try {
+      const stored = JSON.parse(localStorage.getItem('hotel-card-image-indices') || '{}') as Record<string, number>;
+      localStorage.setItem('hotel-card-image-indices', JSON.stringify({ ...stored, [hotel.id]: nextIndex }));
+    } catch {
+      localStorage.setItem('hotel-card-image-indices', JSON.stringify({ [hotel.id]: nextIndex }));
+    }
+  };
 
   return (
     <div className="hotel-card">
       {/* CAROUSEL IMAGE CONTAINER */}
       <div className="card-image-wrapper">
         <img
-          src={hotel.hero_image ? normalizePropertyImageUrl(hotel.hero_image) : placeholderImage}
-          alt={hotel.name}
+          src={gallery.length ? normalizePropertyImageUrl(gallery[imageIndex]?.image_url || gallery[0]?.image_url || '') : placeholderImage}
+          alt={gallery[imageIndex]?.alt_text || `Representative image for ${hotel.name}`}
           className="card-image"
           onError={(e) => {
             e.currentTarget.src = placeholderImage;
           }}
         />
+        {gallery[imageIndex]?.attribution_name && (
+          <a
+            href={gallery[imageIndex]?.attribution_url || undefined}
+            target="_blank"
+            rel="noreferrer"
+            className="card-image-credit"
+            onClick={(event) => event.stopPropagation()}
+          >
+            Photo by {gallery[imageIndex]?.attribution_name} / {gallery[imageIndex]?.source_name}
+          </a>
+        )}
+        {gallery.length > 1 && (
+          <>
+            <button type="button" className="carousel-btn left" aria-label={`Previous image for ${hotel.name}`} onClick={() => changeImage(-1)}>
+              <ChevronLeft size={16} />
+            </button>
+            <button type="button" className="carousel-btn right" aria-label={`Next image for ${hotel.name}`} onClick={() => changeImage(1)}>
+              <ChevronRight size={16} />
+            </button>
+            <div className="carousel-dots-row" aria-label="Property image selection">
+              {gallery.map((_, index) => (
+                <button
+                  type="button"
+                  key={index}
+                  className={`carousel-dot ${imageIndex === index ? 'active' : ''}`}
+                  aria-label={`Show property image ${index + 1}`}
+                  aria-current={imageIndex === index ? 'true' : undefined}
+                  onClick={() => changeImage(index - imageIndex)}
+                />
+              ))}
+            </div>
+          </>
+        )}
 
         {/* STAR RATING BADGE */}
         <div className="star-badge">
