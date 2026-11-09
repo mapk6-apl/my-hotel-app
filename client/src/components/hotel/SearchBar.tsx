@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { Calendar, MapPin, Search, Users } from 'lucide-react';
+import React, { useEffect, useRef, useState } from 'react';
+import { Calendar, MapPin, Minus, Plus, Search, Users } from 'lucide-react';
 import '../../styles/screen1.css';
 
 export type BookingSearch = {
@@ -16,6 +16,9 @@ type SearchBarProps = {
 
 const dateInputValue = (date: Date): string =>
   `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+
+const normalizeGuestCount = (value: number | undefined): number =>
+  typeof value === 'number' && Number.isInteger(value) ? Math.min(8, Math.max(1, value)) : 2;
 
 const dateOffset = (offset: number, from = new Date()): string => {
   const date = new Date(from);
@@ -35,18 +38,37 @@ export const SearchBar: React.FC<SearchBarProps> = ({ initialSearch, onSearch })
   const [city, setCity] = useState(initialSearch?.city ?? '');
   const [checkIn, setCheckIn] = useState(initialSearch?.checkIn ?? dateOffset(1));
   const [checkOut, setCheckOut] = useState(initialSearch?.checkOut ?? dateOffset(4));
-  const [guests, setGuests] = useState(initialSearch?.guests ?? 2);
+  const [guests, setGuests] = useState(normalizeGuestCount(initialSearch?.guests));
+  const [isGuestPickerOpen, setIsGuestPickerOpen] = useState(false);
+  const guestPickerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const closeGuestPicker = (event: PointerEvent) => {
+      if (event.target instanceof Node && !guestPickerRef.current?.contains(event.target)) {
+        setIsGuestPickerOpen(false);
+      }
+    };
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setIsGuestPickerOpen(false);
+    };
+    document.addEventListener('pointerdown', closeGuestPicker);
+    document.addEventListener('keydown', closeOnEscape);
+    return () => {
+      document.removeEventListener('pointerdown', closeGuestPicker);
+      document.removeEventListener('keydown', closeOnEscape);
+    };
+  }, []);
 
   useEffect(() => {
     if (initialSearch?.city !== undefined) setCity(initialSearch.city);
     if (initialSearch?.checkIn) setCheckIn(initialSearch.checkIn);
     if (initialSearch?.checkOut) setCheckOut(initialSearch.checkOut);
-    if (initialSearch?.guests) setGuests(initialSearch.guests);
+    if (initialSearch?.guests !== undefined) setGuests(normalizeGuestCount(initialSearch.guests));
   }, [initialSearch?.city, initialSearch?.checkIn, initialSearch?.checkOut, initialSearch?.guests]);
 
   const submit = (event: React.FormEvent) => {
     event.preventDefault();
-    onSearch({ city: city.trim(), checkIn, checkOut, guests });
+    onSearch({ city: city.trim(), checkIn, checkOut, guests: normalizeGuestCount(guests) });
   };
 
   return (
@@ -97,18 +119,51 @@ export const SearchBar: React.FC<SearchBarProps> = ({ initialSearch, onSearch })
 
         <div className="hero-input-field">
           <Users size={18} color="#656839" aria-hidden="true" />
-          <div className="field-content">
-            <label className="field-label" htmlFor="property-guests">Guests</label>
-            <select
+          <div className="field-content guest-picker-anchor" ref={guestPickerRef}>
+            <span className="field-label">Guests</span>
+            <button
+              type="button"
               id="property-guests"
-              value={guests}
-              onChange={(event) => setGuests(Number(event.target.value))}
-              className="field-select"
+              className="guest-picker-trigger"
+              aria-haspopup="dialog"
+              aria-expanded={isGuestPickerOpen}
+              aria-controls="property-guest-picker"
+              onClick={() => setIsGuestPickerOpen((open) => !open)}
             >
-              {[1, 2, 3, 4].map((count) => (
-                <option key={count} value={count}>{count} {count === 1 ? 'guest' : 'guests'}</option>
-              ))}
-            </select>
+              {guests} {guests === 1 ? 'guest' : 'guests'}
+            </button>
+            {isGuestPickerOpen && (
+              <div className="guest-picker-popover" id="property-guest-picker" role="dialog" aria-label="Select guests">
+                <div>
+                  <strong>Guests</strong>
+                  <span className="guest-picker-count">{guests} {guests === 1 ? 'guest' : 'guests'}</span>
+                </div>
+                <div className="guest-picker-controls">
+                  <button
+                    type="button"
+                    className="guest-picker-stepper"
+                    aria-label="Remove one guest"
+                    disabled={guests <= 1}
+                    onClick={() => setGuests((count) => Math.max(1, count - 1))}
+                  >
+                    <Minus size={16} />
+                  </button>
+                  <output aria-live="polite">{guests}</output>
+                  <button
+                    type="button"
+                    className="guest-picker-stepper"
+                    aria-label="Add one guest"
+                    disabled={guests >= 8}
+                    onClick={() => setGuests((count) => Math.min(8, count + 1))}
+                  >
+                    <Plus size={16} />
+                  </button>
+                </div>
+                <button type="button" className="guest-picker-done" onClick={() => setIsGuestPickerOpen(false)}>
+                  Done
+                </button>
+              </div>
+            )}
           </div>
         </div>
 

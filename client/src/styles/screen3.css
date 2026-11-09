@@ -143,6 +143,35 @@
   text-decoration: none;
 }
 
+.gallery-attribution {
+  margin: 0.5rem 0 0;
+  color: rgba(81, 75, 35, 0.75);
+  font-size: 0.68rem;
+  line-height: 1.4;
+}
+
+.gallery-attribution a {
+  color: inherit;
+  text-underline-offset: 0.15rem;
+}
+
+.gallery-image-loading {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  padding: 0.35rem 0.6rem;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.62);
+  color: #fff;
+  font-size: 0.75rem;
+  pointer-events: none;
+}
+
+.lightbox-image-loading {
+  z-index: 1;
+}
+
 .gallery-thumbs-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -386,6 +415,20 @@
   gap: 0.5rem;
   overflow-x: auto;
   justify-content: center;
+  overscroll-behavior-x: contain;
+}
+
+.lightbox-attribution {
+  min-height: 2rem;
+  padding: 0.45rem 1rem;
+  color: var(--ash-grey);
+  font-size: 0.72rem;
+  text-align: center;
+}
+
+.lightbox-attribution a {
+  color: inherit;
+  text-underline-offset: 0.15rem;
 }
 
 .lightbox-strip-thumb {
@@ -500,11 +543,11 @@
 
 /* STICKY BOOKING CARD */
 .sticky-booking-card {
-  background-color: var(--ash-grey);
+  background-color: #fff;
   border: 1px solid rgba(81, 75, 35, 0.2);
-  border-radius: 20px;
-  padding: 1.5rem;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+  border-radius: 16px;
+  padding: 1.25rem;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.07);
   position: sticky;
   top: 5.5rem;
 }
@@ -519,7 +562,7 @@
 }
 
 .sticky-price-main {
-  font-size: 1.75rem;
+  font-size: clamp(1.45rem, 3vw, 1.75rem);
   font-weight: 900;
   color: var(--dark-khaki);
 }
@@ -530,21 +573,22 @@
 }
 
 .booking-form-box {
-  background-color: rgba(255, 255, 255, 0.9);
+  background-color: #fff;
   border: 1px solid var(--dry-sage);
-  border-radius: 12px;
+  border-radius: 10px;
   overflow: hidden;
   margin-bottom: 1rem;
 }
 
 .date-picker-row {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   border-bottom: 1px solid var(--dry-sage);
 }
 
 .date-picker-cell {
-  padding: 0.6rem 0.75rem;
+  min-width: 0;
+  padding: 0.7rem 0.75rem;
 }
 
 .date-picker-cell:first-child {
@@ -564,6 +608,7 @@
 
 .form-mini-input {
   width: 100%;
+  min-width: 0;
   background: transparent;
   border: none;
   font-size: 0.8125rem;
@@ -573,7 +618,7 @@
 }
 
 .guest-select-cell {
-  padding: 0.65rem 0.75rem;
+  padding: 0.75rem;
 }
 
 .stepper-btn {
@@ -581,8 +626,8 @@
   border: 1px solid rgba(81, 75, 35, 0.2);
   color: var(--dark-khaki);
   border-radius: 6px;
-  width: 1.5rem;
-  height: 1.5rem;
+  width: 2rem;
+  height: 2rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -619,6 +664,7 @@
 
 .btn-book-now {
   width: 100%;
+  min-height: 2.9rem;
   background-color: var(--olive-leaf);
   color: #ffffff;
   font-weight: 900;
@@ -634,4 +680,36 @@
 
 .btn-book-now:hover {
   background-color: var(--dark-khaki);
+}
+
+.btn-book-now:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+@media (max-width: 767px) {
+  .sticky-booking-card {
+    position: static;
+    padding: 1rem;
+    border-radius: 12px;
+  }
+
+  .sticky-price-header {
+    align-items: flex-start;
+    gap: 0.5rem;
+    margin-bottom: 0.9rem;
+    padding-bottom: 0.75rem;
+  }
+
+  .date-picker-cell {
+    padding: 0.65rem 0.55rem;
+  }
+
+  .form-mini-input {
+    font-size: 0.75rem;
+  }
+
+  .lightbox-footer-strip {
+    justify-content: flex-start;
+  }
 }

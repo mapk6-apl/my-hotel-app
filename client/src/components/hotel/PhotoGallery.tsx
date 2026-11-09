@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Maximize2, X, ChevronLeft, ChevronRight, ArrowLeft } from 'lucide-react';
 import { getFallbackSvgDataUri, normalizePropertyImageUrl } from '../../api/photoApi.js';
 import type { PropertyImage } from '../../store/slices/hotelSlice.js';
@@ -17,22 +17,47 @@ export const PhotoGallery: React.FC<PhotoGalleryProps> = ({
     ...image,
     image_url: normalizePropertyImageUrl(image.image_url),
   })) ?? [];
+  const gallerySignature = galleryImages.map((image) => image.image_url).join('|');
 
   const [currentIndex, setCurrentIndex] = useState<number>(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState<boolean>(false);
   const [failedImages, setFailedImages] = useState<Set<string>>(() => new Set());
+  const [loadedImageUrl, setLoadedImageUrl] = useState<string | null>(null);
 
-  const heroImage = galleryImages[currentIndex] || galleryImages[0];
+  const activeIndex = galleryImages.length ? currentIndex % galleryImages.length : 0;
+  const heroImage = galleryImages[activeIndex];
   const fallbackImage = getFallbackSvgDataUri(hotelName);
   const imageSource = (url?: string): string =>
     url && !failedImages.has(url) ? url : fallbackImage;
   const markImageFailed = (url?: string) => {
     if (url) setFailedImages((current) => new Set(current).add(url));
   };
+  const activeImageUrl = heroImage?.image_url;
+  const isImageLoading = Boolean(
+    activeImageUrl && !failedImages.has(activeImageUrl) && loadedImageUrl !== activeImageUrl
+  );
   const sideThumbnails = galleryImages
     .map((image, index) => ({ image, index }))
-    .filter(({ index }) => index !== currentIndex)
+    .filter(({ index }) => index !== activeIndex)
     .slice(0, 4);
+
+  useEffect(() => {
+    setCurrentIndex(0);
+    setFailedImages(new Set());
+    setLoadedImageUrl(null);
+    setIsLightboxOpen(false);
+  }, [hotelName, gallerySignature]);
+
+  useEffect(() => {
+    if (!isLightboxOpen) return;
+    const navigatePhotos = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setIsLightboxOpen(false);
+      if (event.key === 'ArrowRight') handleNext();
+      if (event.key === 'ArrowLeft') handlePrev();
+    };
+    document.addEventListener('keydown', navigatePhotos);
+    return () => document.removeEventListener('keydown', navigatePhotos);
+  }, [isLightboxOpen, galleryImages.length]);
 
   const handleNext = () => {
     if (galleryImages.length === 0) return;
@@ -58,17 +83,11 @@ export const PhotoGallery: React.FC<PhotoGalleryProps> = ({
             alt={heroImage?.alt_text || `Representative image for ${hotelName}`}
             className="gallery-hero-image"
             onError={() => markImageFailed(heroImage?.image_url)}
+            onLoad={() => setLoadedImageUrl(heroImage?.image_url ?? null)}
           />
+          {isImageLoading && <span className="gallery-image-loading" role="status">Loading photo…</span>}
           {galleryImages.length === 0 && (
             <span className="gallery-fallback-label">Property images are not available yet.</span>
-          )}
-          {heroImage?.attribution_name && (
-            <div className="gallery-image-credit" onClick={(event) => event.stopPropagation()}>
-              <a href={heroImage.attribution_url || undefined} target="_blank" rel="noreferrer">Photo by {heroImage.attribution_name}</a>
-              {heroImage.source_url && (
-                <> on <a href={heroImage.source_url} target="_blank" rel="noreferrer">{heroImage.source_name}</a></>
-              )}
-            </div>
           )}
           {galleryImages.length > 0 && (
             <button
@@ -109,6 +128,12 @@ export const PhotoGallery: React.FC<PhotoGalleryProps> = ({
           ))}
         </div>
       </div>
+      {heroImage?.attribution_name && (
+        <p className="gallery-attribution">
+          Photo by <a href={heroImage.attribution_url || undefined} target="_blank" rel="noreferrer">{heroImage.attribution_name}</a>
+          {heroImage.source_url && <> on <a href={heroImage.source_url} target="_blank" rel="noreferrer">{heroImage.source_name}</a></>}
+        </p>
+      )}
 
       {/* STYLED LIGHTBOX OVERLAY */}
       {isLightboxOpen && (
@@ -127,7 +152,7 @@ export const PhotoGallery: React.FC<PhotoGalleryProps> = ({
               </button>
 
               <span className="lightbox-counter">
-                {hotelName} &bull; Photo {currentIndex + 1} of {galleryImages.length}
+                {hotelName} &bull; Photo                 {activeIndex + 1} of {galleryImages.length}
               </span>
 
               <button
@@ -152,11 +177,13 @@ export const PhotoGallery: React.FC<PhotoGalleryProps> = ({
               </button>
 
               <img
-                src={imageSource(galleryImages[currentIndex]?.image_url)}
-                alt={galleryImages[currentIndex]?.alt_text || `Representative image for ${hotelName}, photo ${currentIndex + 1}`}
+                src={imageSource(galleryImages[activeIndex]?.image_url)}
+                alt={galleryImages[activeIndex]?.alt_text || `Representative image for ${hotelName}, photo ${activeIndex + 1}`}
                 className="lightbox-featured-img"
-                onError={() => markImageFailed(galleryImages[currentIndex]?.image_url)}
+                onError={() => markImageFailed(galleryImages[activeIndex]?.image_url)}
+                onLoad={() => setLoadedImageUrl(galleryImages[activeIndex]?.image_url ?? null)}
               />
+              {isImageLoading && <span className="gallery-image-loading lightbox-image-loading" role="status">Loading photo…</span>}
 
               <button
                 type="button"
@@ -168,13 +195,29 @@ export const PhotoGallery: React.FC<PhotoGalleryProps> = ({
               </button>
             </div>
 
+            <div className="lightbox-attribution" aria-live="polite">
+              {galleryImages[activeIndex]?.attribution_name && (
+                <>
+                  Photo by{' '}
+                  <a href={galleryImages[activeIndex]?.attribution_url || undefined} target="_blank" rel="noreferrer">
+                    {galleryImages[activeIndex]?.attribution_name}
+                  </a>
+                  {galleryImages[activeIndex]?.source_url && (
+                    <> on <a href={galleryImages[activeIndex]?.source_url || undefined} target="_blank" rel="noreferrer">{galleryImages[activeIndex]?.source_name}</a></>
+                  )}
+                </>
+              )}
+            </div>
+
             {/* BOTTOM THUMBNAILS STRIP */}
             <div className="lightbox-footer-strip">
               {galleryImages.map((img, idx) => (
                 <button
                   type="button"
                   key={idx}
-                  className={'lightbox-strip-thumb ' + (currentIndex === idx ? 'active' : '')}
+                  className={'lightbox-strip-thumb ' + (activeIndex === idx ? 'active' : '')}
+                  aria-label={`Show photo ${idx + 1} of ${galleryImages.length}`}
+                  aria-current={activeIndex === idx ? 'true' : undefined}
                   onClick={() => setCurrentIndex(idx)}
                 >
                   <img src={imageSource(img.image_url)} alt={img.alt_text || `${hotelName} representative photo ${idx + 1}`} onError={() => markImageFailed(img.image_url)} />

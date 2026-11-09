@@ -324,6 +324,96 @@
   outline: none;
 }
 
+.guest-picker-anchor {
+  position: relative;
+  min-width: 0;
+}
+
+.guest-picker-trigger {
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--dark-khaki);
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+}
+
+.guest-picker-popover {
+  position: absolute;
+  top: calc(100% + 0.65rem);
+  left: 0;
+  z-index: 80;
+  width: min(18rem, calc(100vw - 3rem));
+  padding: 1rem;
+  border: 1px solid var(--dry-sage);
+  border-radius: 12px;
+  background: #fff;
+  color: var(--dark-khaki);
+  box-shadow: 0 8px 20px rgba(32, 34, 20, 0.16);
+}
+
+.guest-picker-popover > div:first-child {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.75rem;
+  font-size: 0.85rem;
+}
+
+.guest-picker-count {
+  color: rgba(81, 75, 35, 0.72);
+  font-size: 0.75rem;
+}
+
+.guest-picker-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin: 0.9rem 0;
+}
+
+.guest-picker-controls output {
+  min-width: 2rem;
+  text-align: center;
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.guest-picker-stepper {
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 1px solid var(--dry-sage);
+  border-radius: 50%;
+  background: #fff;
+  color: var(--dark-khaki);
+  cursor: pointer;
+}
+
+.guest-picker-stepper:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.guest-picker-done {
+  width: 100%;
+  min-height: 2.25rem;
+  border: 0;
+  border-radius: 8px;
+  background: var(--olive-leaf);
+  color: #fff;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
 .field-value-text {
   font-size: 0.8125rem;
   font-weight: 700;

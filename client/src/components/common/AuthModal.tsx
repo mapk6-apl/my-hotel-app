@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
+import { useLocation } from 'react-router-dom';
 import { setToken, setUser } from '../../store/slices/authSlice.js';
 import { X, Sparkles, User, Mail, Lock } from 'lucide-react';
 import { API_BASE_URL } from '../../api/axiosClient.js';
@@ -42,6 +43,7 @@ const isAuthResponse = (value: unknown): value is AuthResponse => {
 
 export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onShowToast }) => {
   const dispatch = useDispatch();
+  const location = useLocation();
 
   const [isSignUp, setIsSignUp] = useState<boolean>(false);
   const [email, setEmail] = useState<string>('');
@@ -136,6 +138,16 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onShowToa
   };
 
   const handleGoogleSignIn = () => {
+    try {
+      sessionStorage.setItem('breakaway-auth-return-location', JSON.stringify({
+        pathname: location.pathname,
+        search: location.search,
+        state: location.state,
+      }));
+    } catch {
+      setErrorMessage('Your current page could not be saved for sign-in. Please try again.');
+      return;
+    }
     window.location.assign(`${API_BASE_URL}/auth/google`);
   };
 

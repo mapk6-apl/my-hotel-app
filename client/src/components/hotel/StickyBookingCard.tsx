@@ -29,6 +29,7 @@ export type StickyBookingCardProps = {
   initialCheckIn?: string;
   initialCheckOut?: string;
   initialGuests?: number;
+  initialRoomId?: number;
   onBookNow: (bookingDetails: BookingPayload) => void;
 };
 
@@ -40,6 +41,7 @@ export const StickyBookingCard: React.FC<StickyBookingCardProps> = ({
   initialCheckIn,
   initialCheckOut,
   initialGuests,
+  initialRoomId,
   onBookNow,
 }) => {
   const getTodayString = (offsetDays = 0) => {
@@ -50,10 +52,18 @@ export const StickyBookingCard: React.FC<StickyBookingCardProps> = ({
 
   const [checkIn, setCheckIn] = useState<string>(initialCheckIn ?? getTodayString(1));
   const [checkOut, setCheckOut] = useState<string>(initialCheckOut ?? getTodayString(4));
-  const [guests, setGuests] = useState<number>(initialGuests ?? 2);
+  const [guests, setGuests] = useState<number>(Math.min(8, Math.max(1, initialGuests ?? 2)));
   const [selectedRoomId, setSelectedRoomId] = useState<number | null>(
-    rooms.find((room) => room.is_available && room.capacity >= 2)?.id ?? null
+    initialRoomId ?? rooms.find((room) => room.is_available && room.capacity >= Math.max(1, initialGuests ?? 2))?.id ?? null
   );
+
+  useEffect(() => {
+    if (initialCheckIn) setCheckIn(initialCheckIn);
+    if (initialCheckOut) setCheckOut(initialCheckOut);
+    if (initialGuests !== undefined) setGuests(Math.min(8, Math.max(1, initialGuests)));
+    if (initialRoomId !== undefined) setSelectedRoomId(initialRoomId);
+  }, [initialCheckIn, initialCheckOut, initialGuests, initialRoomId]);
+
   const availableRooms = rooms.filter((room) => room.is_available && room.capacity >= guests);
   const selectedRoom = availableRooms.find((room) => room.id === selectedRoomId) ?? availableRooms[0];
   const nightlyPrice = selectedRoom ? Number(selectedRoom.price_per_night) : startingPrice;
@@ -189,6 +199,7 @@ export const StickyBookingCard: React.FC<StickyBookingCardProps> = ({
                   onClick={() => setGuests(prev => Math.max(1, prev - 1))}
                   className="stepper-btn"
                   disabled={guests <= 1}
+                  aria-label="Remove one guest"
                 >
                   <Minus size={12} />
                 </button>
@@ -200,6 +211,7 @@ export const StickyBookingCard: React.FC<StickyBookingCardProps> = ({
                   onClick={() => setGuests(prev => Math.min(8, prev + 1))}
                   className="stepper-btn"
                   disabled={guests >= 8}
+                  aria-label="Add one guest"
                 >
                   <Plus size={12} />
                 </button>

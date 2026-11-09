@@ -85,6 +85,11 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onNavigateHome, onOp
       setError('Choose a property, room, and stay dates before continuing.');
       return;
     }
+    if (!user) {
+      setError('Sign in to save this reservation and continue.');
+      onOpenAuthModal();
+      return;
+    }
 
     submissionInProgress.current = true;
     setIsProcessing(true);
@@ -110,10 +115,12 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onNavigateHome, onOp
     if (!bookingDraft || reservation) return;
     navigate(`/hotel/${bookingDraft.hotelId}`, {
       state: {
+        bookingDraft,
         bookingSearch: {
           checkIn: bookingDraft.checkIn,
           checkOut: bookingDraft.checkOut,
           guests: bookingDraft.guests,
+          roomId: bookingDraft.roomId,
         },
       },
     });
@@ -209,7 +216,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onNavigateHome, onOp
                 </div>
               </div>
               <button type="submit" disabled={isProcessing} className="btn-pay-now">
-                {isProcessing ? 'Saving reservation…' : reservation ? 'Continue to payment' : 'Continue to payment'}
+                {isProcessing ? 'Saving reservation…' : !user ? 'Sign in to continue' : 'Continue to payment'}
               </button>
             </aside>
           </form>

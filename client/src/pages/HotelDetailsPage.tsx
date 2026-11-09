@@ -51,6 +51,49 @@ type PropertyDetailsResponse = Omit<PropertyDetails, 'starting_price' | 'images'
   reviews?: PropertyReview[];
 };
 
+type CheckoutBookingDraft = BookingPayload & {
+  hotelId: number;
+  hotelName: string;
+  city: string;
+  heroImage: string | null;
+};
+
+const pendingBookingKey = 'breakaway-pending-booking';
+const pendingBookingMaxAge = 30 * 60 * 1000;
+
+const readPendingBooking = (hotelId: number): CheckoutBookingDraft | undefined => {
+  try {
+    const stored = sessionStorage.getItem(pendingBookingKey);
+    if (!stored) return undefined;
+    const parsed: unknown = JSON.parse(stored);
+    if (!parsed || typeof parsed !== 'object' || !('draft' in parsed) || !('createdAt' in parsed)) {
+      sessionStorage.removeItem(pendingBookingKey);
+      return undefined;
+    }
+    const entry = parsed as { draft?: CheckoutBookingDraft; createdAt?: number };
+    const draft = entry.draft;
+    if (
+      typeof entry.createdAt !== 'number' ||
+      Date.now() - entry.createdAt > pendingBookingMaxAge ||
+      !draft ||
+      draft.hotelId !== hotelId ||
+      !Number.isInteger(draft.roomId) ||
+      !Number.isInteger(draft.guests) ||
+      draft.guests < 1 ||
+      !Number.isFinite(draft.startingPrice) ||
+      !Number.isFinite(draft.grandTotal) ||
+      !draft.checkIn ||
+      !draft.checkOut
+    ) {
+      sessionStorage.removeItem(pendingBookingKey);
+      return undefined;
+    }
+    return draft;
+  } catch {
+    return undefined;
+  }
+};
+
 export type HotelDetailsPageProps = {
   hotelId?: number;
   onOpenAuthModal?: () => void;
@@ -66,7 +109,15 @@ export const HotelDetailsPage: React.FC<HotelDetailsPageProps> = ({
   const dispatch = useDispatch();
   const location = useLocation();
   const isFavorite = useSelector((state: RootState) => state.hotels.favorites.includes(activeId));
-  const bookingSearch = (location.state as { bookingSearch?: { checkIn: string; checkOut: string; guests: number } } | null)?.bookingSearch;
+  const locationState = location.state as {
+    bookingSearch?: { checkIn: string; checkOut: string; guests: number };
+    bookingDraft?: CheckoutBookingDraft;
+  } | null;
+  const bookingSearch = locationState?.bookingSearch;
+  const restoredBooking = locationState?.bookingDraft ?? readPendingBooking(activeId);
+  const initialCheckIn = restoredBooking?.checkIn ?? bookingSearch?.checkIn;
+  const initialCheckOut = restoredBooking?.checkOut ?? bookingSearch?.checkOut;
+  const initialGuests = restoredBooking?.guests ?? bookingSearch?.guests;
 
   const [hotel, setHotel] = useState<PropertyDetails | null>(null);
   const [loading, setLoading] = useState(true);
@@ -149,16 +200,25 @@ export const HotelDetailsPage: React.FC<HotelDetailsPageProps> = ({
 
   const handleBookNow = (bookingDetails: BookingPayload) => {
     if (!hotel) return;
+    const bookingDraft: CheckoutBookingDraft = {
+      ...bookingDetails,
+      hotelId: hotel.id,
+      hotelName: hotel.name,
+      city: hotel.city,
+      heroImage: hotel.images[0]?.image_url ?? null,
+    };
+    try {
+      sessionStorage.setItem(pendingBookingKey, JSON.stringify({
+        draft: bookingDraft,
+        createdAt: Date.now(),
+      }));
+    } catch {
+      window.dispatchEvent(new CustomEvent('app-toast', {
+        detail: { message: 'Your booking can continue, but this browser could not save a recovery copy.', type: 'error' },
+      }));
+    }
     navigate('/checkout', {
-      state: {
-        bookingDraft: {
-          ...bookingDetails,
-          hotelId: hotel.id,
-          hotelName: hotel.name,
-          city: hotel.city,
-          heroImage: hotel.images[0]?.image_url ?? null,
-        },
-      },
+      state: { bookingDraft },
     });
   };
 
@@ -257,11 +317,10 @@ export const HotelDetailsPage: React.FC<HotelDetailsPageProps> = ({
               <StickyBookingCard
                 startingPrice={hotel.starting_price}
                 rooms={hotel.rooms}
-                {...(bookingSearch ? {
-                  initialCheckIn: bookingSearch.checkIn,
-                  initialCheckOut: bookingSearch.checkOut,
-                  initialGuests: bookingSearch.guests,
-                } : {})}
+                {...(initialCheckIn ? { initialCheckIn } : {})}
+                {...(initialCheckOut ? { initialCheckOut } : {})}
+                {...(initialGuests !== undefined ? { initialGuests } : {})}
+                {...(restoredBooking ? { initialRoomId: restoredBooking.roomId } : {})}
                 {...(guestReviewRating !== null ? { rating: guestReviewRating } : {})}
                 reviewCount={hotel.reviews.length}
                 onBookNow={handleBookNow}

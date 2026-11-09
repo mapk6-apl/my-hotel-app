@@ -21,6 +21,33 @@ import { ProtectedRoute } from './components/common/ProtectedRoute.js';
 import { Toast, type ToastType } from './components/common/Toast.js';
 import { API_BASE_URL } from './api/axiosClient.js';
 
+const authReturnLocationKey = 'breakaway-auth-return-location';
+
+const takeAuthReturnLocation = (): { pathname: string; search: string; state: unknown } | null => {
+  try {
+    const stored = sessionStorage.getItem(authReturnLocationKey);
+    sessionStorage.removeItem(authReturnLocationKey);
+    if (!stored) return null;
+    const value: unknown = JSON.parse(stored);
+    if (
+      !value ||
+      typeof value !== 'object' ||
+      !('pathname' in value) ||
+      typeof value.pathname !== 'string' ||
+      !value.pathname.startsWith('/') ||
+      value.pathname.startsWith('//') ||
+      value.pathname === '/auth/callback'
+    ) return null;
+    return {
+      pathname: value.pathname,
+      search: 'search' in value && typeof value.search === 'string' ? value.search : '',
+      state: 'state' in value ? value.state : null,
+    };
+  } catch {
+    return null;
+  }
+};
+
 const GoogleAuthCallbackPage: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const location = useLocation();
@@ -68,7 +95,15 @@ const GoogleAuthCallbackPage: React.FC = () => {
 
         dispatch(setToken(data.token));
         const user = await dispatch(fetchCurrentUser()).unwrap();
-        navigate(user.role === 'admin' ? '/admin' : '/', { replace: true });
+        const returnLocation = takeAuthReturnLocation();
+        if (returnLocation) {
+          navigate(`${returnLocation.pathname}${returnLocation.search}`, {
+            state: returnLocation.state,
+            replace: true,
+          });
+        } else {
+          navigate(user.role === 'admin' ? '/admin' : '/', { replace: true });
+        }
       } catch (error: unknown) {
         setErrorMessage(
           error instanceof TypeError
@@ -201,12 +236,10 @@ export const App: React.FC = () => {
             <Route
               path="/checkout"
               element={
-                <ProtectedRoute>
-                  <CheckoutPage
-                    onNavigateHome={() => { window.location.href = '/'; }}
-                    onOpenAuthModal={() => setIsAuthOpen(true)}
-                  />
-                </ProtectedRoute>
+                <CheckoutPage
+                  onNavigateHome={() => { window.location.href = '/'; }}
+                  onOpenAuthModal={() => setIsAuthOpen(true)}
+                />
               }
             />
 
