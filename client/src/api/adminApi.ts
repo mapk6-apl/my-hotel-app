@@ -11,9 +11,11 @@ export interface AdminAccommodation {
   starting_price: number | string;
   gallery_images?: Array<{
     image_url: string;
+    photo_id?: string | null;
     attribution_name?: string | null;
     attribution_url?: string | null;
     source_name?: string | null;
+    source_url?: string | null;
     alt_text?: string | null;
   }>;
 }

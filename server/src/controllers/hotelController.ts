@@ -4,7 +4,18 @@ import { pool } from '../config/db.js';
 //GET /api/hotels fetches Break-Away Hotel branches with optional search & filters (city, price, rating)
 export const getAllHotels = async (req: Request, res: Response): Promise<void> => {
     try {
-        const { city, minPrice, maxPrice, starRating } = req.query; 
+        const { city, minPrice, maxPrice, starRating, guests } = req.query;
+        const requestedAmenities = Array.isArray(req.query.amenity)
+            ? req.query.amenity.map(String).filter(Boolean)
+            : typeof req.query.amenity === 'string'
+                ? [req.query.amenity].filter(Boolean)
+                : [];
+        const guestCount = guests === undefined ? undefined : Number(guests);
+
+        if (guestCount !== undefined && (!Number.isInteger(guestCount) || guestCount < 1)) {
+            res.status(400).json({ error: 'Guest count must be a positive whole number.' });
+            return;
+        }
         
         let queryText = ` 
         SELECT a.id, a.name, a.description, a.address, a.city, a.latitude, a.longitude, a.star_rating,
@@ -18,7 +29,9 @@ export const getAllHotels = async (req: Request, res: Response): Promise<void> =
                     'attribution_name', to_jsonb(img)->>'attribution_name',
                     'attribution_url', to_jsonb(img)->>'attribution_url',
                     'source_name', to_jsonb(img)->>'source_name',
-                    'alt_text', to_jsonb(img)->>'alt_text'
+                    'source_url', to_jsonb(img)->>'source_url',
+                    'alt_text', to_jsonb(img)->>'alt_text',
+                    'photo_id', to_jsonb(img)->>'photo_id'
                 )
                 ORDER BY img.is_hero DESC,
                     (to_jsonb(img)->>'display_order')::integer NULLS LAST,
@@ -42,7 +55,28 @@ export const getAllHotels = async (req: Request, res: Response): Promise<void> =
         if (starRating) { 
             queryParams.push(Number(starRating)); 
             whereClauses.push(`a.star_rating >= $${queryParams.length}`); 
-        } 
+        }
+
+        if (guestCount !== undefined) {
+            queryParams.push(guestCount);
+            whereClauses.push(`EXISTS (
+                SELECT 1 FROM rooms guest_room
+                WHERE guest_room.accommodation_id = a.id
+                  AND guest_room.is_available = true
+                  AND guest_room.capacity >= $${queryParams.length}
+            )`);
+        }
+
+        if (requestedAmenities.length > 0) {
+            queryParams.push(requestedAmenities);
+            whereClauses.push(`(
+                SELECT COUNT(DISTINCT amenity.name)
+                FROM accommodation_amenities property_amenity
+                JOIN amenities amenity ON amenity.id = property_amenity.amenity_id
+                WHERE property_amenity.accommodation_id = a.id
+                  AND amenity.name = ANY($${queryParams.length}::text[])
+            ) = cardinality($${queryParams.length}::text[])`);
+        }
         
         if (whereClauses.length > 0) { 
             queryText += ` WHERE ` + whereClauses.join(' AND '); 
@@ -75,6 +109,34 @@ export const getAllHotels = async (req: Request, res: Response): Promise<void> =
     }
 }
 
+export const getHotelFilterOptions = async (_req: Request, res: Response): Promise<void> => {
+    try {
+        const [amenitiesResult, guestsResult, pricesResult] = await Promise.all([
+            pool.query<{ name: string }>('SELECT name FROM amenities ORDER BY name'),
+            pool.query<{ max_guests: number }>(
+                'SELECT COALESCE(MAX(capacity), 1)::integer AS max_guests FROM rooms WHERE is_available = true'
+            ),
+            pool.query<{ min_price: number; max_price: number }>(
+                `SELECT COALESCE(MIN(price_per_night), 0)::integer AS min_price,
+                        COALESCE(MAX(price_per_night), 0)::integer AS max_price
+                 FROM rooms WHERE is_available = true`
+            ),
+        ]);
+        res.status(200).json({
+            success: true,
+            data: {
+                amenities: amenitiesResult.rows.map((row) => row.name),
+                maxGuests: guestsResult.rows[0]?.max_guests ?? 1,
+                minPrice: pricesResult.rows[0]?.min_price ?? 0,
+                maxPrice: pricesResult.rows[0]?.max_price ?? 0,
+            },
+        });
+    } catch (error) {
+        console.error('Error fetching property filter options:', error);
+        res.status(500).json({ error: 'Failed to fetch property filter options.' });
+    }
+};
+
 //GET /api/hotels/:id fetches hotel details, gallery, rooms, amenities, and guest reviews
 export const getHotelById = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -90,7 +152,7 @@ export const getHotelById = async (req: Request, res: Response): Promise<void> =
             return; 
         }
 
-        const imagesQuery = `SELECT id, image_url, is_hero,
+        const imagesQuery = `SELECT id, image_url, is_hero, alt_text, photo_id, source_url,
             to_jsonb(image_row)->>'attribution_name' AS attribution_name,
             to_jsonb(image_row)->>'attribution_url' AS attribution_url,
             to_jsonb(image_row)->>'source_name' AS source_name

@@ -19,10 +19,26 @@ const PORT = process.env.PORT || 5001;
 
 //1.Middleware Configuration
 
-//CORS (Cross-Origin Resource Sharing); allows frontend to communicate with backend server
+// CORS allows the configured client origin; development also uses Vite's loopback aliases.
+const allowedClientOrigins = new Set(
+    (process.env.CLIENT_URL || 'http://localhost:5173')
+        .split(',')
+        .map((origin) => origin.trim())
+        .filter(Boolean)
+);
+if (process.env.NODE_ENV !== 'production') {
+    allowedClientOrigins.add('http://localhost:5173');
+    allowedClientOrigins.add('http://127.0.0.1:5173');
+}
 app.use(cors({
-    origin: process.env.CLIENT_URL || 'http://localhost:5173',
-    credentials: true, //allows sending cookies and auuthorization headers
+    origin: (origin, callback) => {
+        if (!origin || allowedClientOrigins.has(origin)) {
+            callback(null, true);
+            return;
+        }
+        callback(new Error('Request origin is not allowed by the CORS policy.'));
+    },
+    credentials: true,
 }));
 
 app.use(express.json()); //express middleware; parses incoming JSON payload bodies 

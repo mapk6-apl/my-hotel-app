@@ -208,7 +208,7 @@ export const AdminDashboardPage: React.FC<AdminDashboardPageProps> = ({ onNaviga
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
           <div>
             <h1 style={{ fontSize: '1.75rem', fontWeight: 900, color: 'var(--dark-khaki)', margin: 0 }}>
-              Admin Management Portal
+              Admin management
             </h1>
             <p style={{ fontSize: '0.8125rem', opacity: 0.8, color: 'var(--dark-khaki)', margin: '0.25rem 0 0' }}>
               Manage live accommodation records and customer bookings.

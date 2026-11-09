@@ -345,3 +345,42 @@
   cursor: pointer;
   margin-top: 0.5rem;
 }
+
+@media (max-width: 640px) {
+  .profile-page-wrapper {
+    padding: 1.25rem 1rem;
+  }
+
+  .profile-banner {
+    padding: 1.25rem;
+  }
+
+  .profile-user-badge {
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .profile-user-name {
+    font-size: 1.15rem;
+    overflow-wrap: anywhere;
+  }
+
+  .profile-tab-bar {
+    gap: 0.25rem;
+    overflow-x: auto;
+  }
+
+  .profile-tab-btn {
+    flex: 0 0 auto;
+    font-size: 0.75rem;
+  }
+
+  .profile-empty-card,
+  .settings-card {
+    padding: 1.25rem;
+  }
+
+  .bookings-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

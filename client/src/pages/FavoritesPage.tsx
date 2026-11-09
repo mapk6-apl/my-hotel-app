@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { Navbar } from '../components/common/Navbar.js';
 import { Footer } from '../components/common/Footer.js';
-import { fetchHotels, type Hotel } from '../store/slices/hotelSlice.js';
+import { fetchHotels, resetFilters, type Hotel } from '../store/slices/hotelSlice.js';
 import type { RootState, AppDispatch } from '../store/store.js';
 import { Heart, Compass } from 'lucide-react';
 import { HotelCard } from '../components/hotel/HotelCard.js';
@@ -20,14 +20,8 @@ export const FavoritesPage: React.FC<FavoritesPageProps> = ({ onOpenAuthModal, o
   const { hotels, favorites, loading, error } = useSelector((state: RootState) => state.hotels);
 
   useEffect(() => {
-    dispatch(
-      fetchHotels({
-        city: '',
-        minPrice: 0,
-        maxPrice: 0,
-        starRating: 0,
-      })
-    );
+    dispatch(resetFilters());
+    dispatch(fetchHotels({ city: '', minPrice: '', maxPrice: '', starRating: '', guests: '', amenities: [] }));
   }, [dispatch]);
 
   const favoritedHotels = hotels.filter((hotel) => favorites.includes(hotel.id));
@@ -46,7 +40,7 @@ export const FavoritesPage: React.FC<FavoritesPageProps> = ({ onOpenAuthModal, o
           Saved Favorites{!loading && !error ? ` (${favoritedHotels.length})` : ''}
         </h1>
         <p className="hero-subtitle">
-          Keep track of your favorite luxury hotels and suites across South Africa.
+          Your saved properties are kept here.
         </p>
       </header>
 
@@ -56,7 +50,7 @@ export const FavoritesPage: React.FC<FavoritesPageProps> = ({ onOpenAuthModal, o
         ) : error ? (
           <div role="alert">
             <p>Your saved properties could not be loaded: {error}</p>
-            <button type="button" className="btn-search-submit" onClick={() => dispatch(fetchHotels({ city: '', minPrice: '', maxPrice: '', starRating: '' }))}>
+            <button type="button" className="btn-search-submit" onClick={() => dispatch(fetchHotels({ city: '', minPrice: '', maxPrice: '', starRating: '', guests: '', amenities: [] }))}>
               Try again
             </button>
           </div>
@@ -71,7 +65,7 @@ export const FavoritesPage: React.FC<FavoritesPageProps> = ({ onOpenAuthModal, o
             <Heart size={48} color="#656839" style={{ margin: '0 auto 1rem' }} />
             <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#514B23', marginBottom: '0.5rem' }}>No Saved Favorites Yet</h3>
             <p style={{ fontSize: '0.875rem', color: '#514B23', opacity: 0.85, marginBottom: '1.5rem' }}>
-              Click the heart icon on any lodging card while exploring to save your favorite hotels here!
+              Select the heart on a property to save it here.
             </p>
             <a href="/explore" className="btn-search-submit" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem 1.5rem', textDecoration: 'none' }}>
               <Compass size={16} />

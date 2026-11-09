@@ -4,29 +4,13 @@ import { useNavigate } from 'react-router-dom';
 import { Navbar } from '../components/common/Navbar.js';
 import { HotelCard } from '../components/hotel/HotelCard.js';
 import { Footer } from '../components/common/Footer.js';
+import { SearchBar, type BookingSearch } from '../components/hotel/SearchBar.js';
 import { setFilters } from '../store/slices/hotelSlice.js';
 import type { AppDispatch } from '../store/store.js';
 import { hotelApi } from '../api/hotelApi.js';
 import type { Hotel } from '../store/slices/hotelSlice.js';
-import { Search, MapPin, Calendar, Users, Sparkles, ShieldCheck, Award, Clock, ArrowRight } from 'lucide-react';
+import { Sparkles, ShieldCheck, Award, Clock, ArrowRight } from 'lucide-react';
 import '../styles/screen1.css';
-
-const toDateInput = (date: Date): string =>
-  `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-
-const getDateOffset = (offset: number): string => {
-  const date = new Date();
-  date.setDate(date.getDate() + offset);
-  return toDateInput(date);
-};
-
-const getDateOffsetFrom = (value: string, offset: number): string => {
-  const [year, month, day] = value.split('-').map(Number);
-  if (!year || !month || !day) return getDateOffset(offset);
-  const date = new Date(year, month - 1, day);
-  date.setDate(date.getDate() + offset);
-  return toDateInput(date);
-};
 
 export type LandingPageProps = {
   onOpenAuthModal?: () => void;
@@ -37,10 +21,6 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onOpenAuthModal, onSel
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
 
-  const [cityInput, setCityInput] = useState<string>('');
-  const [guestsInput, setGuestsInput] = useState<number>(2);
-  const [checkIn, setCheckIn] = useState(() => getDateOffset(1));
-  const [checkOut, setCheckOut] = useState(() => getDateOffset(4));
   const [featuredHotels, setFeaturedHotels] = useState<Hotel[]>([]);
   const [featuredLoading, setFeaturedLoading] = useState(true);
   const [featuredError, setFeaturedError] = useState<string | null>(null);
@@ -65,10 +45,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onOpenAuthModal, onSel
     void loadFeaturedHotels();
   }, [loadFeaturedHotels]);
 
-  const handleHeroSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    dispatch(setFilters({ city: cityInput.trim() }));
-    navigate('/explore', { state: { bookingSearch: { checkIn, checkOut, guests: guestsInput } } });
+  const handleHeroSearch = (search: BookingSearch) => {
+    dispatch(setFilters({ city: search.city }));
+    navigate('/explore', { state: { bookingSearch: search } });
   };
 
   const handleSelect = (id: number) => {
@@ -88,7 +67,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onOpenAuthModal, onSel
         <div className="hero-content-wrapper">
           <div className="hero-badge">
             <Sparkles size={14} className="badge-icon" />
-            <span>STAYS ACROSS SOUTH AFRICA</span>
+            <span>Break-Away Hotels</span>
           </div>
 
           <h1 className="hero-main-title">
@@ -97,64 +76,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onOpenAuthModal, onSel
           </h1>
 
           <p className="hero-description">
-            Discover luxury hotel suites, boutique rooms, and safari resorts in South Africa.
-            Explore guest reviews where available, view property locations, and save a reservation online.
+            Find a room, check its details and rates, and make a reservation.
           </p>
 
           {/* HERO SEARCH ENGINE CARD */}
-          <div className="hero-search-card">
-            <form onSubmit={handleHeroSearch} className="hero-search-grid">
-              <div className="hero-input-field">
-                <MapPin size={18} color="#656839" />
-                <div className="field-content">
-                  <label className="field-label">Destination</label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Polokwane, Cape Town..."
-                    value={cityInput}
-                    onChange={(e) => setCityInput(e.target.value)}
-                    className="field-input"
-                  />
-                </div>
-              </div>
-
-              <div className="hero-input-field">
-                <Calendar size={18} color="#656839" />
-                <div className="field-content">
-                  <label className="field-label">Travel Dates</label>
-                  <div className="hero-date-inputs">
-                    <input aria-label="Check-in date" type="date" min={getDateOffset(0)} value={checkIn} onChange={(event) => {
-                      setCheckIn(event.target.value);
-                      if (event.target.value >= checkOut) setCheckOut(getDateOffsetFrom(event.target.value, 1));
-                    }} />
-                    <input aria-label="Check-out date" type="date" min={getDateOffsetFrom(checkIn, 1)} value={checkOut} onChange={(event) => setCheckOut(event.target.value)} />
-                  </div>
-                </div>
-              </div>
-
-              <div className="hero-input-field">
-                <Users size={18} color="#656839" />
-                <div className="field-content">
-                  <label className="field-label">Travelers</label>
-                  <select
-                    value={guestsInput}
-                    onChange={(e) => setGuestsInput(Number(e.target.value))}
-                    className="field-select"
-                  >
-                    <option value={1}>1 Guest</option>
-                    <option value={2}>2 Guests</option>
-                    <option value={3}>3 Guests</option>
-                    <option value={4}>4 Guests</option>
-                  </select>
-                </div>
-              </div>
-
-              <button type="submit" className="hero-search-button">
-                <Search size={18} />
-                <span>EXPLORE STAYS</span>
-              </button>
-            </form>
-          </div>
+          <SearchBar onSearch={handleHeroSearch} />
 
           {/* VALUE PROPOSITION BADGES */}
           <div className="hero-features-bar">
@@ -170,9 +96,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onOpenAuthModal, onSel
         <div className="featured-container">
           <div className="section-header-block">
             <div>
-              <h2 className="featured-title">Top Featured Lodgings</h2>
+              <h2 className="featured-title">Featured properties</h2>
               <p className="featured-subtitle">
-                A selection from current property listings, ordered by property star rating.
+                Six properties from the current catalogue.
               </p>
             </div>
             <a href="/explore" className="btn-view-all-link">
@@ -209,8 +135,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onOpenAuthModal, onSel
       {/* 3. CALL TO ACTION BANNER */}
       <section className="cta-banner-section">
         <div className="cta-banner-content">
-          <h2>Ready to explore luxury stays across South Africa?</h2>
-          <p>Filter by price, location, and star rating in our dedicated Explore portal.</p>
+          <h2>Find a place for your next stay</h2>
+          <p>Browse the full property catalogue and compare room rates.</p>
           <a href="/explore" className="btn-cta-explore">
             <span>EXPLORE ALL HOTELS</span>
             <ArrowRight size={16} />

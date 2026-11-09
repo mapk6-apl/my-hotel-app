@@ -178,8 +178,7 @@ export const ProfilePage: React.FC = () => {
                 <Compass size={48} color="#656839" style={{ margin: '0 auto 1rem' }} />
                 <h3 className="empty-title">No Active Reservations</h3>
                 <p className="empty-subtitle">
-                  Hello {user?.full_name || 'Traveler'}! You haven't made any hotel bookings yet.
-                  Explore our luxury suites and resorts across South Africa to plan your next break-away!
+                  You have not made a reservation yet. Browse properties and room rates to get started.
                 </p>
                 <a href="/explore" className="btn-explore-cta">
                   <Building size={16} />

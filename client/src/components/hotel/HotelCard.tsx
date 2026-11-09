@@ -54,6 +54,8 @@ export const HotelCard: React.FC<HotelCardProps> = ({ hotel, onViewDetails }) =>
       {/* CAROUSEL IMAGE CONTAINER */}
       <div className="card-image-wrapper">
         <img
+          loading="lazy"
+          decoding="async"
           src={gallery.length ? normalizePropertyImageUrl(gallery[imageIndex]?.image_url || gallery[0]?.image_url || '') : placeholderImage}
           alt={gallery[imageIndex]?.alt_text || `Representative image for ${hotel.name}`}
           className="card-image"
@@ -62,15 +64,14 @@ export const HotelCard: React.FC<HotelCardProps> = ({ hotel, onViewDetails }) =>
           }}
         />
         {gallery[imageIndex]?.attribution_name && (
-          <a
-            href={gallery[imageIndex]?.attribution_url || undefined}
-            target="_blank"
-            rel="noreferrer"
-            className="card-image-credit"
-            onClick={(event) => event.stopPropagation()}
-          >
-            Photo by {gallery[imageIndex]?.attribution_name} / {gallery[imageIndex]?.source_name}
-          </a>
+          <div className="card-image-credit">
+            <a href={gallery[imageIndex]?.attribution_url || undefined} target="_blank" rel="noreferrer" onClick={(event) => event.stopPropagation()}>
+              Photo by {gallery[imageIndex]?.attribution_name}
+            </a>
+            {gallery[imageIndex]?.source_url && (
+              <> / <a href={gallery[imageIndex].source_url!} target="_blank" rel="noreferrer" onClick={(event) => event.stopPropagation()}>{gallery[imageIndex]?.source_name}</a></>
+            )}
+          </div>
         )}
         {gallery.length > 1 && (
           <>

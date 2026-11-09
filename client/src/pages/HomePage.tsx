@@ -29,8 +29,8 @@ export const HomePage: React.FC<HomePageProps> = ({ onOpenAuthModal, onSelectHot
 
             {/* 2. hero banner */}
             <header className="hero-header">
-                <h1 className="hero-title">Find Your Perfect Break-Away Lodging</h1>
-                <p className="hero-subtitle"> Discover luxury suites, boutique rooms, and holiday resorts in South Africa. </p>
+                <h1 className="hero-title">Find a Break-Away stay</h1>
+                <p className="hero-subtitle">Browse properties, room options and nightly rates.</p>
             </header>
 
             {/* 3. main layout */}

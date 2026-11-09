@@ -1,13 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Navbar } from '../components/common/Navbar.js';
 import { SearchFilterBar } from '../components/hotel/SearchFilterBar.js';
+import { SearchBar, type BookingSearch } from '../components/hotel/SearchBar.js';
 import { HotelGrid } from '../components/hotel/HotelGrid.js';
 import { Footer } from '../components/common/Footer.js';
 import { fetchHotels } from '../store/slices/hotelSlice.js';
 import type { RootState, AppDispatch } from '../store/store.js';
-import { Compass, Search } from 'lucide-react';
 import { setFilters } from '../store/slices/hotelSlice.js';
 import '../styles/screen1.css';
 
@@ -21,16 +21,11 @@ export const ExplorePage: React.FC<ExplorePageProps> = ({ onOpenAuthModal, onSel
   const navigate = useNavigate();
   const location = useLocation();
   const { hotels, loading, error, filters } = useSelector((state: RootState) => state.hotels);
-  const [cityInput, setCityInput] = useState(filters.city);
-  const searchDetails = (location.state as { bookingSearch?: { checkIn: string; checkOut: string; guests: number } } | null)?.bookingSearch;
+  const searchDetails = (location.state as { bookingSearch?: BookingSearch } | null)?.bookingSearch;
 
   useEffect(() => {
     dispatch(fetchHotels(filters));
   }, [dispatch, filters]);
-
-  useEffect(() => {
-    setCityInput(filters.city);
-  }, [filters.city]);
 
   const handleSelect = (id: number) => {
     if (onSelectHotel) {
@@ -40,40 +35,37 @@ export const ExplorePage: React.FC<ExplorePageProps> = ({ onOpenAuthModal, onSel
     }
   };
 
-  const handleSearch = (event: React.FormEvent) => {
-    event.preventDefault();
-    dispatch(setFilters({ city: cityInput.trim() }));
+  const handleSearch = (search: BookingSearch) => {
+    dispatch(setFilters({ city: search.city }));
+    navigate('/explore', { replace: true, state: { bookingSearch: search } });
   };
 
   return (
     <div className="page-container">
       <Navbar {...(onOpenAuthModal ? { onOpenAuthModal } : {})} />
 
-      {/* DEDICATED EXPLORE HEADER BANNER */}
       <header className="explore-header-banner">
         <div className="explore-header-content">
-          <div className="explore-badge">
-            <Compass size={14} />
-            <span>EXPLORE LODGING PORTAL</span>
-          </div>
-          <h1 className="explore-main-title">Explore Accommodations</h1>
+          <h1 className="explore-main-title">Explore properties</h1>
           <p className="explore-sub-title">
-            Browse our full catalog of luxury hotels, safari lodges, and waterfront resorts in South Africa.
+            Search the full Break-Away Hotels catalogue.
           </p>
         </div>
       </header>
 
-      <form onSubmit={handleSearch} className="explore-search-bar" role="search">
-        <label className="sr-only" htmlFor="explore-destination">Destination or city</label>
-        <Search size={18} aria-hidden="true" />
-        <input
-          id="explore-destination"
-          value={cityInput}
-          onChange={(event) => setCityInput(event.target.value)}
-          placeholder="Search destination or city"
+      <section className="explore-search-section">
+        <SearchBar
+          initialSearch={{
+            city: filters.city,
+            ...(searchDetails ? {
+              checkIn: searchDetails.checkIn,
+              checkOut: searchDetails.checkOut,
+              guests: searchDetails.guests,
+            } : {}),
+          }}
+          onSearch={handleSearch}
         />
-        <button type="submit" className="btn-search-submit">Search</button>
-      </form>
+      </section>
 
       {/* WORKSPACE LAYOUT (SIDEBAR FILTER LEFT + HOTEL GRID RIGHT) */}
       <main className="main-content-layout">

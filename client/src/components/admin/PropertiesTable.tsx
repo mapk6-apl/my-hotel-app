@@ -83,22 +83,22 @@ export const PropertiesTable: React.FC<PropertiesTableProps> = ({
                 <tbody>
                     {properties.map((property) => (
                         <tr key={property.id}>
-                            <td style={{ fontWeight: 800 }}>{property.name}</td>
-                            <td>
+                            <td data-label="Property" style={{ fontWeight: 800 }}>{property.name}</td>
+                            <td data-label="Location">
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                                     <MapPin size={12} color="#656839" />
                                     <span>{property.city}</span>
                                 </div>
                             </td>
-                            <td>
+                            <td data-label="Rating">
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
                                     <Star size={12} fill="#d97706" color="#d97706" />
                                     <span>{Number(property.star_rating).toFixed(1)} Stars</span>
                                 </div>
                             </td>
-                            <td style={{ fontWeight: 800 }}>{formatStartingPrice(property.starting_price)}</td>
-                            <td>{property.address}</td>
-                            <td style={{ textAlign: 'right' }}>
+                            <td data-label="Nightly rate" style={{ fontWeight: 800 }}>{formatStartingPrice(property.starting_price)}</td>
+                            <td data-label="Address">{property.address}</td>
+                            <td data-label="Actions" style={{ textAlign: 'right' }}>
                                 <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
                                     <button
                                         type="button"

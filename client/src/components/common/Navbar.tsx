@@ -3,7 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import type { RootState } from '../../store/store.js';
 import { logout } from '../../store/slices/authSlice.js';
-import { Heart, Globe, User, LogOut, Shield, ChevronDown } from 'lucide-react';
+import { Heart, Globe, User, LogOut, Shield, ChevronDown, Menu, X } from 'lucide-react';
 import '../../styles/screen1.css';
 
 export type NavbarProps = {
@@ -21,6 +21,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuthModal, onNavigateHome 
   const [language, setLanguage] = useState<string>(() => localStorage.getItem('app-language') || 'EN');
   const [isRegionMenuOpen, setIsRegionMenuOpen] = useState<boolean>(false);
   const [isLogoutConfirmOpen, setIsLogoutConfirmOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     document.documentElement.lang = language.toLowerCase();
@@ -37,7 +38,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuthModal, onNavigateHome 
 
   return (
     <nav className="navbar">
-      <div className="nav-container">
+      <div className={`nav-container ${isMobileMenuOpen ? 'mobile-menu-open' : ''}`}>
         {/* BRAND LOGO */}
         <div 
           className="brand-logo" 
@@ -50,7 +51,17 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenAuthModal, onNavigateHome 
         </div>
 
         {/* NAVIGATION LINKS */}
-        <div className="nav-links">
+        <button
+          type="button"
+          className="mobile-menu-toggle"
+          aria-label={isMobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+          aria-expanded={isMobileMenuOpen}
+          onClick={() => setIsMobileMenuOpen((open) => !open)}
+        >
+          {isMobileMenuOpen ? <X size={21} /> : <Menu size={21} />}
+        </button>
+
+        <div className={`nav-links ${isMobileMenuOpen ? 'mobile-nav-open' : ''}`}>
           <a href="/" className="nav-link">HOME</a>
           <a href="/explore" className="nav-link">EXPLORE</a>
           <a href="/about" className="nav-link">ABOUT</a>

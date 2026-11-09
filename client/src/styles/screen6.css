@@ -170,3 +170,123 @@
   font-weight: 700;
   cursor: pointer;
 }
+
+.admin-table-container {
+  min-width: 0;
+  overflow: hidden;
+}
+
+.admin-table {
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 900px) {
+  .admin-layout-container {
+    flex-direction: column;
+  }
+
+  .admin-sidebar-nav {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding: 0.75rem;
+  }
+
+  .admin-sidebar-nav > div:first-child {
+    grid-column: 1 / -1;
+    margin: 0 !important;
+    padding: 0.25rem 0.5rem 0.75rem !important;
+  }
+
+  .admin-sidebar-nav > div:last-child {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 0 !important;
+    padding: 0.5rem 0 0 !important;
+  }
+
+  .admin-sidebar-link {
+    min-width: 0;
+    padding: 0.65rem;
+    font-size: 0.75rem;
+  }
+
+  .admin-main-workspace {
+    padding: 1rem;
+  }
+
+  .admin-main-workspace > div:first-child {
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .admin-table-container {
+    padding: 0.9rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .admin-main-workspace {
+    padding: 0.75rem;
+  }
+
+  .admin-table-container {
+    border-radius: 12px;
+    padding: 0.75rem;
+  }
+
+  .admin-main-workspace > div:first-child h1 {
+    font-size: 1.35rem !important;
+  }
+
+  .admin-table,
+  .admin-table tbody,
+  .admin-table tr,
+  .admin-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .admin-table thead {
+    display: none;
+  }
+
+  .admin-table tr {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(81, 75, 35, 0.2);
+  }
+
+  .admin-table td {
+    display: grid;
+    grid-template-columns: minmax(6.5rem, 38%) minmax(0, 1fr);
+    gap: 0.5rem;
+    align-items: start;
+    padding: 0.55rem 0.25rem;
+    border-bottom: 0;
+    font-size: 0.75rem;
+  }
+
+  .admin-table td::before {
+    content: attr(data-label);
+    font-size: 0.62rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    opacity: 0.75;
+  }
+
+  .admin-table td:last-child {
+    display: block;
+  }
+
+  .admin-table td:last-child::before {
+    display: block;
+    margin-bottom: 0.4rem;
+  }
+
+  .admin-table td:last-child > div {
+    justify-content: flex-start !important;
+    flex-wrap: wrap;
+  }
+}

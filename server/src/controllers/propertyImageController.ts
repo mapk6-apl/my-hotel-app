@@ -5,14 +5,34 @@ import type { AuthenticatedRequest } from '../middleware/authMiddleware.js';
 type PropertyRecord = {
   name: string;
   city: string;
-  description: string;
 };
 
 type UnsplashPhoto = {
+  id?: string;
   urls?: { regular?: string };
   alt_description?: string | null;
   links?: { html?: string; download_location?: string };
   user?: { name?: string; links?: { html?: string } };
+};
+
+const isUnsplashPhotoUrl = (value: string): boolean => {
+  try {
+    const url = new URL(value);
+    return url.protocol === 'https:' &&
+      ['images.unsplash.com'].includes(url.hostname);
+  } catch {
+    return false;
+  }
+};
+
+const isUnsplashPageUrl = (value: string): boolean => {
+  try {
+    const url = new URL(value);
+    return url.protocol === 'https:' &&
+      ['unsplash.com', 'www.unsplash.com'].includes(url.hostname);
+  } catch {
+    return false;
+  }
 };
 
 const withUnsplashAttribution = (value: string): string => {
@@ -42,15 +62,15 @@ export const importPropertyImages = async (req: AuthenticatedRequest, res: Respo
        WHERE table_schema = current_schema()
          AND table_name = 'accommodation_images'
          AND column_name = ANY($1::text[])`,
-      [['source_name', 'attribution_name', 'attribution_url', 'alt_text', 'display_order']]
+      [['source_name', 'attribution_name', 'attribution_url', 'alt_text', 'display_order', 'photo_id', 'source_url']]
     );
-    if (schema.rows.length !== 5) {
-      res.status(503).json({ error: 'Apply the additive image-attribution migration before importing provider images.' });
+    if (schema.rows.length !== 7) {
+      res.status(503).json({ error: 'Apply the additive image-attribution and Unsplash photo-ID migrations before importing provider images.' });
       return;
     }
 
     const propertyResult = await pool.query<PropertyRecord>(
-      'SELECT name, city, description FROM accommodations WHERE id = $1',
+      'SELECT name, city FROM accommodations WHERE id = $1',
       [propertyId]
     );
     const property = propertyResult.rows[0];
@@ -59,16 +79,32 @@ export const importPropertyImages = async (req: AuthenticatedRequest, res: Respo
       return;
     }
 
-    const characteristics = property.description.split(/[,.]/, 1)[0] || 'hotel accommodation';
-    const query = [
-      property.city,
-      'South Africa',
-      property.name.replace(/^Break-Away Hotel\s*/i, ''),
-      characteristics,
-    ].join(' ').slice(0, 240);
+    const savedImages = await pool.query<{
+      image_url: string;
+      photo_id: string;
+      attribution_name: string;
+      attribution_url: string;
+      source_url: string;
+      alt_text: string;
+      source_name: string;
+    }>(
+      `SELECT image_url, photo_id, attribution_name, attribution_url, source_url, alt_text, source_name
+       FROM accommodation_images
+       WHERE accommodation_id = $1 AND source_name = 'Unsplash' AND photo_id IS NOT NULL
+       ORDER BY display_order ASC, id ASC`,
+      [propertyId]
+    );
+    if (savedImages.rows.length >= 5) {
+      res.status(200).json({ success: true, count: savedImages.rows.length, data: savedImages.rows });
+      return;
+    }
+
+    const query = [property.city, property.name.replace(/^Break-Away Hotel\s*/i, ''), 'South Africa hotel']
+      .join(' ')
+      .slice(0, 240);
     const searchUrl = new URL('https://api.unsplash.com/search/photos');
     searchUrl.searchParams.set('query', query);
-    searchUrl.searchParams.set('per_page', '5');
+    searchUrl.searchParams.set('per_page', '30');
     searchUrl.searchParams.set('orientation', 'landscape');
     searchUrl.searchParams.set('content_filter', 'high');
 
@@ -84,15 +120,20 @@ export const importPropertyImages = async (req: AuthenticatedRequest, res: Respo
     }
 
     const searchData = await searchResponse.json() as { results?: UnsplashPhoto[] };
+    const savedPhotoIds = new Set(savedImages.rows.map((image) => image.photo_id));
     const photos = Array.isArray(searchData.results)
       ? searchData.results.filter((photo) =>
+          typeof photo.id === 'string' &&
+          !savedPhotoIds.has(photo.id) &&
           typeof photo.urls?.regular === 'string' &&
           typeof photo.links?.html === 'string' &&
+          isUnsplashPageUrl(photo.links.html) &&
           typeof photo.links.download_location === 'string' &&
           typeof photo.user?.name === 'string' &&
           typeof photo.user.links?.html === 'string' &&
-          new URL(photo.urls.regular).hostname === 'images.unsplash.com'
-        ).slice(0, 5)
+          isUnsplashPhotoUrl(photo.urls.regular)
+        ).filter((photo, index, list) => list.findIndex((candidate) => candidate.id === photo.id) === index)
+          .slice(0, 5 - savedImages.rows.length)
       : [];
     if (photos.length === 0) {
       res.status(404).json({ error: 'No suitable property images were returned for this search.' });
@@ -116,12 +157,23 @@ export const importPropertyImages = async (req: AuthenticatedRequest, res: Respo
     try {
       await client.query('BEGIN');
       await client.query(
-        'UPDATE accommodation_images SET is_hero = false WHERE accommodation_id = $1',
+        `UPDATE accommodation_images SET is_hero = false
+         WHERE accommodation_id = $1 AND source_name = 'Unsplash'`,
         [propertyId]
       );
 
-      const imported = [];
-      for (const [displayOrder, photo] of photos.entries()) {
+      const imported = [...savedImages.rows];
+      const currentImages = await client.query<{ next_order: number; has_hero: boolean }>(
+        `SELECT COALESCE(MAX(display_order), -1)::integer + 1 AS next_order,
+                COALESCE(BOOL_OR(is_hero), false) AS has_hero
+         FROM accommodation_images WHERE accommodation_id = $1`,
+        [propertyId]
+      );
+      const firstOrder = currentImages.rows[0]?.next_order ?? 0;
+      const hasHero = currentImages.rows[0]?.has_hero ?? false;
+
+      for (const [index, photo] of photos.entries()) {
+        const displayOrder = firstOrder + index;
         const imageUrl = new URL(photo.urls!.regular!);
         imageUrl.searchParams.set('auto', 'format');
         imageUrl.searchParams.set('fit', 'crop');
@@ -129,33 +181,42 @@ export const importPropertyImages = async (req: AuthenticatedRequest, res: Respo
         imageUrl.searchParams.set('q', '85');
         imageUrl.searchParams.set('utm_source', 'breakaway_hotels');
         imageUrl.searchParams.set('utm_medium', 'referral');
-        const values = [
+        const values: [number, string, boolean, string, string, string, string, number, string, string] = [
           propertyId,
           imageUrl.toString(),
-          displayOrder === 0,
+          !hasHero && index === 0,
           'Unsplash',
           photo.user!.name!,
           withUnsplashAttribution(photo.user!.links!.html!),
-          photo.alt_description || `Representative image for ${property.name}`,
+          photo.alt_description
+            ? `Representative image, not a verified photograph of this property: ${photo.alt_description}`
+            : `Representative image for ${property.name}; not a verified property photograph.`,
           displayOrder,
+          photo.id!,
+          withUnsplashAttribution(photo.links!.html!),
         ];
         const existing = await client.query<{ id: number }>(
-          'SELECT id FROM accommodation_images WHERE accommodation_id = $1 AND image_url = $2 ORDER BY id ASC LIMIT 1 FOR UPDATE',
-          [propertyId, values[1]]
+          `SELECT id FROM accommodation_images
+           WHERE accommodation_id = $1 AND source_name = $2 AND photo_id = $3
+           ORDER BY id ASC LIMIT 1 FOR UPDATE`,
+          [propertyId, values[3], values[8]]
         );
         if (existing.rows[0]) {
           await client.query(
             `UPDATE accommodation_images
              SET is_hero = $1, source_name = $2, attribution_name = $3,
-                 attribution_url = $4, alt_text = $5, display_order = $6
-             WHERE id = $7`,
-            [values[2], values[3], values[4], values[5], values[6], values[7], existing.rows[0].id]
+                 attribution_url = $4, alt_text = $5, display_order = $6, image_url = $7, source_url = $8
+             WHERE id = $9`,
+            [values[2], values[3], values[4], values[5], values[6], values[7], values[1], values[9], existing.rows[0].id]
           );
         } else {
           await client.query(
             `INSERT INTO accommodation_images
-             (accommodation_id, image_url, is_hero, source_name, attribution_name, attribution_url, alt_text, display_order)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+             (accommodation_id, image_url, is_hero, source_name, attribution_name, attribution_url, alt_text, display_order, photo_id, source_url)
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+             ON CONFLICT (accommodation_id, source_name, photo_id)
+             WHERE photo_id IS NOT NULL
+             DO NOTHING`,
             values
           );
         }
@@ -165,6 +226,8 @@ export const importPropertyImages = async (req: AuthenticatedRequest, res: Respo
           attribution_name: values[4],
           attribution_url: values[5],
           source_name: values[3],
+          photo_id: values[8],
+          source_url: values[9],
         });
       }
 

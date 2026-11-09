@@ -6,6 +6,8 @@ export interface FilterParams {
   minPrice?: number | string;
   maxPrice?: number | string;
   starRating?: number | string;
+  guests?: number | string;
+  amenities?: string[];
 }
 
 //TypeScript definitions for booking requests
@@ -20,7 +22,19 @@ export interface BookingPayload {
 export const hotelApi = {
   //Fetches property listings from backend matching active search filters.
   getHotels: async (params?: FilterParams) => {
-    const response = await axiosClient.get('/hotels', { params });
+    const query = new URLSearchParams();
+    if (params?.city) query.set('city', params.city);
+    if (params?.minPrice) query.set('minPrice', String(params.minPrice));
+    if (params?.maxPrice) query.set('maxPrice', String(params.maxPrice));
+    if (params?.starRating) query.set('starRating', String(params.starRating));
+    if (params?.guests) query.set('guests', String(params.guests));
+    params?.amenities?.forEach((amenity) => query.append('amenity', amenity));
+    const response = await axiosClient.get(`/hotels?${query.toString()}`);
+    return response.data;
+  },
+
+  getHotelFilterOptions: async () => {
+    const response = await axiosClient.get('/hotels/filters');
     return response.data;
   },
 

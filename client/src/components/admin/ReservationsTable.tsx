@@ -126,37 +126,37 @@ const ReservationsTableContent: React.FC<ReservationsTableProps> = ({
         <tbody>
           {bookings.map((booking) => (
             <tr key={booking.reservation_id}>
-              <td style={{ fontWeight: 800 }}>#{booking.reservation_id}</td>
-              <td>
+              <td data-label="Booking reference" style={{ fontWeight: 800 }}>#{booking.reservation_id}</td>
+              <td data-label="Customer">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                   <User size={12} color="#656839" />
                   <span>{booking.guest_name || 'Guest account unavailable'}</span>
                 </div>
                 <div style={{ fontSize: '0.7rem', opacity: 0.75, marginLeft: '1rem' }}>{booking.guest_email || 'Email unavailable'}</div>
               </td>
-              <td>
+              <td data-label="Property and room">
                 <div>{booking.hotel_name || 'Property unavailable'}</div>
                 <div style={{ fontSize: '0.7rem', opacity: 0.75 }}>{booking.room_type || 'Room unavailable'}</div>
               </td>
-              <td>
+              <td data-label="Stay dates">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                   <Calendar size={12} color="#656839" />
                   <span>{formatDate(booking.check_in)} – {formatDate(booking.check_out)}</span>
                 </div>
               </td>
-              <td>{booking.guest_count}</td>
-              <td style={{ fontWeight: 800 }}>{formatAmount(booking.total_amount)}</td>
-              <td>
+              <td data-label="Guests">{booking.guest_count}</td>
+              <td data-label="Amount" style={{ fontWeight: 800 }}>{formatAmount(booking.total_amount)}</td>
+              <td data-label="Reservation status">
                 <span className={`table-status-pill ${getStatusClass(booking.status)}`}>
                   {booking.status}
                 </span>
               </td>
-              <td>
+              <td data-label="Payment status">
                 <span className={`table-status-pill ${getStatusClass(booking.payment_status)}`}>
                   {booking.payment_status}
                 </span>
               </td>
-              <td>
+              <td data-label="Manage">
                 <div style={{ display: 'flex', gap: '0.35rem', alignItems: 'center' }}>
                   <select
                     aria-label={`Reservation status for booking ${booking.reservation_id}`}

@@ -26,7 +26,7 @@ export const AboutPage: React.FC<AboutPageProps> = ({ onOpenAuthModal }) => (
     <main className="about-page-content">
       <section className="about-intro">
         <div>
-          <span className="about-eyebrow">THE EXPERIENCE</span>
+          <span className="about-eyebrow">About Break-Away Hotels</span>
           <h2>Make the important details easy to find.</h2>
         </div>
         <p>
