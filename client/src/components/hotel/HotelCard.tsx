@@ -69,7 +69,7 @@ export const HotelCard: React.FC<HotelCardProps> = ({ hotel, onViewDetails }) =>
               Photo by {gallery[imageIndex]?.attribution_name}
             </a>
             {gallery[imageIndex]?.source_url && (
-              <> / <a href={gallery[imageIndex].source_url!} target="_blank" rel="noreferrer" onClick={(event) => event.stopPropagation()}>{gallery[imageIndex]?.source_name}</a></>
+              <> on <a href={gallery[imageIndex].source_url!} target="_blank" rel="noreferrer" onClick={(event) => event.stopPropagation()}>{gallery[imageIndex]?.source_name}</a></>
             )}
           </div>
         )}

@@ -15,6 +15,23 @@ type UnsplashPhoto = {
   user?: { name?: string; links?: { html?: string } };
 };
 
+type UsableUnsplashPhoto = UnsplashPhoto & {
+  id: string;
+  urls: { regular: string };
+  links: { html: string; download_location: string };
+  user: { name: string; links: { html: string } };
+};
+
+type SavedUnsplashImage = {
+  image_url: string;
+  photo_id: string;
+  attribution_name: string;
+  attribution_url: string;
+  source_url: string;
+  alt_text: string;
+  source_name: string;
+};
+
 const isUnsplashPhotoUrl = (value: string): boolean => {
   try {
     const url = new URL(value);
@@ -40,6 +57,63 @@ const withUnsplashAttribution = (value: string): string => {
   url.searchParams.set('utm_source', 'breakaway_hotels');
   url.searchParams.set('utm_medium', 'referral');
   return url.toString();
+};
+
+const isUsablePhoto = (photo: UnsplashPhoto): photo is UsableUnsplashPhoto =>
+  typeof photo.id === 'string' &&
+  typeof photo.urls?.regular === 'string' &&
+  isUnsplashPhotoUrl(photo.urls.regular) &&
+  typeof photo.links?.html === 'string' &&
+  isUnsplashPageUrl(photo.links.html) &&
+  typeof photo.links.download_location === 'string' &&
+  typeof photo.user?.name === 'string' &&
+  typeof photo.user.links?.html === 'string' &&
+  isUnsplashPageUrl(photo.user.links.html);
+
+const searchUnsplash = async (
+  query: string,
+  headers: Record<string, string>
+): Promise<UsableUnsplashPhoto[]> => {
+  const searchUrl = new URL('https://api.unsplash.com/search/photos');
+  searchUrl.searchParams.set('query', query);
+  searchUrl.searchParams.set('per_page', '30');
+  searchUrl.searchParams.set('orientation', 'landscape');
+  searchUrl.searchParams.set('content_filter', 'high');
+  searchUrl.searchParams.set('order_by', 'relevant');
+
+  const response = await fetch(searchUrl, { headers, signal: AbortSignal.timeout(15000) });
+  if (!response.ok) {
+    if (response.status === 429) {
+      throw Object.assign(new Error('Image provider rate limit reached. Try again later.'), { status: 429 });
+    }
+    if (response.status === 401 || response.status === 403) {
+      throw Object.assign(new Error('Unsplash rejected the configured access key. Check UNSPLASH_ACCESS_KEY on the server.'), { status: 503 });
+    }
+    throw Object.assign(new Error('The image provider could not complete this search.'), { status: 502 });
+  }
+  const data = await response.json() as { results?: UnsplashPhoto[] };
+  return Array.isArray(data.results) ? data.results.filter(isUsablePhoto) : [];
+};
+
+const saveGalleryHero = async (propertyId: number, images: SavedUnsplashImage[]): Promise<void> => {
+  if (images.length === 0) return;
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    await client.query('UPDATE accommodation_images SET is_hero = false WHERE accommodation_id = $1', [propertyId]);
+    await client.query(
+      `UPDATE accommodation_images
+       SET is_hero = true
+       WHERE accommodation_id = $1 AND source_name = 'Unsplash' AND photo_id = $2`,
+      [propertyId, images[0]!.photo_id]
+    );
+    await client.query('COMMIT');
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  } finally {
+    client.release();
+  }
 };
 
 export const importPropertyImages = async (req: AuthenticatedRequest, res: Response): Promise<void> => {
@@ -79,15 +153,7 @@ export const importPropertyImages = async (req: AuthenticatedRequest, res: Respo
       return;
     }
 
-    const savedImages = await pool.query<{
-      image_url: string;
-      photo_id: string;
-      attribution_name: string;
-      attribution_url: string;
-      source_url: string;
-      alt_text: string;
-      source_name: string;
-    }>(
+    const savedImages = await pool.query<SavedUnsplashImage>(
       `SELECT image_url, photo_id, attribution_name, attribution_url, source_url, alt_text, source_name
        FROM accommodation_images
        WHERE accommodation_id = $1 AND source_name = 'Unsplash' AND photo_id IS NOT NULL
@@ -95,60 +161,64 @@ export const importPropertyImages = async (req: AuthenticatedRequest, res: Respo
       [propertyId]
     );
     if (savedImages.rows.length >= 5) {
+      await saveGalleryHero(propertyId, savedImages.rows);
       res.status(200).json({ success: true, count: savedImages.rows.length, data: savedImages.rows });
       return;
     }
 
-    const query = [property.city, property.name.replace(/^Break-Away Hotel\s*/i, ''), 'South Africa hotel']
-      .join(' ')
-      .slice(0, 240);
-    const searchUrl = new URL('https://api.unsplash.com/search/photos');
-    searchUrl.searchParams.set('query', query);
-    searchUrl.searchParams.set('per_page', '30');
-    searchUrl.searchParams.set('orientation', 'landscape');
-    searchUrl.searchParams.set('content_filter', 'high');
-
+    const usedImages = await pool.query<{ photo_id: string }>(
+      `SELECT photo_id FROM accommodation_images WHERE source_name = 'Unsplash' AND photo_id IS NOT NULL`
+    );
+    const usedPhotoIds = new Set(usedImages.rows.map((image) => image.photo_id));
+    const existingPhotoIds = new Set(savedImages.rows.map((image) => image.photo_id));
+    const selectedPhotos: UsableUnsplashPhoto[] = [];
+    const queryTerms = [
+      `${property.city} hotel`,
+      `${property.city} South Africa`,
+      'hotel bedroom',
+      'hotel bathroom',
+      'hotel restaurant',
+      'hotel swimming pool',
+      'hotel interior',
+      'South Africa landscape',
+    ];
     const headers = { Authorization: `Client-ID ${accessKey}`, 'Accept-Version': 'v1' };
-    const searchResponse = await fetch(searchUrl, { headers, signal: AbortSignal.timeout(15000) });
-    if (!searchResponse.ok) {
-      res.status(searchResponse.status === 429 ? 429 : 502).json({
-        error: searchResponse.status === 429
-          ? 'Image provider rate limit reached. Try again later.'
-          : 'The image provider could not complete this search.',
-      });
+
+    for (const term of queryTerms) {
+      if (selectedPhotos.length >= 5 - savedImages.rows.length) break;
+      const results = await searchUnsplash(term, headers);
+      for (const photo of results) {
+        if (selectedPhotos.length >= 5 - savedImages.rows.length) break;
+        if (usedPhotoIds.has(photo.id) || existingPhotoIds.has(photo.id)) continue;
+        selectedPhotos.push(photo);
+        usedPhotoIds.add(photo.id);
+      }
+    }
+
+    if (selectedPhotos.length === 0) {
+      res.status(404).json({ error: `No new suitable Unsplash images were found for ${property.city}.` });
       return;
     }
 
-    const searchData = await searchResponse.json() as { results?: UnsplashPhoto[] };
-    const savedPhotoIds = new Set(savedImages.rows.map((image) => image.photo_id));
-    const photos = Array.isArray(searchData.results)
-      ? searchData.results.filter((photo) =>
-          typeof photo.id === 'string' &&
-          !savedPhotoIds.has(photo.id) &&
-          typeof photo.urls?.regular === 'string' &&
-          typeof photo.links?.html === 'string' &&
-          isUnsplashPageUrl(photo.links.html) &&
-          typeof photo.links.download_location === 'string' &&
-          typeof photo.user?.name === 'string' &&
-          typeof photo.user.links?.html === 'string' &&
-          isUnsplashPhotoUrl(photo.urls.regular)
-        ).filter((photo, index, list) => list.findIndex((candidate) => candidate.id === photo.id) === index)
-          .slice(0, 5 - savedImages.rows.length)
-      : [];
-    if (photos.length === 0) {
-      res.status(404).json({ error: 'No suitable property images were returned for this search.' });
-      return;
-    }
-
-    for (const photo of photos) {
-      const downloadUrl = new URL(photo.links!.download_location!);
+    for (const photo of selectedPhotos) {
+      const downloadUrl = new URL(photo.links.download_location);
       if (downloadUrl.hostname !== 'api.unsplash.com' || downloadUrl.protocol !== 'https:') {
         res.status(502).json({ error: 'The image provider returned an invalid download reference.' });
         return;
       }
       const downloadResponse = await fetch(downloadUrl, { headers, signal: AbortSignal.timeout(15000) });
       if (!downloadResponse.ok) {
-        res.status(502).json({ error: 'The image provider could not record image usage.' });
+        const status = downloadResponse.status === 429
+          ? 429
+          : downloadResponse.status === 401 || downloadResponse.status === 403
+            ? 503
+            : 502;
+        const error = status === 429
+          ? 'Image provider rate limit reached while recording photo usage. Try again later.'
+          : status === 503
+            ? 'Unsplash rejected the configured access key. Check UNSPLASH_ACCESS_KEY on the server.'
+            : 'The image provider could not record image usage.';
+        res.status(status).json({ error });
         return;
       }
     }
@@ -156,81 +226,66 @@ export const importPropertyImages = async (req: AuthenticatedRequest, res: Respo
     const client = await pool.connect();
     try {
       await client.query('BEGIN');
-      await client.query(
-        `UPDATE accommodation_images SET is_hero = false
-         WHERE accommodation_id = $1 AND source_name = 'Unsplash'`,
-        [propertyId]
-      );
 
-      const imported = [...savedImages.rows];
-      const currentImages = await client.query<{ next_order: number; has_hero: boolean }>(
-        `SELECT COALESCE(MAX(display_order), -1)::integer + 1 AS next_order,
-                COALESCE(BOOL_OR(is_hero), false) AS has_hero
+      const orderResult = await client.query<{ next_order: number }>(
+        `SELECT COALESCE(MAX(display_order), -1)::integer + 1 AS next_order
          FROM accommodation_images WHERE accommodation_id = $1`,
         [propertyId]
       );
-      const firstOrder = currentImages.rows[0]?.next_order ?? 0;
-      const hasHero = currentImages.rows[0]?.has_hero ?? false;
-
-      for (const [index, photo] of photos.entries()) {
-        const displayOrder = firstOrder + index;
-        const imageUrl = new URL(photo.urls!.regular!);
-        imageUrl.searchParams.set('auto', 'format');
-        imageUrl.searchParams.set('fit', 'crop');
-        imageUrl.searchParams.set('w', '1400');
-        imageUrl.searchParams.set('q', '85');
-        imageUrl.searchParams.set('utm_source', 'breakaway_hotels');
-        imageUrl.searchParams.set('utm_medium', 'referral');
-        const values: [number, string, boolean, string, string, string, string, number, string, string] = [
-          propertyId,
-          imageUrl.toString(),
-          !hasHero && index === 0,
-          'Unsplash',
-          photo.user!.name!,
-          withUnsplashAttribution(photo.user!.links!.html!),
-          photo.alt_description
-            ? `Representative image, not a verified photograph of this property: ${photo.alt_description}`
-            : `Representative image for ${property.name}; not a verified property photograph.`,
+      let displayOrder = orderResult.rows[0]?.next_order ?? 0;
+      const imported: SavedUnsplashImage[] = [...savedImages.rows];
+      for (const photo of selectedPhotos) {
+        const values = {
+          accommodationId: propertyId,
+          imageUrl: photo.urls.regular,
+          isHero: imported.length === 0,
+          photographer: photo.user.name,
+          photographerUrl: withUnsplashAttribution(photo.user.links.html),
+          altText: photo.alt_description || `Representative hotel image for ${property.name}; not a verified property photograph.`,
           displayOrder,
-          photo.id!,
-          withUnsplashAttribution(photo.links!.html!),
-        ];
-        const existing = await client.query<{ id: number }>(
-          `SELECT id FROM accommodation_images
-           WHERE accommodation_id = $1 AND source_name = $2 AND photo_id = $3
-           ORDER BY id ASC LIMIT 1 FOR UPDATE`,
-          [propertyId, values[3], values[8]]
-        );
-        if (existing.rows[0]) {
-          await client.query(
-            `UPDATE accommodation_images
-             SET is_hero = $1, source_name = $2, attribution_name = $3,
-                 attribution_url = $4, alt_text = $5, display_order = $6, image_url = $7, source_url = $8
-             WHERE id = $9`,
-            [values[2], values[3], values[4], values[5], values[6], values[7], values[1], values[9], existing.rows[0].id]
-          );
-        } else {
-          await client.query(
-            `INSERT INTO accommodation_images
-             (accommodation_id, image_url, is_hero, source_name, attribution_name, attribution_url, alt_text, display_order, photo_id, source_url)
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-             ON CONFLICT (accommodation_id, source_name, photo_id)
+          photoId: photo.id,
+          sourceUrl: withUnsplashAttribution(photo.links.html),
+        };
+        const inserted = await client.query<SavedUnsplashImage>(
+          `INSERT INTO accommodation_images
+             (accommodation_id, image_url, is_hero, source_name, attribution_name, attribution_url,
+              alt_text, display_order, photo_id, source_url)
+           VALUES ($1, $2, $3, 'Unsplash', $4, $5, $6, $7, $8, $9)
+           ON CONFLICT (accommodation_id, source_name, photo_id)
              WHERE photo_id IS NOT NULL
-             DO NOTHING`,
-            values
-          );
-        }
-        imported.push({
-          image_url: values[1],
-          alt_text: values[6],
-          attribution_name: values[4],
-          attribution_url: values[5],
-          source_name: values[3],
-          photo_id: values[8],
-          source_url: values[9],
-        });
+           DO UPDATE SET image_url = EXCLUDED.image_url,
+                         attribution_name = EXCLUDED.attribution_name,
+                         attribution_url = EXCLUDED.attribution_url,
+                         source_url = EXCLUDED.source_url,
+                         alt_text = EXCLUDED.alt_text,
+                         display_order = EXCLUDED.display_order
+           RETURNING image_url, photo_id, attribution_name, attribution_url,
+                     source_url, alt_text, source_name`,
+          [
+            values.accommodationId,
+            values.imageUrl,
+            values.isHero,
+            values.photographer,
+            values.photographerUrl,
+            values.altText,
+            values.displayOrder,
+            values.photoId,
+            values.sourceUrl,
+          ]
+        );
+        if (inserted.rows[0]) imported.push(inserted.rows[0]);
+        displayOrder += 1;
       }
 
+      await client.query('UPDATE accommodation_images SET is_hero = false WHERE accommodation_id = $1', [propertyId]);
+      if (imported[0]) {
+        await client.query(
+          `UPDATE accommodation_images
+           SET is_hero = true
+           WHERE accommodation_id = $1 AND source_name = 'Unsplash' AND photo_id = $2`,
+          [propertyId, imported[0].photo_id]
+        );
+      }
       await client.query('COMMIT');
       res.status(200).json({ success: true, count: imported.length, data: imported });
     } catch (error) {
@@ -241,6 +296,12 @@ export const importPropertyImages = async (req: AuthenticatedRequest, res: Respo
     }
   } catch (error) {
     console.error('Error importing property images:', error);
-    res.status(500).json({ error: 'Unable to import property images.' });
+    const status = typeof error === 'object' && error !== null && 'status' in error &&
+      (error.status === 429 || error.status === 502 || error.status === 503)
+      ? error.status
+      : 500;
+    res.status(status).json({
+      error: error instanceof Error ? error.message : 'Unable to import property images.',
+    });
   }
 };

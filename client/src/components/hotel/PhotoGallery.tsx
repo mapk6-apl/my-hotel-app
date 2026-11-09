@@ -66,7 +66,7 @@ export const PhotoGallery: React.FC<PhotoGalleryProps> = ({
             <div className="gallery-image-credit" onClick={(event) => event.stopPropagation()}>
               <a href={heroImage.attribution_url || undefined} target="_blank" rel="noreferrer">Photo by {heroImage.attribution_name}</a>
               {heroImage.source_url && (
-                <> / <a href={heroImage.source_url} target="_blank" rel="noreferrer">{heroImage.source_name}</a></>
+                <> on <a href={heroImage.source_url} target="_blank" rel="noreferrer">{heroImage.source_name}</a></>
               )}
             </div>
           )}
