@@ -8,6 +8,7 @@
     "dev:server": "cd server && nodemon --exec tsx src/index.ts",
     "dev:client": "vite",
     "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
+    "build": "npm run build:server && vite build",
     "build:server": "tsc -p server/tsconfig.json && mkdir -p server/dist/db/migrations && cp server/src/db/migrations/*.sql server/dist/db/migrations/",
     "start": "node server/dist/index.js",
     "migrate:prod": "node server/dist/db/runMigrations.js"

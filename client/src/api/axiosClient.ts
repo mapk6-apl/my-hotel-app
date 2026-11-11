@@ -5,13 +5,12 @@ const viteEnvironment = (import.meta as ImportMeta & {
 }).env;
 
 const configuredApiBaseUrl = viteEnvironment.VITE_API_BASE_URL;
-if (!configuredApiBaseUrl && !viteEnvironment.DEV) {
-  throw new Error('VITE_API_BASE_URL must point to the deployed Express API before publishing the frontend.');
-}
+const defaultApiBaseUrl = viteEnvironment.DEV ? 'http://localhost:5001/api' : '/api';
+const configuredBase = (configuredApiBaseUrl?.trim() || defaultApiBaseUrl).replace(/\/+$/, '');
 
-export const API_BASE_URL = (
-  configuredApiBaseUrl || 'http://localhost:5001/api'
-).replace(/\/+$/, '');
+export const API_BASE_URL = /\/api$/i.test(configuredBase)
+  ? configuredBase
+  : `${configuredBase}/api`;
 
 //Base Axios instance for all backend API communication that connects to express server running on Port 5001.
 const axiosClient = axios.create({

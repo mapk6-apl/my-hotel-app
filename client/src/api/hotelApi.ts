@@ -21,10 +21,10 @@ export interface BookingPayload {
   total_amount: number;
 }
 
-export interface PayFastPaymentResponse {
+export interface PaystackPaymentResponse {
   success: boolean;
-  action: string;
-  fields: Record<string, string>;
+  authorizationUrl: string;
+  reference: string;
 }
 
 export const hotelApi = {
@@ -60,13 +60,13 @@ export const hotelApi = {
     return response.data;
   },
 
-  createPayFastPayment: async (reservationId: number) => {
-    const response = await axiosClient.post<PayFastPaymentResponse>(`/bookings/${reservationId}/payfast`);
+  createPaystackPayment: async (reservationId: number): Promise<PaystackPaymentResponse> => {
+    const response = await axiosClient.post<PaystackPaymentResponse>(`/bookings/${reservationId}/paystack`);
     return response.data;
   },
 
-  getPayFastPaymentStatus: async (reservationId: number, paymentReference: string) => {
-    const response = await axiosClient.get(`/bookings/${reservationId}/payfast/${encodeURIComponent(paymentReference)}`);
+  getPaystackPaymentStatus: async (reservationId: number, paymentReference: string) => {
+    const response = await axiosClient.get(`/bookings/${reservationId}/paystack/${encodeURIComponent(paymentReference)}`);
     return response.data;
   },
 

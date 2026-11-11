@@ -102,7 +102,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onNavigateHome, onOp
       setError(null);
       try {
         for (let attempt = 0; attempt < 6; attempt += 1) {
-          const response = await hotelApi.getPayFastPaymentStatus(returnReservationId, returnPaymentReference);
+          const response = await hotelApi.getPaystackPaymentStatus(returnReservationId, returnPaymentReference);
           const data = response.data?.data as (Booking & { room_id: number }) | undefined;
           if (!data) throw new Error('The payment service did not return this reservation.');
           if (cancelled) return;
@@ -142,7 +142,7 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onNavigateHome, onOp
           setPaymentReturnMessage(
             paymentResult === 'cancelled'
               ? 'The payment was cancelled. It has not been marked as paid; you can retry.'
-              : 'Payment has not been verified yet. Confirmation will appear only after the server verifies the PayFast notification.'
+              : 'Payment has not been verified yet. Confirmation will appear only after the server verifies the Paystack notification.'
           );
         }
       } catch (requestError: unknown) {
@@ -160,31 +160,22 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onNavigateHome, onOp
     };
   }, [isPaymentReturn, paymentResult, returnPaymentReference, returnReservationId, user?.id]);
 
-  const startPayFastPayment = async () => {
+  const startPaystackPayment = async () => {
     if (!reservation || paymentInProgress.current || isProcessing) return;
     paymentInProgress.current = true;
     setIsProcessing(true);
     setError(null);
     try {
-      const payment = await hotelApi.createPayFastPayment(reservation.reservation_id);
-      const form = document.createElement('form');
-      form.method = 'POST';
-      form.action = payment.action;
-      form.style.display = 'none';
-      for (const [name, value] of Object.entries(payment.fields)) {
-        const input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = name;
-        input.value = value;
-        form.appendChild(input);
+      const payment = await hotelApi.createPaystackPayment(reservation.reservation_id);
+      if (!payment.authorizationUrl || !payment.reference) {
+        throw new Error('Paystack did not return a valid payment authorization.');
       }
-      document.body.appendChild(form);
-      form.submit();
+      window.location.assign(payment.authorizationUrl);
     } catch (requestError: unknown) {
       const responseError = typeof requestError === 'object' && requestError !== null && 'response' in requestError
         ? (requestError as { response?: { data?: { error?: string } } }).response?.data?.error
         : undefined;
-      setError(responseError || (requestError instanceof Error ? requestError.message : 'Unable to open PayFast Sandbox.'));
+      setError(responseError || (requestError instanceof Error ? requestError.message : 'Unable to open Paystack Test Mode.'));
       paymentInProgress.current = false;
       setIsProcessing(false);
     }
@@ -349,11 +340,11 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onNavigateHome, onOp
                 <CreditCard size={18} color="#656839" />
                 <span>Payment</span>
               </h1>
-              <p>PayFast Sandbox handles payment details. Break-Away Hotels does not collect or store card details.</p>
+              <p>Paystack Test Mode handles payment details. Break-Away Hotels does not collect or store card details.</p>
               <div className="payment-option-unavailable">
                 <CreditCard size={18} aria-hidden="true" />
-                <span>PayFast Sandbox</span>
-                <strong>Sandbox</strong>
+                <span>Paystack Test Mode</span>
+                <strong>Test Mode</strong>
               </div>
               <p className="payment-status-note" role="status">{statusMessage(reservation.payment_status)}</p>
               {paymentReturnMessage && <p className="payment-status-note" role="status">{paymentReturnMessage}</p>}
@@ -363,10 +354,10 @@ export const CheckoutPage: React.FC<CheckoutPageProps> = ({ onNavigateHome, onOp
                 <button
                   type="button"
                   className="btn-pay-now"
-                  onClick={() => void startPayFastPayment()}
+                  onClick={() => void startPaystackPayment()}
                   disabled={isProcessing || reservation.payment_status.toLowerCase() === 'paid'}
                 >
-                  {isProcessing ? 'Opening PayFast…' : 'Pay with PayFast Sandbox'}
+                  {isProcessing ? 'Opening Paystack…' : 'Pay with Paystack'}
                 </button>
               </div>
             </section>

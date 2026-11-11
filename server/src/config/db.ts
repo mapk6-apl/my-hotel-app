@@ -4,9 +4,9 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 export const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  max: 20,
-  idleTimeoutMillis: 30000,
+  connectionString: process.env.HOTEL_DATABASE_URL || process.env.DATABASE_URL,
+  max: process.env.VERCEL ? 1 : 20,
+  idleTimeoutMillis: process.env.VERCEL ? 10000 : 30000,
   connectionTimeoutMillis: 5000,
   ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : undefined,
 });
