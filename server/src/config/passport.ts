@@ -2,6 +2,21 @@ import passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20'; 
 import { pool } from './db.js'; 
 
+const logGoogleStrategyError = (error: unknown): void => {
+    const errorCode =
+        error &&
+        typeof error === 'object' &&
+        'code' in error &&
+        typeof error.code === 'string' &&
+        /^[A-Z0-9]{5}$/.test(error.code)
+            ? error.code
+            : undefined;
+    console.error('google_oauth_profile_lookup_failed', {
+        errorName: error instanceof Error ? error.name : 'UnknownError',
+        ...(errorCode ? { errorCode } : {}),
+    });
+};
+
 passport.use( 
     new GoogleStrategy( 
         { 
@@ -32,7 +47,7 @@ passport.use(
                 ]); 
                 return done(null, newUser.rows[0]); 
             } catch (error) { 
-                console.error('Error during Google Strategy authentication:', error); 
+                logGoogleStrategyError(error);
                 return done(error as Error, undefined); 
             } 
         } 

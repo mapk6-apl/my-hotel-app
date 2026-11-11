@@ -7,6 +7,21 @@ import { getClientUrl, getJwtSecret } from '../config/env.js'
 const PASSWORD_HASH_BYTES = 64;
 const GOOGLE_AUTH_CODE_TTL_MS = 60_000;
 
+const logGoogleAuthError = (event: string, error: unknown): void => {
+    const errorCode =
+        error &&
+        typeof error === 'object' &&
+        'code' in error &&
+        typeof error.code === 'string' &&
+        /^[A-Z0-9]{5}$/.test(error.code)
+            ? error.code
+            : undefined;
+    console.error(event, {
+        errorName: error instanceof Error ? error.name : 'UnknownError',
+        ...(errorCode ? { errorCode } : {}),
+    });
+};
+
 type AuthenticatedProfile = {
     id: number;
     email: string;
@@ -182,6 +197,7 @@ const getFrontendAuthCallbackUrl = (query: string): string =>
 export const googleCallback = async (req: Request, res: Response): Promise<void> => {
     const user = req.user as { id?: number } | undefined;
     if (!user || !Number.isInteger(user.id)) {
+        console.warn('google_oauth_callback_missing_user');
         res.redirect(getFrontendAuthCallbackUrl('#error=google_auth_failed'));
         return;
     }
@@ -198,7 +214,7 @@ export const googleCallback = async (req: Request, res: Response): Promise<void>
         );
         res.redirect(getFrontendAuthCallbackUrl(`#code=${encodeURIComponent(code)}`));
     } catch (error) {
-        console.error('Unable to store Google authentication code:', error);
+        logGoogleAuthError('google_auth_code_store_failed', error);
         res.redirect(getFrontendAuthCallbackUrl('#error=google_auth_failed'));
     }
 };
@@ -219,6 +235,7 @@ export const exchangeGoogleAuthCode = async (req: Request, res: Response): Promi
         );
         const userId = codeResult.rows[0]?.user_id;
         if (!userId) {
+            console.warn('google_auth_code_rejected: invalid, expired, or already used');
             res.status(401).json({ error: 'Google sign-in code is invalid or expired. Please try again.' });
             return;
         }
@@ -231,6 +248,7 @@ export const exchangeGoogleAuthCode = async (req: Request, res: Response): Promi
         );
         const user = result.rows[0];
         if (!user) {
+            console.warn('google_auth_code_user_not_found');
             res.status(401).json({ error: 'Google account could not be found. Please sign in again.' });
             return;
         }
@@ -242,7 +260,7 @@ export const exchangeGoogleAuthCode = async (req: Request, res: Response): Promi
         );
         res.status(200).json({ success: true, token });
     } catch (error) {
-        console.error('Error exchanging Google authentication code:', error);
+        logGoogleAuthError('google_auth_code_exchange_failed', error);
         res.status(500).json({ error: 'Unable to complete Google sign-in. Please try again.' });
     }
 };

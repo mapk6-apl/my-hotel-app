@@ -49,6 +49,7 @@ router.get(
             queryBuffer.length !== cookieBuffer.length ||
             !timingSafeEqual(queryBuffer, cookieBuffer)
         ) {
+            console.warn('google_oauth_state_rejected: missing or mismatched state');
             res.redirect(googleFailureUrl);
             return;
         }
@@ -57,10 +58,15 @@ router.get(
             'google',
             { session: false },
             (error, user) => {
-                if (error || !user) {
-                    if (error) {
-                        console.error('Google OAuth callback failed:', error);
-                    }
+                if (error) {
+                    console.error('google_oauth_passport_callback_failed', {
+                        errorName: error instanceof Error ? error.name : 'UnknownError',
+                    });
+                    res.redirect(googleFailureUrl);
+                    return;
+                }
+                if (!user) {
+                    console.warn('google_oauth_passport_callback_returned_no_user');
                     res.redirect(googleFailureUrl);
                     return;
                 }
