@@ -69,7 +69,6 @@ export const validateProductionEnvironment = (): void => {
     'GOOGLE_CALLBACK_URL',
     'UNSPLASH_ACCESS_KEY',
     'PAYSTACK_SECRET_KEY',
-    'PAYSTACK_WEBHOOK_SECRET',
   ];
 
   const missing = required.filter((name) => !process.env[name]?.trim());
@@ -86,10 +85,6 @@ export const validateProductionEnvironment = (): void => {
 
   if (!process.env.PAYSTACK_SECRET_KEY!.trim().startsWith('sk_test_')) {
     throw new Error('PAYSTACK_SECRET_KEY must be a Paystack Test Mode key. Live payments are disabled.');
-  }
-
-  if (!process.env.PAYSTACK_WEBHOOK_SECRET!.trim().startsWith('whsec_')) {
-    throw new Error('PAYSTACK_WEBHOOK_SECRET must be a valid Paystack webhook signing secret.');
   }
 
 getClientUrl();
