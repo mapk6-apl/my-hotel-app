@@ -124,19 +124,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onShowToa
     }
   };
 
-  const handleDemoKayden = () => {
-    handleAuthSuccess(
-      {
-        id: 101,
-        email: 'kayden@breakaway.co.za',
-        full_name: 'Kayden',
-        role: 'guest',
-        avatar_url: null
-      },
-      'demo_kayden_token_123'
-    );
-  };
-
   const handleGoogleSignIn = () => {
     try {
       sessionStorage.setItem('breakaway-auth-return-location', JSON.stringify({
@@ -275,18 +262,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onShowToa
             <span>Continue with Apple</span>
           </button>
         </div>
-
-        <div className="auth-demo-divider">
-          <span>Quick Demo Options</span>
-        </div>
-
-        <button
-          type="button"
-          onClick={handleDemoKayden}
-          className="btn-demo-kayden"
-        >
-          <span>Sign In as Demo User (Kayden)</span>
-        </button>
 
         <div className="auth-toggle-container">
           <button

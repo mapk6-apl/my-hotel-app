@@ -1,12 +1,11 @@
 import type {Request, Response} from 'express' //always write type
 import jwt from 'jsonwebtoken'
-import { randomBytes, randomUUID, scrypt, timingSafeEqual } from 'node:crypto'
+import { createHash, randomBytes, randomUUID, scrypt, timingSafeEqual } from 'node:crypto'
 import {pool} from '../config/db.js'
 import { getClientUrl, getJwtSecret } from '../config/env.js'
 
 const PASSWORD_HASH_BYTES = 64;
 const GOOGLE_AUTH_CODE_TTL_MS = 60_000;
-const googleAuthCodes = new Map<string, { userId: number; expiresAt: number }>();
 
 type AuthenticatedProfile = {
     id: number;
@@ -180,45 +179,55 @@ export const loginWithEmail = async (req: Request, res: Response): Promise<void>
 const getFrontendAuthCallbackUrl = (query: string): string =>
     new URL(`/auth/callback${query}`, getClientUrl()).toString();
 
-export const googleCallback = (req: Request, res: Response): void => {
+export const googleCallback = async (req: Request, res: Response): Promise<void> => {
     const user = req.user as { id?: number } | undefined;
     if (!user || !Number.isInteger(user.id)) {
         res.redirect(getFrontendAuthCallbackUrl('#error=google_auth_failed'));
         return;
     }
 
-    const now = Date.now();
-    for (const [code, entry] of googleAuthCodes) {
-        if (entry.expiresAt <= now) {
-            googleAuthCodes.delete(code);
-        }
-    }
-
     const code = randomBytes(32).toString('base64url');
-    googleAuthCodes.set(code, { userId: user.id!, expiresAt: now + GOOGLE_AUTH_CODE_TTL_MS });
-    res.redirect(getFrontendAuthCallbackUrl(`#code=${encodeURIComponent(code)}`));
+    try {
+        await pool.query(
+            'DELETE FROM google_auth_codes WHERE expires_at <= CURRENT_TIMESTAMP'
+        );
+        await pool.query(
+            `INSERT INTO google_auth_codes (code_hash, user_id, expires_at)
+             VALUES ($1, $2, CURRENT_TIMESTAMP + ($3 * INTERVAL '1 millisecond'))`,
+            [createHash('sha256').update(code).digest('hex'), user.id, GOOGLE_AUTH_CODE_TTL_MS]
+        );
+        res.redirect(getFrontendAuthCallbackUrl(`#code=${encodeURIComponent(code)}`));
+    } catch (error) {
+        console.error('Unable to store Google authentication code:', error);
+        res.redirect(getFrontendAuthCallbackUrl('#error=google_auth_failed'));
+    }
 };
 
 export const exchangeGoogleAuthCode = async (req: Request, res: Response): Promise<void> => {
     const code = req.body && typeof req.body.code === 'string' ? req.body.code : '';
-    if (!/^[A-Za-z0-9_-]{43}$/.test(code)) {
+    if (!code || code.length > 2048) {
         res.status(400).json({ error: 'A valid Google authentication code is required.' });
         return;
     }
 
-    const entry = googleAuthCodes.get(code);
-    googleAuthCodes.delete(code);
-    if (!entry || entry.expiresAt <= Date.now()) {
-        res.status(401).json({ error: 'Google sign-in code is invalid or expired. Please try again.' });
-        return;
-    }
-
     try {
+        const codeResult = await pool.query<{ user_id: number }>(
+            `DELETE FROM google_auth_codes
+             WHERE code_hash = $1 AND expires_at > CURRENT_TIMESTAMP
+             RETURNING user_id`,
+            [createHash('sha256').update(code).digest('hex')]
+        );
+        const userId = codeResult.rows[0]?.user_id;
+        if (!userId) {
+            res.status(401).json({ error: 'Google sign-in code is invalid or expired. Please try again.' });
+            return;
+        }
+
         const result = await pool.query<AuthenticatedProfile>(
             `SELECT id, email, full_name, avatar_url, role
              FROM users
              WHERE id = $1`,
-            [entry.userId]
+            [userId]
         );
         const user = result.rows[0];
         if (!user) {

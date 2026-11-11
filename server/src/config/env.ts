@@ -98,4 +98,7 @@ getClientUrl();
   if (callbackUrl.pathname !== '/api/auth/google/callback') {
     throw new Error('GOOGLE_CALLBACK_URL must end in /api/auth/google/callback.');
   }
+  if (callbackUrl.origin !== getClientUrl()) {
+    throw new Error('GOOGLE_CALLBACK_URL must use the same origin as CLIENT_URL.');
+  }
 };
