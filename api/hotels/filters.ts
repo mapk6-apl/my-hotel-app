@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express';
-import app, { validateAppEnvironment } from '../../../../../server/src/app.js';
+import app, { validateAppEnvironment } from '../../server/src/app.js';
 
 let environmentValidated = false;
 
