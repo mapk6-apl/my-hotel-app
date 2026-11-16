@@ -12,6 +12,19 @@ A full-stack hotel booking application that allows users to discover accommodati
 
 ---
 
+## App Preparation Links
+
+*Moodboard*
+https://www.figma.com/design/4NNDwVg1RztdBKplv2JQAp/Moodboard?node-id=0-1&t=vmfiunPzeHYnXcvb-0
+
+*Prototype*
+https://www.figma.com/design/oEQW29oGFHlOUFnbVSMb5X/Prototype?node-id=0-1&p=f&t=KWg5xoWYuXdC3m00-0
+
+*Google Drive Link with Information Architecture, User Flows & User Stories*
+https://drive.google.com/drive/folders/1Kv--4vjtmq22lr-IWF1-jEMqzoF6zhvn?usp=sharing
+
+---
+
 ## 📸 App Screenshots
 
 *Screenshots coming soon!*
