@@ -14,7 +14,7 @@ A full-stack hotel booking application that allows users to discover accommodati
 
 ## App Preparation Links
 
-*Moodboard\  *
+*Moodboard<br>*
 https://www.figma.com/design/4NNDwVg1RztdBKplv2JQAp/Moodboard?node-id=0-1&t=vmfiunPzeHYnXcvb-0
 
 *Prototype\  *
